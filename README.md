@@ -7,9 +7,11 @@ You should set the settings a bit harsher, the pub version was, on purpose, made
 DONT ACTIVATE ANY OTHER AUTOTOTEM ALONG THIS ONE, it will glitch it out!
 
 commands:
+
 `,t <module>` where <module> is:
   - autototem
   - tpaparty
+
 `,autototem count <count>` where <count> is any number from 0 to 64, recommended is:
   - if server has stacked tots, 2
   - if server has 32ks and stacked tots, 4-8
