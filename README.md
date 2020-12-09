@@ -8,11 +8,11 @@ DONT ACTIVATE ANY OTHER AUTOTOTEM ALONG THIS ONE, it will glitch it out!
 
 commands:
 
-`,t <module>` where <module> is:
+`,t <module>` where `<module>` is:
   - autototem
   - tpaparty
 
-`,autototem count <count>` where <count> is any number from 0 to 64, recommended is:
+`,autototem count <count>` where `<count>` is any number from 0 to 64, recommended is:
   - if server has stacked tots, 2
   - if server has 32ks and stacked tots, 4-8
   - if server is normal, 0
