@@ -16,5 +16,7 @@ commands:
   - if server has stacked tots, 2
   - if server has 32ks and stacked tots, 4-8
   - if server is normal, 0
+
+`,say <anything...>` where `<anything>` is anything.
   
 more soon
