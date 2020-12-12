@@ -42,23 +42,23 @@ public class InventoryUtils {
     public static void inventorySwap(int from, int to) {
         if(swapping)
             return;
-    
+        
         swapping = true;
         ThreadManager.run(() -> {
             try {
                 GuiScreen screen = Yac.mc.currentScreen;
                 if(screen != null) {
-                    Thread.sleep(500);
-                    Yac.mc.displayGuiScreen(new GuiInventory(Yac.player));
-                    Thread.sleep(190);
+                    Thread.sleep(200);
+                    Yac.player.closeScreen();
+                    Thread.sleep(100);
                 }
                 Thread.sleep(10);
                 Yac.mc.playerController.windowClick(Yac.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, Yac.mc.player);
-                Thread.sleep(500);
+                Thread.sleep(300);
                 Yac.mc.playerController.windowClick(Yac.mc.player.inventoryContainer.windowId, to, 8, ClickType.SWAP, Yac.mc.player);
-                Thread.sleep(500);
+                Thread.sleep(300);
                 Yac.mc.playerController.windowClick(Yac.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, Yac.mc.player);
-                Thread.sleep(500);
+                Thread.sleep(200);
                 Yac.mc.displayGuiScreen(screen);
             }
             catch (InterruptedException e) {

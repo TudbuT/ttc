@@ -12,6 +12,8 @@ import tudbut.mod.client.yac.utils.ChatUtils;
 
 public class FMLEventHandler {
     
+    private int chatHelper = 0;
+    
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
         if(event.getOriginalMessage().startsWith(Yac.prefix)) {
@@ -47,7 +49,10 @@ public class FMLEventHandler {
         }
         else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
-            Yac.player.sendChatMessage(">" + event.getMessage() + " ›YAC‹");
+            Yac.player.sendChatMessage(">" + event.getMessage() + (chatHelper == 0 ? " ›YAC‹" : ""));
+            chatHelper++;
+            if(chatHelper == 5)
+                chatHelper = 0;
             
             ChatUtils.history(event.getOriginalMessage());
         }
