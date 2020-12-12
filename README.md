@@ -22,3 +22,9 @@ commands:
 `,prefix <prefix>` where `<prefix>` is anything.
   
 more soon
+
+guide:
+
+using autototem:
+- run the `,autototem count` command and specify you count
+- run `,t autototem`. If it says "false", run it again.
