@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 import tudbut.mod.client.yac.events.FMLEventHandler;
 import tudbut.mod.client.yac.mods.AutoTotem;
+import tudbut.mod.client.yac.mods.Prefix;
 import tudbut.mod.client.yac.mods.TPAParty;
 import tudbut.mod.client.yac.utils.FileRW;
 import tudbut.mod.client.yac.utils.Module;
@@ -24,13 +25,14 @@ import java.util.Map;
 public class Yac {
     public static final String MODID = "yac";
     public static final String NAME = "YAC Client";
-    public static final String VERSION = "vB0.1.0";
+    public static final String VERSION = "vB0.1.1";
     
     public static Module[] modules ;
     public static EntityPlayerSP player;
     public static Minecraft mc = Minecraft.getMinecraft();
     public static FileRW file;
     public static Map<String, String> cfg;
+    public static String prefix = ",";
 
     public static Logger logger;
 
@@ -58,7 +60,8 @@ public class Yac {
         }
         modules = new Module[] {
                 new AutoTotem(),
-                new TPAParty()
+                new TPAParty(),
+                new Prefix()
         };
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
         
@@ -70,6 +73,7 @@ public class Yac {
                 modules[i].loadConfig(Utils.stringToMap(cfg.get(modules[i].getClass().getSimpleName())));
             }
         }
+        prefix = cfg.getOrDefault("prefix", ",");
     
         try {
             Thread.sleep(2000);
@@ -85,6 +89,7 @@ public class Yac {
                         for (int i = 0; i < modules.length; i++) {
                             cfg.put(modules[i].getClass().getSimpleName(), modules[i].saveConfig());
                         }
+                        cfg.put("prefix", prefix);
         
                         file.setContent(Utils.mapToString(cfg));
                     }

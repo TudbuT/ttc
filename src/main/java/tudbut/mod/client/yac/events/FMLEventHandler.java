@@ -4,52 +4,46 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
-import net.minecraftforge.event.ServerChatEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.yac.Yac;
-import tudbut.mod.client.yac.mods.TPAParty;
 import tudbut.mod.client.yac.utils.ChatUtils;
-import tudbut.mod.client.yac.utils.Utils;
-
-import java.io.IOException;
 
 public class FMLEventHandler {
     
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if(event.getOriginalMessage().startsWith(",")) {
+        if(event.getOriginalMessage().startsWith(Yac.prefix)) {
             event.setCanceled(true);
             ChatUtils.print("Blocked message");
             ChatUtils.history(event.getOriginalMessage());
+            String s = event.getOriginalMessage().substring(Yac.prefix.length());
             
             try {
-                if (event.getOriginalMessage().startsWith(",t ")) {
+                if (s.startsWith("t ")) {
                     for (int i = 0; i < Yac.modules.length; i++) {
-                        if (Yac.modules[i].getClass().getSimpleName().equalsIgnoreCase(event.getOriginalMessage().substring(",t ".length()))) {
+                        if (Yac.modules[i].getClass().getSimpleName().equalsIgnoreCase(s.substring("t ".length()))) {
                             Yac.modules[i].enabled = !Yac.modules[i].enabled;
                             ChatUtils.print(String.valueOf(Yac.modules[i].enabled));
                         }
                     }
                 }
                 
-                if (event.getOriginalMessage().startsWith(",say ")) {
-                    Yac.player.sendChatMessage(event.getOriginalMessage().substring(",say ".length()));
+                if (s.startsWith("say ")) {
+                    Yac.player.sendChatMessage(s.substring("say ".length()));
                     ChatUtils.history(event.getOriginalMessage());
                 }
-    
+                
                 for (int i = 0; i < Yac.modules.length; i++) {
-                    if (event.getOriginalMessage().substring(",".length()).toLowerCase().startsWith(Yac.modules[i].getClass().getSimpleName().toLowerCase())) {
-                        Yac.modules[i].onChat(event.getOriginalMessage().substring(", ".length() + Yac.modules[i].getClass().getSimpleName().length()));
+                    if (s.toLowerCase().startsWith(Yac.modules[i].getClass().getSimpleName().toLowerCase())) {
+                        Yac.modules[i].onChat(s.substring(Yac.modules[i].getClass().getSimpleName().length() + 1));
                     }
                 }
             } catch (Exception e) {
                 ChatUtils.print("Command failed!");
             }
-    
+            
         }
         else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
@@ -84,7 +78,9 @@ public class FMLEventHandler {
             return;
         for (int i = 0; i < Yac.modules.length; i++) {
             if(Yac.modules[i].enabled)
-                Yac.modules[i].onTick();
+                try {
+                    Yac.modules[i].onTick();
+                } catch (Exception ignore) {}
         }
     }
 }
