@@ -18,5 +18,7 @@ commands:
   - if server is normal, 0
 
 `,say <anything...>` where `<anything>` is anything.
+
+`,prefix <prefix>` where `<prefix>` is anything.
   
 more soon
