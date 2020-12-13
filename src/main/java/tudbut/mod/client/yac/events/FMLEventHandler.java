@@ -10,6 +10,13 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import tudbut.mod.client.yac.Yac;
 import tudbut.mod.client.yac.utils.ChatUtils;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 public class FMLEventHandler {
     
     private int chatHelper = 0;
@@ -74,6 +81,27 @@ public class FMLEventHandler {
     @SubscribeEvent
     public void onJoin(EntityJoinWorldEvent event) {
         Yac.player = Minecraft.getMinecraft().player;
+    
+        try {
+            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/yacpub/master/version.txt");
+            InputStream stream = updateCheckURL.openConnection().getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            
+            String s;
+            StringBuilder builder = new StringBuilder();
+            while ((s = reader.readLine()) != null) {
+                builder.append(s);
+            }
+            
+            s = builder.toString();
+            if(!s.equals(Yac.VERSION)) {
+                ChatUtils.print("§a§lA new YAC version was found! Current: " + Yac.VERSION + ", New: " + s + "! Please consider updating!");
+            }
+        }
+        catch (IOException e) {
+            ChatUtils.print("Unable to check for a new version!");
+            e.printStackTrace();
+        }
     }
     
     @SubscribeEvent
