@@ -99,7 +99,8 @@ public class FMLEventHandler {
                 ChatUtils.print(
                         "§a§lA new YAC version was found! Current: " +
                         Yac.VERSION +
-                        ", New: " + s +
+                        ", New: " +
+                        s +
                         "! Please consider updating at " +
                         "https://github.com/TudbuT/yacpub/releases/tag/" +
                         s

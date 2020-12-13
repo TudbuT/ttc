@@ -25,7 +25,7 @@ import java.util.Map;
 public class Yac {
     public static final String MODID = "yac";
     public static final String NAME = "YAC Client";
-    public static final String VERSION = "vB0.1.2";
+    public static final String VERSION = "vB0.1.2a";
     
     public static Module[] modules ;
     public static EntityPlayerSP player;
@@ -50,7 +50,9 @@ public class Yac {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         logger.info("YAC by TudbuT, public version");
-        JOptionPane.showMessageDialog(null, "YAC by TudbuT, public version");
+        ThreadManager.run(() -> {
+            JOptionPane.showMessageDialog(null, "YAC by TudbuT, public version");
+        });
         player = Minecraft.getMinecraft().player;
         try {
             cfg = Utils.stringToMap(file.getContent());
