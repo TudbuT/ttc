@@ -7,6 +7,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.yac.Yac;
 import tudbut.mod.client.yac.utils.ChatUtils;
 
@@ -79,7 +80,7 @@ public class FMLEventHandler {
     }
     
     @SubscribeEvent
-    public void onJoin(EntityJoinWorldEvent event) {
+    public void onJoin(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         Yac.player = Minecraft.getMinecraft().player;
     
         try {
@@ -95,7 +96,14 @@ public class FMLEventHandler {
             
             s = builder.toString();
             if(!s.equals(Yac.VERSION)) {
-                ChatUtils.print("§a§lA new YAC version was found! Current: " + Yac.VERSION + ", New: " + s + "! Please consider updating!");
+                ChatUtils.print(
+                        "§a§lA new YAC version was found! Current: " +
+                        Yac.VERSION +
+                        ", New: " + s +
+                        "! Please consider updating at " +
+                        "https://github.com/TudbuT/yacpub/releases/tag/" +
+                        s
+                );
             }
         }
         catch (IOException e) {
