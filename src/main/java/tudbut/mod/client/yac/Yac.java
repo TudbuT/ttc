@@ -25,7 +25,7 @@ import java.util.Map;
 public class Yac {
     public static final String MODID = "yac";
     public static final String NAME = "YAC Client";
-    public static final String VERSION = "vB0.1.2b";
+    public static final String VERSION = "vB0.1.2c";
     
     public static Module[] modules ;
     public static EntityPlayerSP player;
