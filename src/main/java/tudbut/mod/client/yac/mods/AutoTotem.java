@@ -34,7 +34,7 @@ public class AutoTotem extends Module {
     }
     
     @Override
-    public void onChat(String s) {
+    public void onChat(String s, String[] args) {
         if(s.startsWith("count "))
             try {
                 min_count = Integer.parseInt(s.substring("count ".length()));
@@ -45,10 +45,8 @@ public class AutoTotem extends Module {
     }
     
     @Override
-    public void loadConfig(Map<String, String> map) {
-        super.loadConfig(map);
-        
-        min_count = Integer.parseInt(map.get("count"));
+    public void loadConfig() {
+        min_count = Integer.parseInt(cfg.get("count"));
     }
     
     @Override

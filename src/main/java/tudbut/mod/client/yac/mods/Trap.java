@@ -23,7 +23,7 @@ public class Trap extends Module {
     }
     
     @Override
-    public void onChat(String s) {
+    public void onChat(String s, String[] args) {
         ChatUtils.print("Finding player");
         for (EntityPlayer player : Yac.mc.world.playerEntities) {
             if(player.getName().equalsIgnoreCase(s)) {

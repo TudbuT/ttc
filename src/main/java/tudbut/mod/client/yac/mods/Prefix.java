@@ -13,7 +13,7 @@ public class Prefix extends Module {
     }
     
     @Override
-    public void onChat(String s) {
+    public void onChat(String s, String[] args) {
     
     }
 }
