@@ -22,6 +22,11 @@ public class GuiYAC extends GuiScreen {
         this.parentGuiScreen = parentScreenIn;
     }
     
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
+    }
+    
     /**
      * Adds the buttons (and other controls) to the screen in question. Called when the GUI is displayed and when the
      * window resizes, the buttonList is cleared beforehand.
@@ -42,7 +47,15 @@ public class GuiYAC extends GuiScreen {
     
     @Override
     public void updateScreen() {
-        while(buttons == null);
+        while(buttons == null) {
+            try {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            resetButtons();
+        }
         for (int i = 0; i < buttons.length; i++) {
             if (buttons[i] != null)
                 buttons[i].onTick();
@@ -70,7 +83,15 @@ public class GuiYAC extends GuiScreen {
     
     
     private void updateButtons() {
-        while(buttons == null);
+        while(buttons == null) {
+            try {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            resetButtons();
+        }
         for (int i = 0; i < Yac.modules.length; i++) {
             if(buttons[i] == null)
                 return;
