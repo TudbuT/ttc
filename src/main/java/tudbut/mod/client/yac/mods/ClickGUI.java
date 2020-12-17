@@ -35,7 +35,7 @@ public class ClickGUI extends Module {
     
     @Override
     public void onEveryTick() {
-        if(Keyboard.isKeyDown(Keyboard.KEY_RCONTROL) && Yac.mc.currentScreen == null) {
+        if(Keyboard.isKeyDown(Keyboard.KEY_COMMA) && Yac.mc.currentScreen == null) {
             if(!enabled) {
                 enabled = true;
                 onEnable();
