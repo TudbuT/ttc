@@ -54,7 +54,8 @@ public class GuiYAC extends GuiScreen {
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            resetButtons();
+            if(buttons == null)
+                resetButtons();
         }
         for (int i = 0; i < buttons.length; i++) {
             if (buttons[i] != null)
@@ -90,7 +91,8 @@ public class GuiYAC extends GuiScreen {
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            resetButtons();
+            if(buttons == null)
+                resetButtons();
         }
         for (int i = 0; i < Yac.modules.length; i++) {
             if(buttons[i] == null)
