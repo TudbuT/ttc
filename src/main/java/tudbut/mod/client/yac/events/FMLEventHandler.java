@@ -58,7 +58,7 @@ public class FMLEventHandler {
             event.setCanceled(true);
             Yac.player.sendChatMessage(">" + event.getMessage() + (chatHelper == 0 ? " ›YAC‹" : ""));
             chatHelper++;
-            if(chatHelper == 2)
+            if(chatHelper == 6)
                 chatHelper = 0;
             
             ChatUtils.history(event.getOriginalMessage());
