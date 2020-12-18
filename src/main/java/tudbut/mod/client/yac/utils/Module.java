@@ -1,5 +1,8 @@
 package tudbut.mod.client.yac.utils;
 
+import tudbut.mod.client.yac.gui.GuiYAC;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,6 +13,7 @@ public abstract class Module {
     public boolean enabled = false;
     public Integer clickGuiX;
     public Integer clickGuiY;
+    public ArrayList<GuiYAC.Button> subButtons = new ArrayList<>();
     
     public abstract void onTick();
     public void onEveryTick() {
