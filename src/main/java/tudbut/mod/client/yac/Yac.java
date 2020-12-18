@@ -9,10 +9,7 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 import tudbut.mod.client.yac.events.FMLEventHandler;
-import tudbut.mod.client.yac.mods.AutoTotem;
-import tudbut.mod.client.yac.mods.ClickGUI;
-import tudbut.mod.client.yac.mods.Prefix;
-import tudbut.mod.client.yac.mods.TPAParty;
+import tudbut.mod.client.yac.mods.*;
 import tudbut.mod.client.yac.utils.FileRW;
 import tudbut.mod.client.yac.utils.Module;
 import tudbut.mod.client.yac.utils.ThreadManager;
@@ -26,7 +23,7 @@ import java.util.Map;
 public class Yac {
     public static final String MODID = "yac";
     public static final String NAME = "YAC Client";
-    public static final String VERSION = "vB0.2.1b";
+    public static final String VERSION = "vB0.2.2a";
     
     public static Module[] modules ;
     public static EntityPlayerSP player;
@@ -65,7 +62,8 @@ public class Yac {
                 new AutoTotem(),
                 new TPAParty(),
                 new Prefix(),
-                new ClickGUI()
+                new ClickGUI(),
+                new Team()
         };
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
         

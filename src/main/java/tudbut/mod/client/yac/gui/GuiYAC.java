@@ -191,7 +191,11 @@ public class GuiYAC extends GuiScreen {
         public int color = 0x8000ff00;
         public Module module;
         private Button[] subButtons;
-        
+    
+        public Button(String text, ButtonClickEvent event) {
+            this(0, 0, text, event, null);
+        }
+    
         public Button(int x, int y, String text, ButtonClickEvent event, Module module) {
             if(module != null) {
                 if(module.clickGuiX != null && module.clickGuiY != null) {
@@ -206,11 +210,11 @@ public class GuiYAC extends GuiScreen {
             this.event = event;
             this.module = module;
         }
-        
+    
         public void draw(GuiYAC gui) {
             drawRect(x, y, x + 200, y + 30, color);
             gui.drawString(gui.fontRenderer, text.get(), x + 10, y + 11, 0xffffffff);
-            
+        
             if(subButtons != null) {
                 if(module != null && module.enabled) {
                     for (int i = 0; i < subButtons.length; i++) {
@@ -223,7 +227,7 @@ public class GuiYAC extends GuiScreen {
                 }
             }
         }
-        
+    
         public boolean mouseClicked(int clickX, int clickY, int button) {
             if(clickX >= x && clickY >= y) {
                 if(clickX <= x + 200 && clickY <= y + 30) {
@@ -242,7 +246,7 @@ public class GuiYAC extends GuiScreen {
             }
             return false;
         }
-        
+    
         public void mouseReleased() {
             mouseDown = false;
             if(subButtons != null) {
@@ -253,12 +257,12 @@ public class GuiYAC extends GuiScreen {
                 }
             }
         }
-        
+    
         protected void click(int button) {
             if(button == 0)
                 event.run(text);
         }
-        
+    
         protected void onTick(GuiYAC gui) {
             if (module != null) {
                 if(mouseDown && mouseDownButton == 1) {
@@ -269,7 +273,7 @@ public class GuiYAC extends GuiScreen {
                 module.clickGuiY = y;
             }
         }
-        
+    
     }
     
     public interface ButtonClickEvent {

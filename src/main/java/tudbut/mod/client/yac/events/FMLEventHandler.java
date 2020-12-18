@@ -8,8 +8,15 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.yac.Yac;
 import tudbut.mod.client.yac.utils.ChatUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 
 public class FMLEventHandler {
     
@@ -62,6 +69,39 @@ public class FMLEventHandler {
                 chatHelper = 0;
             
             ChatUtils.history(event.getOriginalMessage());
+        }
+    }
+    
+    
+    @SubscribeEvent
+    public void onJoin(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+        try {
+            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/yacpub/master/version.txt");
+            InputStream stream = updateCheckURL.openConnection().getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            
+            String s;
+            StringBuilder builder = new StringBuilder();
+            while ((s = reader.readLine()) != null) {
+                builder.append(s);
+            }
+            
+            s = builder.toString();
+            if(!s.equals(Yac.VERSION)) {
+                ChatUtils.print(
+                        "§a§lA new YAC version was found! Current: " +
+                        Yac.VERSION +
+                        ", New: " +
+                        s +
+                        "! Please consider updating at " +
+                        "https://github.com/TudbuT/yacpub/releases/tag/" +
+                        s
+                );
+            }
+        }
+        catch (IOException e) {
+            ChatUtils.print("Unable to check for a new version!");
+            e.printStackTrace();
         }
     }
     
