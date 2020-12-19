@@ -1,5 +1,7 @@
 package tudbut.mod.client.yac.utils;
 
+import net.minecraft.client.gui.GuiChat;
+import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.inventory.ClickType;
@@ -7,6 +9,7 @@ import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import tudbut.mod.client.yac.Yac;
+import tudbut.mod.client.yac.gui.GuiYAC;
 
 public class InventoryUtils {
     
@@ -47,18 +50,18 @@ public class InventoryUtils {
         ThreadManager.run(() -> {
             try {
                 GuiScreen screen = Yac.mc.currentScreen;
-                if(screen != null) {
+                if(screen != null && screen.getClass() != GuiChat.class && screen.getClass() != GuiIngameMenu.class && screen.getClass() != GuiYAC.class) {
                     Thread.sleep(200);
                     Yac.player.closeScreen();
-                    Thread.sleep(100);
+                    Thread.sleep(300);
                 }
-                Thread.sleep(10);
+                
                 Yac.mc.playerController.windowClick(Yac.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, Yac.mc.player);
-                Thread.sleep(300);
+                Thread.sleep(100);
                 Yac.mc.playerController.windowClick(Yac.mc.player.inventoryContainer.windowId, to, 8, ClickType.SWAP, Yac.mc.player);
-                Thread.sleep(300);
+                Thread.sleep(100);
                 Yac.mc.playerController.windowClick(Yac.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, Yac.mc.player);
-                Thread.sleep(200);
+                Thread.sleep(100);
                 Yac.mc.displayGuiScreen(screen);
             }
             catch (InterruptedException e) {
