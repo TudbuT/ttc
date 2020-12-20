@@ -6,7 +6,6 @@ import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.yac.Yac;
@@ -24,7 +23,7 @@ public class FMLEventHandler {
     
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if(event.getOriginalMessage().startsWith(Yac.prefix)) {
+        if (event.getOriginalMessage().startsWith(Yac.prefix)) {
             event.setCanceled(true);
             ChatUtils.print("Blocked message");
             ChatUtils.history(event.getOriginalMessage());
@@ -36,7 +35,7 @@ public class FMLEventHandler {
                         if (Yac.modules[i].getClass().getSimpleName().equalsIgnoreCase(s.substring("t ".length()))) {
                             ChatUtils.print(String.valueOf(!Yac.modules[i].enabled));
                             
-                            if(Yac.modules[i].enabled = !Yac.modules[i].enabled)
+                            if (Yac.modules[i].enabled = !Yac.modules[i].enabled)
                                 Yac.modules[i].onEnable();
                             else
                                 Yac.modules[i].onDisable();
@@ -50,22 +49,22 @@ public class FMLEventHandler {
                 }
                 
                 for (int i = 0; i < Yac.modules.length; i++) {
-                    if(Yac.modules[i].enabled)
+                    if (Yac.modules[i].enabled)
                         if (s.toLowerCase().startsWith(Yac.modules[i].getClass().getSimpleName().toLowerCase())) {
                             String args = s.substring(Yac.modules[i].getClass().getSimpleName().length() + 1);
                             Yac.modules[i].onChat(args, args.split(" "));
                         }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 ChatUtils.print("Command failed!");
             }
             
-        }
-        else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
+        } else if (!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
             Yac.player.sendChatMessage(">" + event.getMessage() + (chatHelper == 0 ? " ›YAC‹" : ""));
             chatHelper++;
-            if(chatHelper == 6)
+            if (chatHelper == 6)
                 chatHelper = 0;
             
             ChatUtils.history(event.getOriginalMessage());
@@ -87,7 +86,7 @@ public class FMLEventHandler {
             }
             
             s = builder.toString();
-            if(!s.equals(Yac.VERSION)) {
+            if (!s.equals(Yac.VERSION)) {
                 ChatUtils.print(
                         "§a§lA new YAC version was found! Current: " +
                         Yac.VERSION +
@@ -107,13 +106,13 @@ public class FMLEventHandler {
     
     @SubscribeEvent
     public void onServerChat(ClientChatReceivedEvent event) {
-        if(event.getMessage().getUnformattedText().startsWith("BayMax") && event.getMessage().getUnformattedText().contains("Please type '")) {
+        if (event.getMessage().getUnformattedText().startsWith("BayMax") && event.getMessage().getUnformattedText().contains("Please type '")) {
             String key = event.getMessage().getUnformattedText().substring("BayMax _ Please type '".length(), "BayMax _ Please type '".length() + 4);
             Yac.player.sendChatMessage(key);
             ChatUtils.print("Auto-solved");
         }
         for (int i = 0; i < Yac.modules.length; i++) {
-            if(Yac.modules[i].enabled)
+            if (Yac.modules[i].enabled)
                 Yac.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText());
         }
     }
@@ -126,13 +125,14 @@ public class FMLEventHandler {
     @SubscribeEvent
     public void onTick(TickEvent event) {
         EntityPlayerSP player = Yac.player;
-        if(player == null)
+        if (player == null)
             return;
         for (int i = 0; i < Yac.modules.length; i++) {
-            if(Yac.modules[i].enabled)
+            if (Yac.modules[i].enabled)
                 try {
                     Yac.modules[i].onTick();
-                } catch (Exception ignore) {}
+                }
+                catch (Exception ignore) {}
             Yac.modules[i].onEveryTick();
         }
     }

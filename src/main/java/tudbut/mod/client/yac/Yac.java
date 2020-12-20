@@ -23,17 +23,17 @@ import java.util.Map;
 public class Yac {
     public static final String MODID = "yac";
     public static final String NAME = "YAC Client";
-    public static final String VERSION = "vB0.2.3a";
+    public static final String VERSION = "vB0.2.4a";
     
-    public static Module[] modules ;
+    public static Module[] modules;
     public static EntityPlayerSP player;
     public static Minecraft mc = Minecraft.getMinecraft();
     public static FileRW file;
     public static Map<String, String> cfg;
     public static String prefix = ",";
-
+    
     public static Logger logger;
-
+    
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
@@ -44,7 +44,7 @@ public class Yac {
             e.printStackTrace();
         }
     }
-
+    
     @EventHandler
     public void init(FMLInitializationEvent event) {
         logger.info("YAC by TudbuT, public version");
@@ -58,32 +58,34 @@ public class Yac {
         catch (Exception e) {
             e.printStackTrace();
         }
-        modules = new Module[] {
+        modules = new Module[]{
                 new AutoTotem(),
                 new TPAParty(),
                 new Prefix(),
                 new ClickGUI(),
-                new Team()
+                new Team(),
+                new AutoConfig(),
+                new TPATools()
         };
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
         
         for (int i = 0; i < modules.length; i++) {
             logger.info(modules[i].toString());
-            if(cfg.containsKey(modules[i].toString())) {
+            if (cfg.containsKey(modules[i].toString())) {
                 logger.info(modules[i].toString());
                 logger.info(cfg);
                 modules[i].loadConfig(Utils.stringToMap(cfg.get(modules[i].getClass().getSimpleName())));
             }
         }
         prefix = cfg.getOrDefault("prefix", ",");
-    
+        
         try {
             Thread.sleep(2000);
         }
         catch (InterruptedException e) {
             e.printStackTrace();
         }
-    
+        
         ThreadManager.run(() -> {
             while (true) {
                 try {
@@ -92,7 +94,7 @@ public class Yac {
                             cfg.put(modules[i].getClass().getSimpleName(), modules[i].saveConfig());
                         }
                         cfg.put("prefix", prefix);
-        
+                        
                         file.setContent(Utils.mapToString(cfg));
                     }
                     catch (IOException e) {

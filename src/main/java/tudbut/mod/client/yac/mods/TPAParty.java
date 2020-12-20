@@ -5,6 +5,16 @@ import tudbut.mod.client.yac.utils.Module;
 
 public class TPAParty extends Module {
     
+    static TPAParty instance;
+    
+    public TPAParty() {
+        instance = this;
+    }
+    
+    public static TPAParty getInstance() {
+        return instance;
+    }
+    
     @Override
     public void onTick() {
     
@@ -17,7 +27,7 @@ public class TPAParty extends Module {
     
     @Override
     public void onServerChat(String s, String formatted) {
-        if(s.contains("has requested to teleport to you.") && !s.startsWith("<")) {
+        if (s.contains("has requested to teleport to you.") && !s.startsWith("<")) {
             Yac.player.sendChatMessage("/tpaccept");
         }
     }

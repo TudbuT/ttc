@@ -1,5 +1,6 @@
 package tudbut.mod.client.yac.mods;
 
+import net.minecraft.client.network.NetworkPlayerInfo;
 import tudbut.mod.client.yac.Yac;
 import tudbut.mod.client.yac.gui.GuiYAC;
 import tudbut.mod.client.yac.utils.ChatUtils;
@@ -10,12 +11,15 @@ import tudbut.mod.client.yac.utils.Utils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class Team extends Module {
+    
+    static Team instance;
     private final ArrayList<String> names = new ArrayList<>();
     private boolean tpa = true;
     private boolean tpaHere = false;
-    
+
     {
         subButtons.add(new GuiYAC.Button("Accept /tpa: " + tpa, text -> {
             tpa = !tpa;
@@ -26,15 +30,22 @@ public class Team extends Module {
             text.set("Accept /tpahere: " + tpaHere);
         }));
         subButtons.add(new GuiYAC.Button("Send /tpahere", text -> {
-            onChat("", new String[] {
+            onChat("", new String[]{
                     "tpahere"
             });
         }));
         subButtons.add(new GuiYAC.Button("Show list", text -> {
-            onChat("", new String[] {
+            onChat("", new String[]{
                     "list"
             });
         }));
+    }
+    public Team() {
+        instance = this;
+    }
+    
+    public static Team getInstance() {
+        return instance;
     }
     
     public void updateButtons() {
@@ -70,13 +81,19 @@ public class Team extends Module {
             case "tpahere":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
-                    for(String name : names) {
-                        Yac.mc.player.sendChatMessage("/tpahere " + name);
-                        try {
-                            Thread.sleep(1000);
-                        }
-                        catch (InterruptedException e) {
-                            e.printStackTrace();
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(Yac.mc.getConnection()).getPlayerInfoMap()) {
+                        if (names.contains(info.getGameProfile().getName())) {
+                            try {
+                                Yac.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
+                                ChatUtils.print("Sent to " + info.getGameProfile().getName());
+                            }
+                            catch (Throwable e) { }
+                            try {
+                                Thread.sleep(1000);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                     ChatUtils.print("Done!");
@@ -90,7 +107,7 @@ public class Team extends Module {
                 for (String name : names) {
                     toPrint.append(name).append(", ");
                 }
-                if(names.size() >= 1)
+                if (names.size() >= 1)
                     toPrint.delete(toPrint.length() - 2, toPrint.length() - 1);
                 ChatUtils.print(toPrint.toString());
                 break;
@@ -100,10 +117,10 @@ public class Team extends Module {
     
     @Override
     public void onServerChat(String s, String formatted) {
-        if(tpa && s.contains("has requested to teleport to you.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
+        if (tpa && s.contains("has requested to teleport to you.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
             Yac.player.sendChatMessage("/tpaccept");
         }
-        if(tpaHere && s.contains("has requested that you teleport to them.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
+        if (tpaHere && s.contains("has requested that you teleport to them.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
             Yac.player.sendChatMessage("/tpaccept");
         }
     }
@@ -120,7 +137,7 @@ public class Team extends Module {
     }
     
     @Override
-    public String saveConfig() {
+    public void updateConfig() {
         Map<String, String> map = new HashMap<>();
         for (int i = 0; i < names.size(); i++) {
             map.put(String.valueOf(i), names.get(i));
@@ -128,7 +145,5 @@ public class Team extends Module {
         cfg.put("team", Utils.mapToString(map));
         cfg.put("tpa", "" + tpa);
         cfg.put("tpahere", "" + tpaHere);
-        
-        return super.saveConfig();
     }
 }

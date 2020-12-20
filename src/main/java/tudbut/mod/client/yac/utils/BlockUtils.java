@@ -21,6 +21,7 @@ import java.util.Arrays;
 
 public class BlockUtils {
     
+    private static final Minecraft mc = Minecraft.getMinecraft();
     public static ArrayList<Block> blackList = new ArrayList<Block>(Arrays.asList(
             Blocks.ENDER_CHEST,
             Blocks.CHEST,
@@ -34,7 +35,6 @@ public class BlockUtils {
             Blocks.TRAPDOOR,
             Blocks.ENCHANTING_TABLE
     ));
-    
     public static ArrayList<Block> shulkerList = new ArrayList<Block>(Arrays.asList(
             Blocks.WHITE_SHULKER_BOX,
             Blocks.ORANGE_SHULKER_BOX,
@@ -54,11 +54,9 @@ public class BlockUtils {
             Blocks.BLACK_SHULKER_BOX
     ));
     
-    private static final Minecraft mc = Minecraft.getMinecraft();
-    
     public static void placeBlock(BlockPos pos, boolean rotate) {
         EnumFacing side = getPlaceableSide(pos);
-        if(side == null) {
+        if (side == null) {
             ChatUtils.print("Couldn't place a block");
             return;
         }
@@ -105,6 +103,7 @@ public class BlockUtils {
             return;
         }
     }
+    
     private static Vec3d eyesPos() {
         return new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ);
     }
@@ -121,7 +120,6 @@ public class BlockUtils {
     }
     
     
-    
     public static void faceVectorPacketInstant(Vec3d vec) {
         float[] rotations = getLegitRotations(vec);
         mc.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0],
@@ -133,7 +131,7 @@ public class BlockUtils {
                                                    mc.world, pos, side, hitVec, EnumHand.MAIN_HAND);
     }
     
-    public static boolean  canBeClicked(BlockPos pos) {
+    public static boolean canBeClicked(BlockPos pos) {
         return getBlock(pos).canCollideCheck(getState(pos), false);
     }
     
@@ -170,13 +168,6 @@ public class BlockUtils {
         return false;
     }
     
-    
-    
-    boolean checkForLiquid() {
-        return getGroundPosY() == -999.0;
-    }
-    
-    
     public static double getGroundPosY() {
         AxisAlignedBB boundingBox = mc.player.getEntityBoundingBox();
         double yOffset = mc.player.posY - boundingBox.minY;
@@ -187,7 +178,11 @@ public class BlockUtils {
         return boundingBox.offset(0.0, yOffset + 0.05, 0.0).minY;
     }
     
-    boolean isWater(BlockPos pos){
+    boolean checkForLiquid() {
+        return getGroundPosY() == -999.0;
+    }
+    
+    boolean isWater(BlockPos pos) {
         return mc.world.getBlockState(pos).getBlock() == Blocks.WATER;
     }
     

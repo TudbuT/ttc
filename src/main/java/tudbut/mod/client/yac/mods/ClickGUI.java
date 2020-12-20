@@ -9,6 +9,16 @@ import tudbut.mod.client.yac.utils.ThreadManager;
 
 public class ClickGUI extends Module {
     
+    static ClickGUI instance;
+    
+    public ClickGUI() {
+        instance = this;
+    }
+    
+    public static ClickGUI getInstance() {
+        return instance;
+    }
+    
     @Override
     public void onEnable() {
         ThreadManager.run(() -> {
@@ -35,8 +45,8 @@ public class ClickGUI extends Module {
     
     @Override
     public void onEveryTick() {
-        if(Keyboard.isKeyDown(Keyboard.KEY_COMMA) && Yac.mc.currentScreen == null) {
-            if(!enabled) {
+        if (Keyboard.isKeyDown(Keyboard.KEY_COMMA) && Yac.mc.currentScreen == null) {
+            if (!enabled) {
                 enabled = true;
                 onEnable();
             }
