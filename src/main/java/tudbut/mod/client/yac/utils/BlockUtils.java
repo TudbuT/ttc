@@ -86,24 +86,6 @@ public class BlockUtils {
         return null;
     }
     
-    public static void placeBlockScaffold(BlockPos pos) {
-        for (EnumFacing side : EnumFacing.values()) {
-            BlockPos neighbor = pos.offset(side);
-            EnumFacing side2 = side.getOpposite();
-            
-            if (!canBeClicked(neighbor)) {
-                continue;
-            }
-            
-            Vec3d hitVec = new Vec3d(neighbor).addVector(0.5, 0.5, 0.5).add(new Vec3d(side2.getDirectionVec()).scale(0.5));
-            
-            faceVectorPacketInstant(hitVec);
-            processRightClickBlock(neighbor, side2, hitVec);
-            mc.player.swingArm(EnumHand.MAIN_HAND);
-            return;
-        }
-    }
-    
     private static Vec3d eyesPos() {
         return new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ);
     }
@@ -119,94 +101,12 @@ public class BlockUtils {
         return new float[]{(float) (mc.player.rotationYaw + MathHelper.wrapDegrees(yaw - mc.player.rotationYaw)), (float) (mc.player.rotationPitch + MathHelper.wrapDegrees(pitch - mc.player.rotationPitch))};
     }
     
-    
     public static void faceVectorPacketInstant(Vec3d vec) {
         float[] rotations = getLegitRotations(vec);
-        mc.player.connection.sendPacket(new CPacketPlayer.Rotation(rotations[0],
-                                                                   rotations[1], mc.player.onGround));
-    }
-    
-    public static void processRightClickBlock(BlockPos pos, EnumFacing side, Vec3d hitVec) {
-        mc.playerController.processRightClickBlock(mc.player,
-                                                   mc.world, pos, side, hitVec, EnumHand.MAIN_HAND);
-    }
-    
-    public static boolean canBeClicked(BlockPos pos) {
-        return getBlock(pos).canCollideCheck(getState(pos), false);
-    }
-    
-    public static Block getBlock(BlockPos pos) {
-        return getState(pos).getBlock();
-    }
-    
-    private static IBlockState getState(BlockPos pos) {
-        return mc.world.getBlockState(pos);
-    }
-    
-    public static boolean checkForNeighbours(BlockPos blockPos) {
-        
-        if (!hasNeighbour(blockPos)) {
-            
-            for (EnumFacing side : EnumFacing.values()) {
-                BlockPos neighbour = blockPos.offset(side);
-                if (hasNeighbour(neighbour)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        return true;
-    }
-    
-    static boolean hasNeighbour(BlockPos blockPos) {
-        for (EnumFacing side : EnumFacing.values()) {
-            BlockPos neighbour = blockPos.offset(side);
-            if (!mc.world.getBlockState(neighbour).getMaterial().isReplaceable()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    public static double getGroundPosY() {
-        AxisAlignedBB boundingBox = mc.player.getEntityBoundingBox();
-        double yOffset = mc.player.posY - boundingBox.minY;
-        while (!mc.world.collidesWithAnyBlock(boundingBox.offset(0.0, yOffset, 0.0))) {
-            yOffset -= 0.05;
-            if (mc.player.posY + yOffset < 0.0f) return -999.0;
-        }
-        return boundingBox.offset(0.0, yOffset + 0.05, 0.0).minY;
-    }
-    
-    boolean checkForLiquid() {
-        return getGroundPosY() == -999.0;
-    }
-    
-    boolean isWater(BlockPos pos) {
-        return mc.world.getBlockState(pos).getBlock() == Blocks.WATER;
-    }
-    
-    
-    boolean isPlaceable(BlockPos pos) {
-        AxisAlignedBB bBox = mc.player.getEntityBoundingBox();
-        int[] xArray = new int[]{(int) Math.floor(bBox.minX), (int) Math.floor(bBox.maxX)};
-        int[] yArray = new int[]{(int) Math.floor(bBox.minY), (int) Math.floor(bBox.maxY)};
-        int[] zArray = new int[]{(int) Math.floor(bBox.minZ), (int) Math.floor(bBox.maxZ)};
-        
-        
-        for (int x = 0; x <= 1; x++) {
-            for (int y = 0; y <= 1; y++) {
-                for (int z = 0; z <= 1; z++) {
-                    if (pos == new BlockPos(xArray[x], yArray[y], zArray[z])) return false;
-                }
-            }
-        }
-        
-        return mc.world.isAirBlock(pos) && !mc.world.isAirBlock(pos.down());
-    }
-    
-    
-    boolean isPlaceableForChest(BlockPos pos) {
-        return isPlaceable(pos) && mc.world.isAirBlock(pos.up());
+        mc.player.connection.sendPacket(
+                new CPacketPlayer.Rotation(
+                        rotations[0], rotations[1], mc.player.onGround
+                )
+        );
     }
 }

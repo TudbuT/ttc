@@ -24,7 +24,6 @@ public class Trap extends Module {
         ChatUtils.print("Finding player");
         for (EntityPlayer player : Yac.mc.world.playerEntities) {
             if (player.getName().equalsIgnoreCase(s)) {
-                ChatUtils.print("Trapping " + s + "...");
                 ThreadManager.run(() -> trap(player));
                 return;
             }
@@ -32,163 +31,48 @@ public class Trap extends Module {
         ChatUtils.print("Player not found!");
     }
     
-    public void trap(EntityPlayer player) {
-        BlockPos[] positions = new BlockPos[18];
-        for (int i = 0; i < positions.length; i++) {
-            positions[i] = player.getPosition().add(0, 0, 0);
-        }
-        
-        positions[0].add(+1, -1, +0);
-        positions[1].add(+0, -1, +0);
-        positions[2].add(-1, -1, +0);
-        positions[3].add(+0, -1, +1);
-        positions[4].add(+0, -1, -1);
-        
-        positions[5].add(+1, +0, +0);
-        positions[6].add(-1, +0, +0);
-        positions[7].add(+0, +0, +1);
-        positions[8].add(+0, +0, -1);
-        
-        positions[9].add(+1, +1, +0);
-        positions[10].add(-1, +1, +0);
-        positions[11].add(+0, +1, +1);
-        positions[12].add(+0, +1, -1);
-        
-        positions[13].add(+1, +2, +0);
-        positions[14].add(+0, +2, +0);
-        positions[15].add(-1, +2, +0);
-        positions[16].add(+0, +2, +1);
-        positions[17].add(+0, +2, -1);
-        
-        ChatUtils.print("Constructed positions. Placing blocks...");
-        
-        for (int i = 0; i < positions.length; i++) {
-            try {
-                int fI = i;
-                ThreadManager.run(() -> BlockUtils.placeBlock(positions[fI], false));
-                Thread.sleep(1000);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        
-        ChatUtils.print("Blocks placed.");
+    public void add(BlockPos[] positions, int i, int x, int y, int z) {
+        positions[i] = positions[i].add(x,y,z);
     }
     
-    public void trapOld(EntityPlayer player) {
-        BlockPos[] positions = new BlockPos[
-                3 * 3 +
-                3 * 3 +
-                3 * 3 +
-                3 * 3 +
-                3 * 3 +
-                3 * 3 +
-                8
-                ];
+    public void trap(EntityPlayer player) {
+        ChatUtils.print("Trapping " + player.getName() + "...");
+        BlockPos[] positions = new BlockPos[18];
         for (int i = 0; i < positions.length; i++) {
-            positions[i] = player.getPosition().add(0, 0, 0);
+            positions[i] = new BlockPos(player.getPositionVector());
         }
         
-        positions[0].add(+1, -1, +1); // bottom
-        positions[1].add(+1, -1, +0);
-        positions[2].add(+1, -1, -1);
+        add(positions,  0, +1, -1, +0);
+        add(positions,  1, +0, -1, +0);
+        add(positions,  2, -1, -1, +0);
+        add(positions,  3, +0, -1, +1);
+        add(positions,  4, +0, -1, -1);
         
-        positions[3].add(+0, -1, +1);
-        positions[4].add(+0, -1, +0);
-        positions[5].add(+0, -1, -1);
+        add(positions,  5, +1, +0, +0);
+        add(positions,  6, -1, +0, +0);
+        add(positions,  7, +0, +0, +1);
+        add(positions,  8, +0, +0, -1);
         
-        positions[6].add(-1, -1, +1);
-        positions[7].add(-1, -1, +0);
-        positions[8].add(-1, -1, -1);
+        add(positions,  9, +1, +1, +0);
+        add(positions, 10, -1, +1, +0);
+        add(positions, 11, +0, +1, +1);
+        add(positions, 12, +0, +1, -1);
         
-        
-        positions[9].add(+2, -1, +0);
-        positions[10].add(-2, -1, +0);
-        positions[11].add(+0, -1, +2);
-        positions[12].add(+0, -1, -2);
-        
-        
-        positions[13].add(+2, +0, +1); // right
-        positions[14].add(+2, +0, +0);
-        positions[15].add(+2, +0, -1);
-        
-        positions[16].add(+2, +1, +1);
-        positions[17].add(+2, +1, +0);
-        positions[18].add(+2, +1, -1);
-        
-        positions[19].add(+2, +2, +1);
-        positions[20].add(+2, +2, +0);
-        positions[21].add(+2, +2, -1);
-        
-        
-        positions[22].add(+2, +3, +0);
-        
-        
-        positions[23].add(+1, +3, +1); // top
-        positions[24].add(+1, +3, +0);
-        positions[25].add(+1, +3, -1);
-        
-        positions[26].add(+0, +3, +1);
-        positions[26].add(+0, +3, +0);
-        positions[27].add(+0, +3, -1);
-        
-        positions[29].add(-1, +3, +1);
-        positions[30].add(-1, +3, +0);
-        positions[31].add(-1, +3, -1);
-        
-        
-        positions[32].add(-2, +3, +0);
-        positions[33].add(+0, +3, +2);
-        positions[34].add(+0, +3, -2);
-        
-        
-        positions[45].add(-2, +0, +1); // left
-        positions[36].add(-2, +0, +0);
-        positions[37].add(-2, +0, -1);
-        
-        positions[38].add(-2, +1, +1);
-        positions[39].add(-2, +1, +0);
-        positions[40].add(-2, +1, -1);
-        
-        positions[41].add(-2, +2, +1);
-        positions[42].add(-2, +2, +0);
-        positions[43].add(-2, +2, -1);
-        
-        
-        positions[44].add(+0, +1, -2); // front
-        positions[45].add(+0, +0, -2);
-        positions[46].add(+0, -1, -2);
-        
-        positions[47].add(+1, +1, -2);
-        positions[48].add(+1, +0, -2);
-        positions[49].add(+1, -1, -2);
-        
-        positions[50].add(+2, +1, -2);
-        positions[51].add(+2, +0, -2);
-        positions[52].add(+2, -1, -2);
-        
-        
-        positions[53].add(+0, +1, -2); // back
-        positions[54].add(+0, +0, -2);
-        positions[55].add(+0, -1, -2);
-        
-        positions[56].add(+1, +1, -2);
-        positions[57].add(+1, +0, -2);
-        positions[58].add(+1, -1, -2);
-        
-        positions[59].add(+2, +1, -2);
-        positions[60].add(+2, +0, -2);
-        positions[61].add(+2, -1, -2);
+        add(positions, 13, +1, +2, +0);
+        add(positions, 14, +0, +2, +0);
+        add(positions, 15, -1, +2, +0);
+        add(positions, 16, +0, +2, +1);
+        add(positions, 17, +0, +2, -1);
         
         ChatUtils.print("Constructed positions. Placing blocks...");
         
         for (int i = 0; i < positions.length; i++) {
-            BlockUtils.placeBlockScaffold(positions[i]);
             try {
-                Thread.sleep(200);
+                BlockUtils.placeBlock(positions[i], false);
+                System.out.println(positions[i]);
+                Thread.sleep(50);
             }
-            catch (InterruptedException e) {
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }

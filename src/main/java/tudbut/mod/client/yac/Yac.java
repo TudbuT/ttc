@@ -23,7 +23,7 @@ import java.util.Map;
 public class Yac {
     public static final String MODID = "yac";
     public static final String NAME = "YAC Client";
-    public static final String VERSION = "vB0.2.4a";
+    public static final String VERSION = "vB0.2.5a";
     
     public static Module[] modules;
     public static EntityPlayerSP player;
@@ -65,15 +65,15 @@ public class Yac {
                 new ClickGUI(),
                 new Team(),
                 new AutoConfig(),
-                new TPATools()
+                new TPATools(),
+                new Trap()
         };
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
         
         for (int i = 0; i < modules.length; i++) {
             logger.info(modules[i].toString());
+            modules[i].saveConfig();
             if (cfg.containsKey(modules[i].toString())) {
-                logger.info(modules[i].toString());
-                logger.info(cfg);
                 modules[i].loadConfig(Utils.stringToMap(cfg.get(modules[i].getClass().getSimpleName())));
             }
         }

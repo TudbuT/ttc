@@ -13,6 +13,7 @@ import java.util.Objects;
 public class TPATools extends Module {
     static TPATools instance;
     private int delay = 1000;
+    private boolean stop = false;
     
     {
         subButtons.add(new GuiYAC.Button("Send /tpa to everyone", text -> {
@@ -32,6 +33,21 @@ public class TPATools extends Module {
             if (delay < 1000)
                 delay = 5000;
             text.set("Delay: " + delay);
+        }));
+        subButtons.add(new GuiYAC.Button("Stop", text -> {
+            stop = true;
+        
+            ThreadManager.run(() -> {
+                text.set("Done");
+                try {
+                    Thread.sleep(2000 + delay);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                stop = false;
+                text.set("Stop");
+            });
         }));
     }
     
@@ -66,6 +82,8 @@ public class TPATools extends Module {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
                 for (NetworkPlayerInfo info : Objects.requireNonNull(Yac.mc.getConnection()).getPlayerInfoMap()) {
+                    if(stop)
+                        return;
                     try {
                         Yac.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
@@ -85,6 +103,8 @@ public class TPATools extends Module {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
                 for (NetworkPlayerInfo info : Objects.requireNonNull(Yac.mc.getConnection()).getPlayerInfoMap()) {
+                    if(stop)
+                        return;
                     try {
                         Yac.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());

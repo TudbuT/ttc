@@ -1,5 +1,6 @@
 package tudbut.mod.client.yac.gui;
 
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import tudbut.mod.client.yac.Yac;
 import tudbut.mod.client.yac.mods.ClickGUI;
@@ -17,7 +18,8 @@ public class GuiYAC extends GuiScreen {
     private int cx,
             cy;
     
-    public GuiYAC(GuiScreen parentScreenIn) {
+    public GuiYAC(GuiScreen parentScreenIn)
+    {
         this.mc = Yac.mc;
         this.parentGuiScreen = parentScreenIn;
     }
@@ -31,7 +33,8 @@ public class GuiYAC extends GuiScreen {
      * Adds the buttons (and other controls) to the screen in question. Called when the GUI is displayed and when the
      * window resizes, the buttonList is cleared beforehand.
      */
-    public void initGui() {
+    public void initGui()
+    {
         mc.mouseHelper.ungrabMouseCursor();
         buttons = new Button[256];
         
@@ -49,14 +52,14 @@ public class GuiYAC extends GuiScreen {
     
     @Override
     public void updateScreen() {
-        while (buttons == null) {
+        while(buttons == null) {
             try {
                 Thread.sleep(100);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (buttons == null)
+            if(buttons == null)
                 resetButtons();
         }
         for (int i = 0; i < buttons.length; i++) {
@@ -72,7 +75,7 @@ public class GuiYAC extends GuiScreen {
                 Button b = new Button(
                         10 + (210 * x), 10 + (y * 40), Yac.modules[r].getClass().getSimpleName() + ": " + Yac.modules[r].enabled,
                         (text) -> {
-                            if (Yac.modules[r].enabled = !Yac.modules[r].enabled)
+                            if(Yac.modules[r].enabled = !Yac.modules[r].enabled)
                                 Yac.modules[r].onEnable();
                             else
                                 Yac.modules[r].onDisable();
@@ -87,18 +90,18 @@ public class GuiYAC extends GuiScreen {
     
     
     private void updateButtons() {
-        while (buttons == null) {
+        while(buttons == null) {
             try {
                 Thread.sleep(100);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            if (buttons == null)
+            if(buttons == null)
                 resetButtons();
         }
         for (int i = 0; i < Yac.modules.length; i++) {
-            if (buttons[i] == null)
+            if(buttons[i] == null)
                 return;
             buttons[i].text.set(Yac.modules[i].getClass().getSimpleName() + ": " + Yac.modules[i].enabled);
         }
@@ -107,15 +110,16 @@ public class GuiYAC extends GuiScreen {
     /**
      * Called when the mouse is clicked. Args : mouseX, mouseY, clickedButton
      */
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
+    {
         super.mouseClicked(mouseX, mouseY, mouseButton);
         
         cx = mouseX;
         cy = mouseY;
         
         for (Button button : buttons) {
-            if (button != null)
-                if (button.mouseClicked(mouseX, mouseY, mouseButton))
+            if(button != null)
+                if(button.mouseClicked(mouseX, mouseY, mouseButton))
                     return;
         }
     }
@@ -129,12 +133,13 @@ public class GuiYAC extends GuiScreen {
     /**
      * Called when a mouse button is released.  Args : mouseX, mouseY, releaseButton
      */
-    protected void mouseReleased(int mouseX, int mouseY, int state) {
+    protected void mouseReleased(int mouseX, int mouseY, int state)
+    {
         super.mouseReleased(mouseX, mouseY, state);
         
         
         for (Button button : buttons) {
-            if (button != null)
+            if(button != null)
                 button.mouseReleased();
         }
     }
@@ -142,7 +147,8 @@ public class GuiYAC extends GuiScreen {
     /**
      * Draws the screen and all the components in it. Args : mouseX, mouseY, renderPartialTicks
      */
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+    public void drawScreen(int mouseX, int mouseY, float partialTicks)
+    {
         updateButtons();
         
         this.drawDefaultBackground();
@@ -153,25 +159,21 @@ public class GuiYAC extends GuiScreen {
         //}
         
         for (int i = 0; i < buttons.length; i++) {
-            if (buttons[i] != null)
+            if(buttons[i] != null)
                 buttons[i].draw(this);
         }
         
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
     
-    public interface ButtonClickEvent {
-        void run(AtomicReference<String> text);
-    }
-    
     public static class Button {
         public int x, y;
         public AtomicReference<String> text;
-        public int color = 0x8000ff00;
-        public Module module;
         ButtonClickEvent event;
         private boolean mouseDown = false;
         private int mouseDownButton = 0;
+        public int color = 0x8000ff00;
+        public Module module;
         private Button[] subButtons;
         
         public Button(String text, ButtonClickEvent event) {
@@ -179,8 +181,8 @@ public class GuiYAC extends GuiScreen {
         }
         
         public Button(int x, int y, String text, ButtonClickEvent event, Module module) {
-            if (module != null) {
-                if (module.clickGuiX != null && module.clickGuiY != null) {
+            if(module != null) {
+                if(module.clickGuiX != null && module.clickGuiY != null) {
                     x = module.clickGuiX;
                     y = module.clickGuiY;
                 }
@@ -197,7 +199,7 @@ public class GuiYAC extends GuiScreen {
             drawRect(x, y, x + 200, y + 30, color);
             gui.drawString(gui.fontRenderer, text.get(), x + 10, y + 11, 0xffffffff);
             
-            if (module != null && module.enabled) {
+            if(module != null && module.enabled) {
                 subButtons = module.subButtons.toArray(new Button[0]);
                 
                 for (int i = 0; i < subButtons.length; i++) {
@@ -212,19 +214,20 @@ public class GuiYAC extends GuiScreen {
         }
         
         public boolean mouseClicked(int clickX, int clickY, int button) {
-            if (clickX >= x && clickY >= y) {
-                if (clickX <= x + 200 && clickY <= y + 30) {
+            if(clickX >= x && clickY >= y) {
+                if(clickX <= x + 200 && clickY <= y + 30) {
                     mouseDown = true;
                     mouseDownButton = button;
                     click(button);
                     return true;
                 }
             }
-            if (module != null && module.enabled) {
+            if(module != null && module.enabled) {
                 subButtons = module.subButtons.toArray(new Button[0]);
                 
                 for (int i = 0; i < subButtons.length; i++) {
-                    subButtons[i].mouseClicked(clickX, clickY, button);
+                    if(subButtons[i].mouseClicked(clickX, clickY, button))
+                        return true;
                 }
             }
             return false;
@@ -232,7 +235,7 @@ public class GuiYAC extends GuiScreen {
         
         public void mouseReleased() {
             mouseDown = false;
-            if (module != null && module.enabled) {
+            if(module != null && module.enabled) {
                 subButtons = module.subButtons.toArray(new Button[0]);
                 
                 for (int i = 0; i < subButtons.length; i++) {
@@ -243,13 +246,13 @@ public class GuiYAC extends GuiScreen {
         }
         
         protected void click(int button) {
-            if (button == 0)
+            if(button == 0)
                 event.run(text);
         }
         
         protected void onTick(GuiYAC gui) {
             if (module != null) {
-                if (mouseDown && mouseDownButton == 1) {
+                if(mouseDown && mouseDownButton == 1) {
                     x = gui.cx - 100;
                     y = gui.cy - 15;
                     x = (x / 5) * 5;
@@ -260,5 +263,9 @@ public class GuiYAC extends GuiScreen {
             }
         }
         
+    }
+    
+    public interface ButtonClickEvent {
+        void run(AtomicReference<String> text);
     }
 }
