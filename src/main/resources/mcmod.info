@@ -3,7 +3,7 @@
   "modid": "yac",
   "name": "YAC Client",
   "description": "",
-  "version": "vB1.0.0a",
+  "version": "vB1.0.0b",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",

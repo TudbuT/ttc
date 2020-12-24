@@ -40,7 +40,10 @@ public class LeavePos extends Module {
                                     ChatUtils.print(
                                             "§c§l§c§lThe player §r" +
                                             visiblePlayersLastTick[j].getName() +
-                                            "§c§l left at " + (int) (vec.x * 100) / 100 +
+                                            "§c§l left at " +
+                                            (int) (vec.x * 100) / 100 + " " +
+                                            (int) (vec.y * 100) / 100 + " " +
+                                            (int) (vec.z * 100) / 100 + " " +
                                             "!"
                                     );
                                 }
