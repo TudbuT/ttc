@@ -9,11 +9,18 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.yac.YAC;
 import tudbut.mod.client.yac.mods.ChatColor;
 import tudbut.mod.client.yac.mods.ChatSuffix;
 import tudbut.mod.client.yac.mods.TPAParty;
 import tudbut.mod.client.yac.utils.ChatUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 
 public class FMLEventHandler {
     
@@ -80,6 +87,38 @@ public class FMLEventHandler {
         for (int i = 0; i < YAC.modules.length; i++) {
             if(YAC.modules[i].enabled)
                 YAC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText());
+        }
+    }
+    
+    @SubscribeEvent
+    public void onJoinServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+        try {
+            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/yacpub/master/version.txt");
+            InputStream stream = updateCheckURL.openConnection().getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+            
+            String s;
+            StringBuilder builder = new StringBuilder();
+            while ((s = reader.readLine()) != null) {
+                builder.append(s);
+            }
+            
+            s = builder.toString();
+            if (!s.equals(YAC.VERSION)) {
+                ChatUtils.print(
+                        "§a§lA new YAC version was found! Current: " +
+                        YAC.VERSION +
+                        ", New: " +
+                        s +
+                        "! Please consider updating at " +
+                        "https://github.com/TudbuT/yacpub/releases/tag/" +
+                        s
+                );
+            }
+        }
+        catch (IOException e) {
+            ChatUtils.print("Unable to check for a new version!");
+            e.printStackTrace();
         }
     }
     
