@@ -15,7 +15,8 @@ out
 
 # gradle
 build
-*gradle*
+gradle
+.gradle
 
 
 # other
