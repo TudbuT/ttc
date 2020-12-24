@@ -1,9 +1,9 @@
 [
 {
   "modid": "yac",
-  "name": "YAC Client (Public version)",
+  "name": "YAC Client",
   "description": "",
-  "version": "vB0.2.5a (Public)",
+  "version": "vB1.0.0a",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",

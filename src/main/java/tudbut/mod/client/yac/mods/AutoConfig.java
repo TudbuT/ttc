@@ -5,8 +5,6 @@ import tudbut.mod.client.yac.gui.GuiYAC;
 import tudbut.mod.client.yac.utils.Module;
 import tudbut.mod.client.yac.utils.ThreadManager;
 
-import java.io.Serializable;
-
 public class AutoConfig extends Module {
     
     private boolean mode = false;
@@ -18,9 +16,26 @@ public class AutoConfig extends Module {
     private Server server = Server._8b8t;
     
     private enum Server {
-        _8b8t("8b8t.xyz", true , true , true ),
-        _5b5t("5b5t.net", false, false, false),
-        _0t0t("0b0t.org", false, false, true ),
+        _8b8t
+                ("8b8t.xyz",
+                 true , true , true ),
+        
+        _5b5t
+                ("5b5t.net",
+                 false, false, false),
+        
+        _0t0t
+                ("0b0t.org",
+                 false, false, true ),
+        
+        _2b2t
+                ("2b2t.org",
+                 false, false, false),
+        
+        crystalpvp
+                ("crystalpvp.cc",
+                 false, false, false),
+        
         ;
         
         String name;
@@ -97,7 +112,7 @@ public class AutoConfig extends Module {
             if(!tpa)
                 TPAParty.getInstance().enabled = false;
             TPATools.getInstance().enabled = tpa;
-            
+    
             ThreadManager.run(() -> {
                 text.set("Done");
                 try {
@@ -141,5 +156,7 @@ public class AutoConfig extends Module {
         tpa = Boolean.parseBoolean(cfg.get("tpa"));
         
         server = Server.values()[Integer.parseInt(cfg.get("server"))];
+        
+        updateButtons();
     }
 }

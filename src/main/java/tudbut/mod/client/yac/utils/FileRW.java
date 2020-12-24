@@ -22,13 +22,6 @@ public class FileRW {
         rereadFile();
     }
     
-    public String getContent() {
-        StringBuilder builder = new StringBuilder();
-        for (String line : lines)
-            builder.append(line);
-        return builder.toString();
-    }
-    
     public void setContent(String content) throws IOException {
         this.lines.clear();
         this.lines.addAll(Arrays.asList(content.split("\n")));
@@ -36,6 +29,13 @@ public class FileRW {
         PrintWriter writer = new PrintWriter(fileWriter);
         writer.write(content);
         writer.close();
+    }
+    
+    public String getContent() {
+        StringBuilder builder = new StringBuilder();
+        for (String line : lines)
+            builder.append(line);
+        return builder.toString();
     }
     
     public void rereadFile() throws IOException {

@@ -1,7 +1,7 @@
 package tudbut.mod.client.yac.mods;
 
 import net.minecraft.client.network.NetworkPlayerInfo;
-import tudbut.mod.client.yac.Yac;
+import tudbut.mod.client.yac.YAC;
 import tudbut.mod.client.yac.gui.GuiYAC;
 import tudbut.mod.client.yac.utils.ChatUtils;
 import tudbut.mod.client.yac.utils.Module;
@@ -16,10 +16,19 @@ import java.util.Objects;
 public class Team extends Module {
     
     static Team instance;
-    private final ArrayList<String> names = new ArrayList<>();
+    
+    public static Team getInstance() {
+        return instance;
+    }
+    
+    public Team() {
+        instance = this;
+    }
+    
+    public final ArrayList<String> names = new ArrayList<>();
     private boolean tpa = true;
     private boolean tpaHere = false;
-
+    
     {
         subButtons.add(new GuiYAC.Button("Accept /tpa: " + tpa, text -> {
             tpa = !tpa;
@@ -30,22 +39,15 @@ public class Team extends Module {
             text.set("Accept /tpahere: " + tpaHere);
         }));
         subButtons.add(new GuiYAC.Button("Send /tpahere", text -> {
-            onChat("", new String[]{
+            onChat("", new String[] {
                     "tpahere"
             });
         }));
         subButtons.add(new GuiYAC.Button("Show list", text -> {
-            onChat("", new String[]{
+            onChat("", new String[] {
                     "list"
             });
         }));
-    }
-    public Team() {
-        instance = this;
-    }
-    
-    public static Team getInstance() {
-        return instance;
     }
     
     public void updateButtons() {
@@ -81,10 +83,10 @@ public class Team extends Module {
             case "tpahere":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
-                    for (NetworkPlayerInfo info : Objects.requireNonNull(Yac.mc.getConnection()).getPlayerInfoMap()) {
-                        if (names.contains(info.getGameProfile().getName())) {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(YAC.mc.getConnection()).getPlayerInfoMap()) {
+                        if(names.contains(info.getGameProfile().getName())) {
                             try {
-                                Yac.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
+                                YAC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                                 ChatUtils.print("Sent to " + info.getGameProfile().getName());
                             }
                             catch (Throwable e) { }
@@ -107,21 +109,23 @@ public class Team extends Module {
                 for (String name : names) {
                     toPrint.append(name).append(", ");
                 }
-                if (names.size() >= 1)
+                if(names.size() >= 1)
                     toPrint.delete(toPrint.length() - 2, toPrint.length() - 1);
                 ChatUtils.print(toPrint.toString());
                 break;
         }
         updateButtons();
+        names.remove(YAC.player.getName());
+        names.add(YAC.player.getName());
     }
     
     @Override
     public void onServerChat(String s, String formatted) {
-        if (tpa && s.contains("has requested to teleport to you.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
-            Yac.player.sendChatMessage("/tpaccept");
+        if(tpa && s.contains("has requested to teleport to you.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
+            YAC.player.sendChatMessage("/tpaccept");
         }
-        if (tpaHere && s.contains("has requested that you teleport to them.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
-            Yac.player.sendChatMessage("/tpaccept");
+        if(tpaHere && s.contains("has requested that you teleport to them.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
+            YAC.player.sendChatMessage("/tpaccept");
         }
     }
     

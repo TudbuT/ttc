@@ -2,33 +2,47 @@ package tudbut.mod.client.yac.mods;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
-import tudbut.mod.client.yac.Yac;
+import tudbut.mod.client.yac.YAC;
 import tudbut.mod.client.yac.utils.BlockUtils;
-import tudbut.mod.client.yac.utils.ChatUtils;
 import tudbut.mod.client.yac.utils.Module;
 import tudbut.mod.client.yac.utils.ThreadManager;
 
 public class Trap extends Module {
     
-    {
-        enabled = true;
+    private boolean ticked = false;
+    
+    @Override
+    public void onEnable() {
+        ThreadManager.run(() -> {
+            while (enabled) {
+                try {
+                    if (YAC.mc.world != null) {
+                        for (EntityPlayer player : YAC.mc.world.playerEntities) {
+                            if (!Team.getInstance().names.contains(player.getName())) {
+                                trap(player);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+            
+                }
+            }
+        });
     }
     
     @Override
     public void onTick() {
+        ticked = true;
+    }
     
+    public void waitForTick() throws InterruptedException {
+        while (!ticked);
+        Thread.sleep(1);
+        ticked = false;
     }
     
     @Override
     public void onChat(String s, String[] args) {
-        ChatUtils.print("Finding player");
-        for (EntityPlayer player : Yac.mc.world.playerEntities) {
-            if (player.getName().equalsIgnoreCase(s)) {
-                ThreadManager.run(() -> trap(player));
-                return;
-            }
-        }
-        ChatUtils.print("Player not found!");
     }
     
     public void add(BlockPos[] positions, int i, int x, int y, int z) {
@@ -36,7 +50,6 @@ public class Trap extends Module {
     }
     
     public void trap(EntityPlayer player) {
-        ChatUtils.print("Trapping " + player.getName() + "...");
         BlockPos[] positions = new BlockPos[18];
         for (int i = 0; i < positions.length; i++) {
             positions[i] = new BlockPos(player.getPositionVector());
@@ -64,10 +77,9 @@ public class Trap extends Module {
         add(positions, 16, +0, +2, +1);
         add(positions, 17, +0, +2, -1);
         
-        ChatUtils.print("Constructed positions. Placing blocks...");
-        
         for (int i = 0; i < positions.length; i++) {
             try {
+                waitForTick();
                 BlockUtils.placeBlock(positions[i], false);
                 System.out.println(positions[i]);
                 Thread.sleep(50);
@@ -76,7 +88,5 @@ public class Trap extends Module {
                 e.printStackTrace();
             }
         }
-        
-        ChatUtils.print("Blocks placed.");
     }
 }

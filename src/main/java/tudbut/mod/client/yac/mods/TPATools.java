@@ -2,7 +2,7 @@ package tudbut.mod.client.yac.mods;
 
 import net.minecraft.client.network.NetworkPlayerInfo;
 import org.lwjgl.input.Keyboard;
-import tudbut.mod.client.yac.Yac;
+import tudbut.mod.client.yac.YAC;
 import tudbut.mod.client.yac.gui.GuiYAC;
 import tudbut.mod.client.yac.utils.ChatUtils;
 import tudbut.mod.client.yac.utils.Module;
@@ -11,9 +11,18 @@ import tudbut.mod.client.yac.utils.ThreadManager;
 import java.util.Objects;
 
 public class TPATools extends Module {
-    static TPATools instance;
     private int delay = 1000;
     private boolean stop = false;
+    
+    static TPATools instance;
+    
+    public static TPATools getInstance() {
+        return instance;
+    }
+    
+    public TPATools() {
+        instance = this;
+    }
     
     {
         subButtons.add(new GuiYAC.Button("Send /tpa to everyone", text -> {
@@ -23,14 +32,14 @@ public class TPATools extends Module {
             onChat("tpahere", null);
         }));
         subButtons.add(new GuiYAC.Button("Delay: " + delay, text -> {
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+            if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
                 delay -= 1000;
             else
                 delay += 1000;
             
-            if (delay > 5000)
+            if(delay > 5000)
                 delay = 1000;
-            if (delay < 1000)
+            if(delay < 1000)
                 delay = 5000;
             text.set("Delay: " + delay);
         }));
@@ -51,14 +60,6 @@ public class TPATools extends Module {
         }));
     }
     
-    public TPATools() {
-        instance = this;
-    }
-    
-    public static TPATools getInstance() {
-        return instance;
-    }
-    
     public void updateButtons() {
         subButtons.get(2).text.set("Delay: " + delay);
     }
@@ -73,19 +74,19 @@ public class TPATools extends Module {
     
     @Override
     public void onChat(String s, String[] args) {
-        if (s.equalsIgnoreCase("delay")) {
+        if(s.equalsIgnoreCase("delay")) {
             delay = Integer.parseInt(args[1]);
             ChatUtils.print("Set!");
         }
         
-        if (s.equalsIgnoreCase("tpa")) {
+        if(s.equalsIgnoreCase("tpa")) {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
-                for (NetworkPlayerInfo info : Objects.requireNonNull(Yac.mc.getConnection()).getPlayerInfoMap()) {
+                for (NetworkPlayerInfo info : Objects.requireNonNull(YAC.mc.getConnection()).getPlayerInfoMap()) {
                     if(stop)
                         return;
                     try {
-                        Yac.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
+                        YAC.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
                     }
                     catch (Throwable e) { }
@@ -99,14 +100,14 @@ public class TPATools extends Module {
                 ChatUtils.print("Done!");
             });
         }
-        if (s.equalsIgnoreCase("tpahere")) {
+        if(s.equalsIgnoreCase("tpahere")) {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
-                for (NetworkPlayerInfo info : Objects.requireNonNull(Yac.mc.getConnection()).getPlayerInfoMap()) {
+                for (NetworkPlayerInfo info : Objects.requireNonNull(YAC.mc.getConnection()).getPlayerInfoMap()) {
                     if(stop)
                         return;
                     try {
-                        Yac.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
+                        YAC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
                     }
                     catch (Throwable e) { }
@@ -124,7 +125,7 @@ public class TPATools extends Module {
     }
     
     public void loadConfig() {
-        delay = Integer.parseInt(cfg.getOrDefault("delay", "1000"));
+        delay = Integer.parseInt(cfg.get("delay"));
         updateButtons();
     }
     

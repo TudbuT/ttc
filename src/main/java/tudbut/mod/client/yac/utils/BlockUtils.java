@@ -10,7 +10,6 @@ import net.minecraft.network.play.client.CPacketEntityAction;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -57,7 +56,7 @@ public class BlockUtils {
     public static void placeBlock(BlockPos pos, boolean rotate) {
         EnumFacing side = getPlaceableSide(pos);
         if (side == null) {
-            ChatUtils.print("Couldn't place a block");
+            //ChatUtils.print("Couldn't place a block");
             return;
         }
         BlockPos neighbour = pos.offset(side);
@@ -70,6 +69,9 @@ public class BlockUtils {
         if (rotate) BlockUtils.faceVectorPacketInstant(hitVec);
         mc.playerController.processRightClickBlock(mc.player, mc.world, neighbour, opposite, hitVec, EnumHand.MAIN_HAND);
         mc.player.swingArm(EnumHand.MAIN_HAND);
+        if ((BlockUtils.blackList.contains(neighbourBlock) || BlockUtils.shulkerList.contains(neighbourBlock))) {
+            mc.player.connection.sendPacket(new CPacketEntityAction(mc.player, CPacketEntityAction.Action.STOP_SNEAKING));
+        }
     }
     
     private static EnumFacing getPlaceableSide(BlockPos pos) {
