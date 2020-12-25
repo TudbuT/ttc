@@ -1,4 +1,4 @@
-package tudbut.mod.client.yac.utils;
+package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TextComponentString;

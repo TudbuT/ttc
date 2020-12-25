@@ -1,7 +1,7 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.utils.Module;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.utils.Module;
 
 public class Prefix extends Module {
     {
@@ -19,6 +19,6 @@ public class Prefix extends Module {
     
     @Override
     public void onChat(String s, String[] args) {
-        YAC.prefix = s;
+        TTC.prefix = s;
     }
 }

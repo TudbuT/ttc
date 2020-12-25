@@ -1,14 +1,14 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.input.Keyboard;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.gui.GuiYAC;
-import tudbut.mod.client.yac.utils.ChatUtils;
-import tudbut.mod.client.yac.utils.InventoryUtils;
-import tudbut.mod.client.yac.utils.Module;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.InventoryUtils;
+import tudbut.mod.client.ttc.utils.Module;
 
 public class AutoTotem extends Module {
     
@@ -27,7 +27,7 @@ public class AutoTotem extends Module {
     private boolean isRestockingAfterRespawn = false;
     
     {
-        subButtons.add(new GuiYAC.Button("Count: " + orig_min_count, text -> {
+        subButtons.add(new GuiTTC.Button("Count: " + orig_min_count, text -> {
             if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
                 orig_min_count = min_count = orig_min_count - 1;
             else
@@ -38,7 +38,7 @@ public class AutoTotem extends Module {
                 orig_min_count = min_count = 12;
             text.set("Count: " + orig_min_count);
         }));
-        subButtons.add(new GuiYAC.Button(0, 0, "Actual count: " + min_count, text -> {
+        subButtons.add(new GuiTTC.Button(0, 0, "Actual count: " + min_count, text -> {
         
         }, null));
     }
@@ -51,7 +51,7 @@ public class AutoTotem extends Module {
     @Override
     public void onTick() {
         
-        EntityPlayerSP player = YAC.player;
+        EntityPlayerSP player = TTC.player;
         
         updateTotCount();
     
@@ -61,10 +61,10 @@ public class AutoTotem extends Module {
         
         updateButtons();
         
-        if(YAC.mc.currentScreen == null)
+        if(TTC.mc.currentScreen == null)
             isRestockingAfterRespawn = false;
         
-        if((isRestockingAfterRespawn || isRestockingAfterRespawn()) && YAC.mc.currentScreen != null) {
+        if((isRestockingAfterRespawn || isRestockingAfterRespawn()) && TTC.mc.currentScreen != null) {
             System.out.println(isRestockingAfterRespawn);
             return;
         }
@@ -86,7 +86,7 @@ public class AutoTotem extends Module {
     }
     
     public boolean isRestockingAfterRespawn() {
-        EntityPlayerSP player = YAC.player;
+        EntityPlayerSP player = TTC.player;
         
         Integer slot0 = InventoryUtils.getSlotWithItem(
                 player.inventoryContainer,
@@ -127,7 +127,7 @@ public class AutoTotem extends Module {
     
     @Override
     public void onEnable() {
-        YAC.modules[2].enabled = false;
+        TTC.modules[2].enabled = false;
     }
     
     @Override
@@ -142,7 +142,7 @@ public class AutoTotem extends Module {
     }
     
     public void updateTotCount() {
-        EntityPlayerSP player = YAC.player;
+        EntityPlayerSP player = TTC.player;
         
         
         if(

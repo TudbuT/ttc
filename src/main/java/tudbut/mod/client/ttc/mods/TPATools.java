@@ -1,12 +1,12 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.network.NetworkPlayerInfo;
 import org.lwjgl.input.Keyboard;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.gui.GuiYAC;
-import tudbut.mod.client.yac.utils.ChatUtils;
-import tudbut.mod.client.yac.utils.Module;
-import tudbut.mod.client.yac.utils.ThreadManager;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
 
 import java.util.Objects;
 
@@ -25,13 +25,13 @@ public class TPATools extends Module {
     }
     
     {
-        subButtons.add(new GuiYAC.Button("Send /tpa to everyone", text -> {
+        subButtons.add(new GuiTTC.Button("Send /tpa to everyone", text -> {
             onChat("tpa", null);
         }));
-        subButtons.add(new GuiYAC.Button("Send /tpahere to everyone", text -> {
+        subButtons.add(new GuiTTC.Button("Send /tpahere to everyone", text -> {
             onChat("tpahere", null);
         }));
-        subButtons.add(new GuiYAC.Button("Delay: " + delay, text -> {
+        subButtons.add(new GuiTTC.Button("Delay: " + delay, text -> {
             if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
                 delay -= 1000;
             else
@@ -43,7 +43,7 @@ public class TPATools extends Module {
                 delay = 5000;
             text.set("Delay: " + delay);
         }));
-        subButtons.add(new GuiYAC.Button("Stop", text -> {
+        subButtons.add(new GuiTTC.Button("Stop", text -> {
             stop = true;
         
             ThreadManager.run(() -> {
@@ -82,11 +82,11 @@ public class TPATools extends Module {
         if(s.equalsIgnoreCase("tpa")) {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
-                for (NetworkPlayerInfo info : Objects.requireNonNull(YAC.mc.getConnection()).getPlayerInfoMap()) {
+                for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
                     if(stop)
                         return;
                     try {
-                        YAC.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
+                        TTC.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
                     }
                     catch (Throwable e) { }
@@ -103,11 +103,11 @@ public class TPATools extends Module {
         if(s.equalsIgnoreCase("tpahere")) {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
-                for (NetworkPlayerInfo info : Objects.requireNonNull(YAC.mc.getConnection()).getPlayerInfoMap()) {
+                for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
                     if(stop)
                         return;
                     try {
-                        YAC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
+                        TTC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
                     }
                     catch (Throwable e) { }

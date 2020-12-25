@@ -1,11 +1,11 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import org.lwjgl.input.Keyboard;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.gui.GuiYAC;
-import tudbut.mod.client.yac.utils.ChatUtils;
-import tudbut.mod.client.yac.utils.Module;
-import tudbut.mod.client.yac.utils.ThreadManager;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
 
 public class ClickGUI extends Module {
     
@@ -20,10 +20,10 @@ public class ClickGUI extends Module {
     }
     
     {
-        subButtons.add(new GuiYAC.Button("Reset layout", text -> {
+        subButtons.add(new GuiTTC.Button("Reset layout", text -> {
             enabled = false;
             onDisable();
-            for (Module module : YAC.modules) {
+            for (Module module : TTC.modules) {
                 module.clickGuiX = null;
                 module.clickGuiY = null;
             }
@@ -42,14 +42,14 @@ public class ClickGUI extends Module {
                 e.printStackTrace();
             }
             ChatUtils.print("Showing ClickGUI");
-            YAC.mc.displayGuiScreen(new GuiYAC(YAC.mc.currentScreen));
+            TTC.mc.displayGuiScreen(new GuiTTC(TTC.mc.currentScreen));
         });
     }
     
     @Override
     public void onDisable() {
-        if (YAC.mc.currentScreen != null && YAC.mc.currentScreen.getClass() == GuiYAC.class)
-            YAC.mc.displayGuiScreen(null);
+        if (TTC.mc.currentScreen != null && TTC.mc.currentScreen.getClass() == GuiTTC.class)
+            TTC.mc.displayGuiScreen(null);
     }
     
     @Override
@@ -58,7 +58,7 @@ public class ClickGUI extends Module {
     
     @Override
     public void onEveryTick() {
-        if(Keyboard.isKeyDown(Keyboard.KEY_COMMA) && YAC.mc.currentScreen == null) {
+        if(Keyboard.isKeyDown(Keyboard.KEY_COMMA) && TTC.mc.currentScreen == null) {
             if(!enabled) {
                 enabled = true;
                 onEnable();

@@ -1,4 +1,4 @@
-package tudbut.mod.client.yac.utils;
+package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiScreen;
@@ -8,8 +8,8 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.gui.GuiYAC;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
 
 public class InventoryUtils {
     
@@ -39,7 +39,7 @@ public class InventoryUtils {
     private static boolean swapping = false;
     
     public static void swap(int slot, int hotbarSlot) {
-        YAC.mc.playerController.windowClick(YAC.mc.player.inventoryContainer.windowId, slot, hotbarSlot, ClickType.SWAP, YAC.mc.player);
+        TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, slot, hotbarSlot, ClickType.SWAP, TTC.mc.player);
     }
     
     public static void inventorySwap(int from, int to) {
@@ -49,12 +49,12 @@ public class InventoryUtils {
         swapping = true;
         ThreadManager.run(() -> {
             try {
-                GuiScreen screen = YAC.mc.currentScreen;
+                GuiScreen screen = TTC.mc.currentScreen;
                 boolean doResetScreen = false;
                 if(
                         screen != null &&
                         !(
-                                screen instanceof GuiYAC ||
+                                screen instanceof GuiTTC ||
                                 screen.getClass().getSimpleName().contains("Chat") ||
                                 screen instanceof GuiContainerCreative ||
                                 screen instanceof GuiIngameMenu ||
@@ -62,22 +62,22 @@ public class InventoryUtils {
                         )
                 ) {
                     Thread.sleep(200);
-                    YAC.player.closeScreen();
+                    TTC.player.closeScreen();
                     Thread.sleep(300);
                     doResetScreen = true;
                 }
                 
                 //Thread.sleep(10);
-                YAC.mc.playerController.windowClick(YAC.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, YAC.mc.player);
+                TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, TTC.mc.player);
                 //Thread.sleep(100);
-                YAC.mc.playerController.windowClick(YAC.mc.player.inventoryContainer.windowId, to, 8, ClickType.SWAP, YAC.mc.player);
+                TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, to, 8, ClickType.SWAP, TTC.mc.player);
                 //Thread.sleep(200);
-                YAC.mc.playerController.windowClick(YAC.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, YAC.mc.player);
+                TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, TTC.mc.player);
                 
                 Thread.sleep(20);
                 
                 if(doResetScreen)
-                    YAC.mc.displayGuiScreen(screen);
+                    TTC.mc.displayGuiScreen(screen);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();

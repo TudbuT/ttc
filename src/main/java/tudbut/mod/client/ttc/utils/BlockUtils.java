@@ -1,4 +1,4 @@
-package tudbut.mod.client.yac.utils;
+package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDeadBush;

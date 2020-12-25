@@ -1,12 +1,12 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.network.NetworkPlayerInfo;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.gui.GuiYAC;
-import tudbut.mod.client.yac.utils.ChatUtils;
-import tudbut.mod.client.yac.utils.Module;
-import tudbut.mod.client.yac.utils.ThreadManager;
-import tudbut.mod.client.yac.utils.Utils;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
+import tudbut.mod.client.ttc.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,20 +30,20 @@ public class Team extends Module {
     private boolean tpaHere = false;
     
     {
-        subButtons.add(new GuiYAC.Button("Accept /tpa: " + tpa, text -> {
+        subButtons.add(new GuiTTC.Button("Accept /tpa: " + tpa, text -> {
             tpa = !tpa;
             text.set("Accept /tpa: " + tpa);
         }));
-        subButtons.add(new GuiYAC.Button("Accept /tpahere: " + tpaHere, text -> {
+        subButtons.add(new GuiTTC.Button("Accept /tpahere: " + tpaHere, text -> {
             tpaHere = !tpaHere;
             text.set("Accept /tpahere: " + tpaHere);
         }));
-        subButtons.add(new GuiYAC.Button("Send /tpahere", text -> {
+        subButtons.add(new GuiTTC.Button("Send /tpahere", text -> {
             onChat("", new String[] {
                     "tpahere"
             });
         }));
-        subButtons.add(new GuiYAC.Button("Show list", text -> {
+        subButtons.add(new GuiTTC.Button("Show list", text -> {
             onChat("", new String[] {
                     "list"
             });
@@ -83,10 +83,10 @@ public class Team extends Module {
             case "tpahere":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
-                    for (NetworkPlayerInfo info : Objects.requireNonNull(YAC.mc.getConnection()).getPlayerInfoMap()) {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
                         if(names.contains(info.getGameProfile().getName())) {
                             try {
-                                YAC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
+                                TTC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                                 ChatUtils.print("Sent to " + info.getGameProfile().getName());
                             }
                             catch (Throwable e) { }
@@ -115,17 +115,17 @@ public class Team extends Module {
                 break;
         }
         updateButtons();
-        names.remove(YAC.player.getName());
-        names.add(YAC.player.getName());
+        names.remove(TTC.player.getName());
+        names.add(TTC.player.getName());
     }
     
     @Override
     public void onServerChat(String s, String formatted) {
         if(tpa && s.contains("has requested to teleport to you.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
-            YAC.player.sendChatMessage("/tpaccept");
+            TTC.player.sendChatMessage("/tpaccept");
         }
         if(tpaHere && s.contains("has requested that you teleport to them.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
-            YAC.player.sendChatMessage("/tpaccept");
+            TTC.player.sendChatMessage("/tpaccept");
         }
     }
     

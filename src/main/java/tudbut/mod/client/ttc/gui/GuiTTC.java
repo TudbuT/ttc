@@ -1,14 +1,14 @@
-package tudbut.mod.client.yac.gui;
+package tudbut.mod.client.ttc.gui;
 
 import net.minecraft.client.gui.GuiScreen;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.mods.ClickGUI;
-import tudbut.mod.client.yac.utils.Module;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.mods.ClickGUI;
+import tudbut.mod.client.ttc.utils.Module;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class GuiYAC extends GuiScreen {
+public class GuiTTC extends GuiScreen {
     
     private final GuiScreen parentGuiScreen;
     
@@ -17,9 +17,9 @@ public class GuiYAC extends GuiScreen {
     private int cx,
             cy;
     
-    public GuiYAC(GuiScreen parentScreenIn)
+    public GuiTTC(GuiScreen parentScreenIn)
     {
-        this.mc = YAC.mc;
+        this.mc = TTC.mc;
         this.parentGuiScreen = parentScreenIn;
     }
     
@@ -68,18 +68,18 @@ public class GuiYAC extends GuiScreen {
     }
     
     private void resetButtons() {
-        for (int x = 0; x < YAC.modules.length; x++) {
-            for (int y = 0; y < 5 && y + (x * 5) < YAC.modules.length; y++) {
+        for (int x = 0; x < TTC.modules.length; x++) {
+            for (int y = 0; y < 5 && y + (x * 5) < TTC.modules.length; y++) {
                 int r = y + (x * 5);
                 Button b = new Button(
-                        10 + (210 * x), 10 + (y * 40), YAC.modules[r].getClass().getSimpleName() + ": " + YAC.modules[r].enabled,
+                        10 + (210 * x), 10 + (y * 40), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
                         (text) -> {
-                            if(YAC.modules[r].enabled = !YAC.modules[r].enabled)
-                                YAC.modules[r].onEnable();
+                            if(TTC.modules[r].enabled = !TTC.modules[r].enabled)
+                                TTC.modules[r].onEnable();
                             else
-                                YAC.modules[r].onDisable();
+                                TTC.modules[r].onDisable();
                     
-                        }, YAC.modules[r]
+                        }, TTC.modules[r]
                 );
         
                 buttons[r] = b;
@@ -99,10 +99,10 @@ public class GuiYAC extends GuiScreen {
             if(buttons == null)
                 resetButtons();
         }
-        for (int i = 0; i < YAC.modules.length; i++) {
+        for (int i = 0; i < TTC.modules.length; i++) {
             if(buttons[i] == null)
                 return;
-            buttons[i].text.set(YAC.modules[i].getClass().getSimpleName() + ": " + YAC.modules[i].enabled);
+            buttons[i].text.set(TTC.modules[i].getClass().getSimpleName() + ": " + TTC.modules[i].enabled);
         }
     }
     
@@ -189,7 +189,7 @@ public class GuiYAC extends GuiScreen {
             this.module = module;
         }
         
-        public void draw(GuiYAC gui) {
+        public void draw(GuiTTC gui) {
             drawRect(x, y, x + 200, y + 30, color);
             gui.drawString(gui.fontRenderer, text.get(), x + 10, y + 11, 0xffffffff);
     
@@ -244,7 +244,7 @@ public class GuiYAC extends GuiScreen {
                 event.run(text);
         }
         
-        protected void onTick(GuiYAC gui) {
+        protected void onTick(GuiTTC gui) {
             if (module != null) {
                 if(mouseDown && mouseDownButton == 1) {
                     x = gui.cx - 100;

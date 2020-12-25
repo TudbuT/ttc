@@ -1,7 +1,7 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.utils.Module;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.utils.Module;
 
 public class TPAParty extends Module {
     
@@ -28,7 +28,7 @@ public class TPAParty extends Module {
     @Override
     public void onServerChat(String s, String formatted) {
         if(s.contains("has requested to teleport to you.") && !s.startsWith("<")) {
-            YAC.player.sendChatMessage("/tpaccept");
+            TTC.player.sendChatMessage("/tpaccept");
         }
     }
 }

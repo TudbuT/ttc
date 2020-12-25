@@ -1,6 +1,6 @@
-package tudbut.mod.client.yac.utils;
+package tudbut.mod.client.ttc.utils;
 
-import tudbut.mod.client.yac.gui.GuiYAC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ public abstract class Module {
     public boolean enabled = defaultEnabled();
     public Integer clickGuiX;
     public Integer clickGuiY;
-    public ArrayList<GuiYAC.Button> subButtons = new ArrayList<>();
+    public ArrayList<GuiTTC.Button> subButtons = new ArrayList<>();
     
     public Module() {
         index = cIndex;

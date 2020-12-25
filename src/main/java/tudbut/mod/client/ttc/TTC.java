@@ -1,4 +1,4 @@
-package tudbut.mod.client.yac;
+package tudbut.mod.client.ttc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -8,21 +8,21 @@ import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
-import tudbut.mod.client.yac.events.FMLEventHandler;
-import tudbut.mod.client.yac.mods.*;
-import tudbut.mod.client.yac.utils.FileRW;
-import tudbut.mod.client.yac.utils.Module;
-import tudbut.mod.client.yac.utils.ThreadManager;
-import tudbut.mod.client.yac.utils.Utils;
+import tudbut.mod.client.ttc.events.FMLEventHandler;
+import tudbut.mod.client.ttc.mods.*;
+import tudbut.mod.client.ttc.utils.FileRW;
+import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
+import tudbut.mod.client.ttc.utils.Utils;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Map;
 
-@Mod(modid = YAC.MODID, name = YAC.NAME, version = YAC.VERSION)
-public class YAC {
-    public static final String MODID = "yac";
-    public static final String NAME = "YAC Client";
+@Mod(modid = TTC.MODID, name = TTC.NAME, version = TTC.VERSION)
+public class TTC {
+    public static final String MODID = "ttc";
+    public static final String NAME = "TTC Client";
     public static final String VERSION = "vB1.0.0c";
     
     public static Module[] modules ;
@@ -38,7 +38,7 @@ public class YAC {
     public void preInit(FMLPreInitializationEvent event) {
         logger = event.getModLog();
         try {
-            file = new FileRW("config/yac.cfg");
+            file = new FileRW("config/ttc.cfg");
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -47,9 +47,9 @@ public class YAC {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        logger.info("YAC by TudbuT");
+        logger.info("TTC by TudbuT");
         ThreadManager.run(() -> {
-            JOptionPane.showMessageDialog(null, "YAC by TudbuT");
+            JOptionPane.showMessageDialog(null, "TTC by TudbuT");
         });
         player = Minecraft.getMinecraft().player;
         try {

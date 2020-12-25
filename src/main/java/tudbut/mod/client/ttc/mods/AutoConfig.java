@@ -1,9 +1,9 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import org.lwjgl.input.Keyboard;
-import tudbut.mod.client.yac.gui.GuiYAC;
-import tudbut.mod.client.yac.utils.Module;
-import tudbut.mod.client.yac.utils.ThreadManager;
+import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
 
 public class AutoConfig extends Module {
     
@@ -58,13 +58,13 @@ public class AutoConfig extends Module {
     
     public void updateButtons() {
         subButtons.clear();
-        subButtons.add(new GuiYAC.Button("Mode: " + (mode ? "Server" : "Custom"), text -> {
+        subButtons.add(new GuiTTC.Button("Mode: " + (mode ? "Server" : "Custom"), text -> {
             mode = !mode;
             text.set("Mode: " + (mode ? "Server" : "Custom"));
             updateButtons();
         }));
         if(mode) {
-            subButtons.add(new GuiYAC.Button("Server: " + server.name, text -> {
+            subButtons.add(new GuiTTC.Button("Server: " + server.name, text -> {
                 int i = server.ordinal();
                 
                 if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
@@ -83,20 +83,20 @@ public class AutoConfig extends Module {
             }));
         }
         else {
-            subButtons.add(new GuiYAC.Button("Has stacked totems: " + stackedTots, text -> {
+            subButtons.add(new GuiTTC.Button("Has stacked totems: " + stackedTots, text -> {
                 stackedTots = !stackedTots;
                 text.set("Has stacked totems: " + stackedTots);
             }));
-            subButtons.add(new GuiYAC.Button("PvP meta: " + (pvp ? "32k" : "Crystal"), text -> {
+            subButtons.add(new GuiTTC.Button("PvP meta: " + (pvp ? "32k" : "Crystal"), text -> {
                 pvp = !pvp;
                 text.set("PvP meta: " + (pvp ? "32k" : "Crystal"));
             }));
-            subButtons.add(new GuiYAC.Button("Has /tpa: " + tpa, text -> {
+            subButtons.add(new GuiTTC.Button("Has /tpa: " + tpa, text -> {
                 tpa = !tpa;
                 text.set("Has /tpa: " + tpa);
             }));
         }
-        subButtons.add(new GuiYAC.Button("Set", text -> {
+        subButtons.add(new GuiTTC.Button("Set", text -> {
             if(mode) {
                 stackedTots = server.stackedTots;
                 pvp = server.pvp;

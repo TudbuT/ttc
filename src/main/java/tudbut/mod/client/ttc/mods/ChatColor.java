@@ -1,7 +1,7 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
-import tudbut.mod.client.yac.gui.GuiYAC;
-import tudbut.mod.client.yac.utils.Module;
+import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.Module;
 
 public class ChatColor extends Module {
     
@@ -23,7 +23,7 @@ public class ChatColor extends Module {
     
     public void updateButtons() {
         subButtons.clear();
-        subButtons.add(new GuiYAC.Button("Add space: " + useSpace, text -> {
+        subButtons.add(new GuiTTC.Button("Add space: " + useSpace, text -> {
             useSpace = !useSpace;
             text.set("Add space: " + useSpace);
         }));

@@ -1,7 +1,7 @@
 [
 {
-  "modid": "yac",
-  "name": "YAC Client",
+  "modid": "ttc",
+  "name": "TTC Client",
   "description": "",
   "version": "vB1.0.0c",
   "mcversion": "${mcversion}",

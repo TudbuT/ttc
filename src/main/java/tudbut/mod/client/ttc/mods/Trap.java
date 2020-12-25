@@ -1,11 +1,11 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.utils.BlockUtils;
-import tudbut.mod.client.yac.utils.Module;
-import tudbut.mod.client.yac.utils.ThreadManager;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.utils.BlockUtils;
+import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
 
 public class Trap extends Module {
     
@@ -16,8 +16,8 @@ public class Trap extends Module {
         ThreadManager.run(() -> {
             while (enabled) {
                 try {
-                    if (YAC.mc.world != null) {
-                        for (EntityPlayer player : YAC.mc.world.playerEntities) {
+                    if (TTC.mc.world != null) {
+                        for (EntityPlayer player : TTC.mc.world.playerEntities) {
                             if (!Team.getInstance().names.contains(player.getName())) {
                                 trap(player);
                             }

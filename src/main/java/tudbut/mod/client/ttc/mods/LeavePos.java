@@ -1,11 +1,11 @@
-package tudbut.mod.client.yac.mods;
+package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.utils.ChatUtils;
-import tudbut.mod.client.yac.utils.Module;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.Module;
 
 public class LeavePos extends Module {
     NetworkPlayerInfo[] playersLastTick;
@@ -13,13 +13,13 @@ public class LeavePos extends Module {
     
     @Override
     public void onTick() {
-        if(YAC.mc.getConnection() == null)
+        if(TTC.mc.getConnection() == null)
             return;
         if(playersLastTick == null) {
-            playersLastTick = YAC.mc.getConnection().getPlayerInfoMap().toArray(new NetworkPlayerInfo[0]);
+            playersLastTick = TTC.mc.getConnection().getPlayerInfoMap().toArray(new NetworkPlayerInfo[0]);
         }
-        EntityPlayer[] visiblePlayersThisTick = YAC.mc.world.playerEntities.toArray(new EntityPlayer[0]);
-        NetworkPlayerInfo[] playersThisTick = YAC.mc.getConnection().getPlayerInfoMap().toArray(new NetworkPlayerInfo[0]);
+        EntityPlayer[] visiblePlayersThisTick = TTC.mc.world.playerEntities.toArray(new EntityPlayer[0]);
+        NetworkPlayerInfo[] playersThisTick = TTC.mc.getConnection().getPlayerInfoMap().toArray(new NetworkPlayerInfo[0]);
         
         try {
     

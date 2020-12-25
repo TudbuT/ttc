@@ -15,8 +15,8 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 version = '1.0'
-group = 'tudbut.mod.client.yac' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = 'yac'
+group = 'tudbut.mod.client.ttc' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = 'ttc'
 
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
@@ -86,10 +86,10 @@ dependencies {
 jar {
     manifest {
         attributes([
-            "Specification-Title": "yac",
+            "Specification-Title": "ttc",
             "Specification-Vendor": "TudbuT",
             "Specification-Version": "1", // We are version 1 of ourselves
-            "Implementation-Title": "YAC",
+            "Implementation-Title": "TTC",
             "Implementation-Version": "${version}",
             "Implementation-Vendor" :"TudbuT",
             "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
@@ -99,10 +99,10 @@ jar {
 
 task finalizeJar {
     doLast {
-        File yacFile = new File("build/reobfJar/yac.jar")
-        yacFile.delete()
+        File ttcFile = new File("build/reobfJar/ttc.jar")
+        ttcFile.delete()
         File jarFile = new File("build/reobfJar/output.jar")
-        jarFile.renameTo(yacFile)
+        jarFile.renameTo(ttcFile)
     }
 }
 

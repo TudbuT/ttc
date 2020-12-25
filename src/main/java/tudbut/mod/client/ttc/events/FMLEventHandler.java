@@ -1,4 +1,4 @@
-package tudbut.mod.client.yac.events;
+package tudbut.mod.client.ttc.events;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -10,11 +10,11 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import tudbut.mod.client.yac.YAC;
-import tudbut.mod.client.yac.mods.ChatColor;
-import tudbut.mod.client.yac.mods.ChatSuffix;
-import tudbut.mod.client.yac.mods.TPAParty;
-import tudbut.mod.client.yac.utils.ChatUtils;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.mods.ChatColor;
+import tudbut.mod.client.ttc.mods.ChatSuffix;
+import tudbut.mod.client.ttc.mods.TPAParty;
+import tudbut.mod.client.ttc.utils.ChatUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,37 +28,37 @@ public class FMLEventHandler {
     
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if(event.getOriginalMessage().startsWith(YAC.prefix)) {
+        if(event.getOriginalMessage().startsWith(TTC.prefix)) {
             
             event.setCanceled(true);
             ChatUtils.print("Blocked message");
             ChatUtils.history(event.getOriginalMessage());
-            String s = event.getOriginalMessage().substring(YAC.prefix.length());
+            String s = event.getOriginalMessage().substring(TTC.prefix.length());
             
             try {
                 if (s.startsWith("t ")) {
-                    for (int i = 0; i < YAC.modules.length; i++) {
-                        if (YAC.modules[i].getClass().getSimpleName().equalsIgnoreCase(s.substring("t ".length()))) {
-                            ChatUtils.print(String.valueOf(!YAC.modules[i].enabled));
+                    for (int i = 0; i < TTC.modules.length; i++) {
+                        if (TTC.modules[i].getClass().getSimpleName().equalsIgnoreCase(s.substring("t ".length()))) {
+                            ChatUtils.print(String.valueOf(!TTC.modules[i].enabled));
                             
-                            if(YAC.modules[i].enabled = !YAC.modules[i].enabled)
-                                YAC.modules[i].onEnable();
+                            if(TTC.modules[i].enabled = !TTC.modules[i].enabled)
+                                TTC.modules[i].onEnable();
                             else
-                                YAC.modules[i].onDisable();
+                                TTC.modules[i].onDisable();
                         }
                     }
                 }
                 
                 if (s.startsWith("say ")) {
-                    YAC.player.sendChatMessage(s.substring("say ".length()));
+                    TTC.player.sendChatMessage(s.substring("say ".length()));
                     ChatUtils.history(event.getOriginalMessage());
                 }
     
-                for (int i = 0; i < YAC.modules.length; i++) {
-                    if(YAC.modules[i].enabled)
-                        if (s.toLowerCase().startsWith(YAC.modules[i].getClass().getSimpleName().toLowerCase())) {
-                            String args = s.substring(YAC.modules[i].getClass().getSimpleName().length() + 1);
-                            YAC.modules[i].onChat(args, args.split(" "));
+                for (int i = 0; i < TTC.modules.length; i++) {
+                    if(TTC.modules[i].enabled)
+                        if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
+                            String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
+                            TTC.modules[i].onChat(args, args.split(" "));
                         }
                 }
             } catch (Exception e) {
@@ -68,7 +68,7 @@ public class FMLEventHandler {
         }
         else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
-            YAC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + (chatHelper == 0 && ChatSuffix.getInstance().enabled ? " ›YAC‹" : ""));
+            TTC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + (chatHelper == 0 && ChatSuffix.getInstance().enabled ? " ›TTC‹" : ""));
             chatHelper++;
             if(chatHelper == 6)
                 chatHelper = 0;
@@ -81,19 +81,19 @@ public class FMLEventHandler {
     public void onServerChat(ClientChatReceivedEvent event) {
         if(event.getMessage().getUnformattedText().startsWith("BayMax") && event.getMessage().getUnformattedText().contains("Please type '")) {
             String key = event.getMessage().getUnformattedText().substring("BayMax _ Please type '".length(), "BayMax _ Please type '".length() + 4);
-            YAC.player.sendChatMessage(key);
+            TTC.player.sendChatMessage(key);
             ChatUtils.print("Auto-solved");
         }
-        for (int i = 0; i < YAC.modules.length; i++) {
-            if(YAC.modules[i].enabled)
-                YAC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText());
+        for (int i = 0; i < TTC.modules.length; i++) {
+            if(TTC.modules[i].enabled)
+                TTC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText());
         }
     }
     
     @SubscribeEvent
     public void onJoinServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         try {
-            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/yacpub/master/version.txt");
+            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/ttc/master/version.txt");
             InputStream stream = updateCheckURL.openConnection().getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             
@@ -104,14 +104,14 @@ public class FMLEventHandler {
             }
             
             s = builder.toString();
-            if (!s.equals(YAC.VERSION)) {
+            if (!s.equals(TTC.VERSION)) {
                 ChatUtils.print(
-                        "§a§lA new YAC version was found! Current: " +
-                        YAC.VERSION +
+                        "§a§lA new TTC version was found! Current: " +
+                        TTC.VERSION +
                         ", New: " +
                         s +
                         "! Please consider updating at " +
-                        "https://github.com/TudbuT/yacpub/releases/tag/" +
+                        "https://github.com/TudbuT/ttc/releases/tag/" +
                         s
                 );
             }
@@ -124,31 +124,31 @@ public class FMLEventHandler {
     
     @SubscribeEvent
     public void onJoin(EntityJoinWorldEvent event) {
-        YAC.player = Minecraft.getMinecraft().player;
+        TTC.player = Minecraft.getMinecraft().player;
     }
     
     @SubscribeEvent
     public void onDeath(LivingDeathEvent event) {
         try {
-            if (event.getEntity().getName().equals(YAC.player.getName()) && event.getEntity() instanceof EntityPlayer) {
+            if (event.getEntity().getName().equals(TTC.player.getName()) && event.getEntity() instanceof EntityPlayer) {
                 TPAParty.getInstance().enabled = false;
                 TPAParty.getInstance().onDisable();
-                YAC.player = Minecraft.getMinecraft().player;
+                TTC.player = Minecraft.getMinecraft().player;
             }
         } catch (Exception ignore) { }
     }
     
     @SubscribeEvent
     public void onTick(TickEvent event) {
-        EntityPlayerSP player = YAC.player;
+        EntityPlayerSP player = TTC.player;
         if(player == null)
             return;
-        for (int i = 0; i < YAC.modules.length; i++) {
-            if(YAC.modules[i].enabled)
+        for (int i = 0; i < TTC.modules.length; i++) {
+            if(TTC.modules[i].enabled)
                 try {
-                    YAC.modules[i].onTick();
+                    TTC.modules[i].onTick();
                 } catch (Exception ignore) {}
-            YAC.modules[i].onEveryTick();
+            TTC.modules[i].onEveryTick();
         }
     }
 }

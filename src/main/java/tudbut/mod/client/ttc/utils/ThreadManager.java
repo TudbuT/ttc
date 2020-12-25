@@ -1,4 +1,4 @@
-package tudbut.mod.client.yac.utils;
+package tudbut.mod.client.ttc.utils;
 
 public class ThreadManager {
     public static void run(Runnable runnable) {
