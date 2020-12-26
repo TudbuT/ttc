@@ -24,7 +24,7 @@ public class AutoTotem extends Module {
     
     public int min_count = 0;
     public int orig_min_count = 0;
-    private boolean isRestockingAfterRespawn = false;
+    public boolean isRestockingAfterRespawn = false;
     
     {
         subButtons.add(new GuiTTC.Button("Count: " + orig_min_count, text -> {

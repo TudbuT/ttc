@@ -2,6 +2,7 @@ package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.inventory.ClickType;
@@ -51,16 +52,7 @@ public class InventoryUtils {
             try {
                 GuiScreen screen = TTC.mc.currentScreen;
                 boolean doResetScreen = false;
-                if(
-                        screen != null &&
-                        !(
-                                screen instanceof GuiTTC ||
-                                screen.getClass().getSimpleName().contains("Chat") ||
-                                screen instanceof GuiContainerCreative ||
-                                screen instanceof GuiIngameMenu ||
-                                screen instanceof GuiInventory
-                        )
-                ) {
+                if(screen instanceof GuiContainer) {
                     Thread.sleep(200);
                     TTC.player.closeScreen();
                     Thread.sleep(300);
@@ -68,11 +60,11 @@ public class InventoryUtils {
                 }
                 
                 //Thread.sleep(10);
-                TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, TTC.mc.player);
+                swap(from, 8);
                 //Thread.sleep(100);
-                TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, to, 8, ClickType.SWAP, TTC.mc.player);
+                swap(to, 8);
                 //Thread.sleep(200);
-                TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, from, 8, ClickType.SWAP, TTC.mc.player);
+                swap(from, 8);
                 
                 Thread.sleep(20);
                 
