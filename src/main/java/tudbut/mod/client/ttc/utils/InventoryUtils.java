@@ -52,7 +52,12 @@ public class InventoryUtils {
             try {
                 GuiScreen screen = TTC.mc.currentScreen;
                 boolean doResetScreen = false;
-                if(screen instanceof GuiContainer) {
+                if(
+                        screen instanceof GuiContainer && !(
+                                screen instanceof GuiInventory ||
+                                screen instanceof GuiContainerCreative
+                        )
+                ) {
                     Thread.sleep(200);
                     TTC.player.closeScreen();
                     Thread.sleep(300);

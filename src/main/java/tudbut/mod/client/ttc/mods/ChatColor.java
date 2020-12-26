@@ -29,6 +29,10 @@ public class ChatColor extends Module {
         }));
     }
     
+    {
+        updateButtons();
+    }
+    
     @Override
     public void onTick() {
     

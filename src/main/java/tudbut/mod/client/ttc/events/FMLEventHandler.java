@@ -134,6 +134,7 @@ public class FMLEventHandler {
                 TPAParty.getInstance().enabled = false;
                 TPAParty.getInstance().onDisable();
                 TTC.player = Minecraft.getMinecraft().player;
+                ChatUtils.print("§c§l§k|||§c§l You died at " + event.getEntity().getPosition());
             }
         } catch (Exception ignore) { }
     }
