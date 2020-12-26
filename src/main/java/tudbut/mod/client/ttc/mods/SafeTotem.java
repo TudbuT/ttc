@@ -47,7 +47,7 @@ public class SafeTotem extends Module {
             );
             if(slot == null)
                 return;
-            InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT);
+            safeInventorySwap(slot, InventoryUtils.OFFHAND_SLOT);
         }
     }
     
