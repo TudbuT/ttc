@@ -38,10 +38,18 @@ public class Team extends Module {
             tpaHere = !tpaHere;
             text.set("Accept /tpahere: " + tpaHere);
         }));
-        subButtons.add(new GuiTTC.Button("Send /tpahere", text -> {
+        subButtons.add(new GuiTTC.Button("Send /tpahere (/tpahere)", text -> {
             onChat("", new String[] {
                     "tpahere"
             });
+        }));
+        subButtons.add(new GuiTTC.Button("Send /tpahere (/tpa)", text -> {
+            onChat("", new String[] {
+                    "here"
+            });
+        }));
+        subButtons.add(new GuiTTC.Button("Send DM", text -> {
+            ChatUtils.print("§c§lUse " + TTC.prefix + "team dm <message>");
         }));
         subButtons.add(new GuiTTC.Button("Show list", text -> {
             onChat("", new String[] {
@@ -101,6 +109,48 @@ public class Team extends Module {
                     ChatUtils.print("Done!");
                 });
                 break;
+            case "here":
+                ChatUtils.print("Sending...");
+                ThreadManager.run(() -> {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                        if(names.contains(info.getGameProfile().getName())) {
+                            try {
+                                TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " TTC[0]");
+                                ChatUtils.print("Sent to " + info.getGameProfile().getName());
+                            }
+                            catch (Throwable e) { }
+                            try {
+                                Thread.sleep(1000);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    ChatUtils.print("Done!");
+                });
+                break;
+            case "dm":
+                ChatUtils.print("Sending...");
+                ThreadManager.run(() -> {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                        if(names.contains(info.getGameProfile().getName())) {
+                            try {
+                                TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s.substring("dm ".length()));
+                                ChatUtils.print("Sent to " + info.getGameProfile().getName());
+                            }
+                            catch (Throwable e) { }
+                            try {
+                                Thread.sleep(1000);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    ChatUtils.print("Done!");
+                });
+                break;
             case "settings":
                 ChatUtils.print("TPA: " + (tpa ? "enabled" : "disabled"));
                 ChatUtils.print("TPAhere: " + (tpaHere ? "enabled" : "disabled"));
@@ -127,6 +177,30 @@ public class Team extends Module {
         if(tpaHere && s.contains("has requested that you teleport to them.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
             TTC.player.sendChatMessage("/tpaccept");
         }
+        
+        try {
+            String name = names.stream().filter(
+                    theName ->
+                            s.startsWith(theName + " whispers:") ||
+                            s.startsWith("~" + theName + " whispers:") ||
+                            s.startsWith(theName + " whispers to you:") ||
+                            s.startsWith("~" + theName + " whispers to you:") ||
+                            s.startsWith("From " + theName + ":") ||
+                            s.startsWith("From ~" + theName + ":")
+            ).iterator().next();
+            if(name != null) {
+                String msg = s.split(": ")[1];
+                if (msg.startsWith("TTC")) {
+                    if(msg.substring("TTC".length()).equals("[0]") && tpaHere) {
+                        TTC.player.sendChatMessage("/tpa " + name);
+                        ChatUtils.print("Sent TPA to " + name + ".");
+                    }
+                    return;
+                }
+                
+                ChatUtils.print("§b§lDM from Team member: ");
+            }
+        } catch (Exception ignore) { }
     }
     
     @Override

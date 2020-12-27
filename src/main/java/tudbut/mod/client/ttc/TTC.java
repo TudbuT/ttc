@@ -23,7 +23,7 @@ import java.util.Map;
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.0.1b";
+    public static final String VERSION = "vB1.0.2a";
     
     public static Module[] modules ;
     public static EntityPlayerSP player;
