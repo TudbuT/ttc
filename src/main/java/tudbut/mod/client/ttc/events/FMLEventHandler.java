@@ -15,6 +15,7 @@ import tudbut.mod.client.ttc.mods.ChatColor;
 import tudbut.mod.client.ttc.mods.ChatSuffix;
 import tudbut.mod.client.ttc.mods.TPAParty;
 import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
 
 import java.io.BufferedReader;
@@ -104,21 +105,36 @@ public class FMLEventHandler {
     
     @SubscribeEvent
     public void onJoinServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
-        String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
-        if(s == null) {
-            ChatUtils.print("Unable to check for a new version! Check your connection!");
-        }
-        else if (!s.equals(TTC.VERSION)) {
-            ChatUtils.print(
-                    "§a§lA new TTC version was found! Current: " +
-                    TTC.VERSION +
-                    ", New: " +
-                    s +
-                    "! Please consider updating at " +
-                    "https://github.com/TudbuT/ttc/releases/tag/" +
-                    s
-            );
-        }
+        ThreadManager.run(() -> {
+            while (TTC.mc.world != null) {
+                try {
+                    Thread.sleep(10000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
+                if (s == null) {
+                    ChatUtils.print("Unable to check for a new version! Check your connection!");
+                } else if (!s.equals(TTC.VERSION)) {
+                    ChatUtils.print(
+                            "§a§lA new TTC version was found! Current: " +
+                            TTC.VERSION +
+                            ", New: " +
+                            s +
+                            "! Please consider updating at " +
+                            "https://github.com/TudbuT/ttc/releases/tag/" +
+                            s
+                    );
+                }
+                try {
+                    Thread.sleep(10000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
     
     @SubscribeEvent
