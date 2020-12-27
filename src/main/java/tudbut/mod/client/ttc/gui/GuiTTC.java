@@ -68,25 +68,31 @@ public class GuiTTC extends GuiScreen {
     }
     
     private void resetButtons() {
-        for (int x = 0; x < TTC.modules.length; x++) {
-            for (int y = 0; y < 5 && y + (x * 5) < TTC.modules.length; y++) {
-                int r = y + (x * 5);
-                Button b = new Button(
-                        10 + (210 * x), 10 + (y * 40), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
-                        (text) -> {
-                            if(TTC.modules[r].enabled = !TTC.modules[r].enabled)
-                                TTC.modules[r].onEnable();
-                            else
-                                TTC.modules[r].onDisable();
-                    
-                        }, TTC.modules[r]
-                );
-        
-                buttons[r] = b;
-            }
+        System.out.println("Resetting buttons on ClickGUI");
+        for (int i = 0, j = 0; i < TTC.modules.length; i++) {
+            int x = j / 6;
+            int y = j - x * 6;
+            
+            if (!TTC.modules[i].displayOnClickGUI())
+                continue;
+    
+            int r = i;
+            Button b = new Button(
+                    10 + (210 * x), 10 + (y * 40), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
+                    (text) -> {
+                        if (TTC.modules[r].enabled = !TTC.modules[r].enabled)
+                            TTC.modules[r].onEnable();
+                        else
+                            TTC.modules[r].onDisable();
+                
+                    }, TTC.modules[i]
+            );
+    
+            buttons[i] = b;
+            
+            j++;
         }
     }
-    
     
     private void updateButtons() {
         while(buttons == null) {
@@ -100,9 +106,8 @@ public class GuiTTC extends GuiScreen {
                 resetButtons();
         }
         for (int i = 0; i < TTC.modules.length; i++) {
-            if(buttons[i] == null)
-                return;
-            buttons[i].text.set(TTC.modules[i].getClass().getSimpleName() + ": " + TTC.modules[i].enabled);
+            if(buttons[i] != null)
+                buttons[i].text.set(TTC.modules[i].getClass().getSimpleName() + ": " + TTC.modules[i].enabled);
         }
     }
     
@@ -169,6 +174,7 @@ public class GuiTTC extends GuiScreen {
         public int color = 0x8000ff00;
         public Module module;
         private Button[] subButtons;
+        private boolean display = true;
         
         public Button(String text, ButtonClickEvent event) {
             this(0, 0, text, event, null);
@@ -181,6 +187,7 @@ public class GuiTTC extends GuiScreen {
                     y = module.clickGuiY;
                 }
                 subButtons = module.subButtons.toArray(new Button[0]);
+                display = module.displayOnClickGUI();
             }
             this.x = x;
             this.y = y;
@@ -190,6 +197,9 @@ public class GuiTTC extends GuiScreen {
         }
         
         public void draw(GuiTTC gui) {
+            if(!display)
+                return;
+            
             drawRect(x, y, x + 200, y + 30, color);
             gui.drawString(gui.fontRenderer, text.get(), x + 10, y + 11, 0xffffffff);
     

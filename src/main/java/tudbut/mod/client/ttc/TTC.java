@@ -23,9 +23,9 @@ import java.util.Map;
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.0.2a";
+    public static final String VERSION = "vB1.0.3a";
     
-    public static Module[] modules ;
+    public static Module[] modules;
     public static EntityPlayerSP player;
     public static Minecraft mc = Minecraft.getMinecraft();
     public static FileRW file;
@@ -69,13 +69,10 @@ public class TTC {
                 new AutoConfig(),
                 new ChatColor(),
                 new Trap(),
-                new LeavePos(),
+                new PlayerLog(),
                 new ClickGUI(),
+                new DM(),
         };
-    
-        for (Module module : modules) {
-            module.cfg = Utils.stringToMap(module.saveConfig());
-        }
         
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
         

@@ -10,8 +10,18 @@ ClickGUI opens with COMMA
 
 commands:
 
-`,t <module>` where `<module>` is a module
+`,t <module>` 
+Toggle a module
+where `<module>` is a module.
 
-`,say <anything...>` where `<anything>` is anything.
+`,dm <message>`
+DM everyone on the server
+where `<message>` is any message.
 
-`,prefix <prefix>` where `<prefix>` is anything.
+`,say <anything...>` 
+Say something, that would be blocked normally
+where `<anything>` is anything.
+
+`,prefix <prefix>` 
+Set the prefix of commands
+where `<prefix>` is anything.

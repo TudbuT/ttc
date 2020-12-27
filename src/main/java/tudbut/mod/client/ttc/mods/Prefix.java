@@ -8,6 +8,10 @@ public class Prefix extends Module {
         enabled = true;
     }
     
+    public boolean displayOnClickGUI() {
+        return false;
+    }
+    
     @Override
     public void onTick() {
     }

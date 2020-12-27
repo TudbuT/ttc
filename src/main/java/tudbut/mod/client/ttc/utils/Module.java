@@ -16,6 +16,11 @@ public abstract class Module {
     public boolean defaultEnabled() {
         return false;
     }
+    
+    public boolean displayOnClickGUI() {
+        return true;
+    }
+    
     public boolean enabled = defaultEnabled();
     public Integer clickGuiX;
     public Integer clickGuiY;
@@ -53,6 +58,8 @@ public abstract class Module {
         if(cfg.containsKey("cgx") && cfg.containsKey("cgy")) {
             clickGuiX = Integer.parseInt(cfg.get("cgx"));
             clickGuiY = Integer.parseInt(cfg.get("cgy"));
+            System.out.println(clickGuiX);
+            System.out.println(clickGuiY);
         }
         
         loadConfig();

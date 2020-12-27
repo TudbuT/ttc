@@ -38,9 +38,9 @@ public class AutoTotem extends Module {
                 orig_min_count = min_count = 12;
             text.set("Count: " + orig_min_count);
         }));
-        subButtons.add(new GuiTTC.Button(0, 0, "Actual count: " + min_count, text -> {
+        subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
         
-        }, null));
+        }));
     }
     
     public void updateButtons() {

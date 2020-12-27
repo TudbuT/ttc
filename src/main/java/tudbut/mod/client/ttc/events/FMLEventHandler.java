@@ -15,6 +15,7 @@ import tudbut.mod.client.ttc.mods.ChatColor;
 import tudbut.mod.client.ttc.mods.ChatSuffix;
 import tudbut.mod.client.ttc.mods.TPAParty;
 import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -53,7 +54,18 @@ public class FMLEventHandler {
                     TTC.player.sendChatMessage(s.substring("say ".length()));
                     ChatUtils.history(event.getOriginalMessage());
                 }
-    
+                
+                if(s.equals("help")) {
+                    String help = Utils.removeNewlines(Utils.getRemote("help.chat.txt", false));
+                    if(help == null) {
+                        ChatUtils.print("Unable retrieve help message! Check your connection!");
+                    }
+                    else {
+                        help = help.replaceAll("%p", TTC.prefix);
+                        ChatUtils.print(help);
+                    }
+                }
+                
                 for (int i = 0; i < TTC.modules.length; i++) {
                     if(TTC.modules[i].enabled)
                         if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
@@ -64,7 +76,7 @@ public class FMLEventHandler {
             } catch (Exception e) {
                 ChatUtils.print("Command failed!");
             }
-    
+            
         }
         else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
@@ -92,33 +104,20 @@ public class FMLEventHandler {
     
     @SubscribeEvent
     public void onJoinServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
-        try {
-            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/ttc/master/version.txt");
-            InputStream stream = updateCheckURL.openConnection().getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-            
-            String s;
-            StringBuilder builder = new StringBuilder();
-            while ((s = reader.readLine()) != null) {
-                builder.append(s);
-            }
-            
-            s = builder.toString();
-            if (!s.equals(TTC.VERSION)) {
-                ChatUtils.print(
-                        "§a§lA new TTC version was found! Current: " +
-                        TTC.VERSION +
-                        ", New: " +
-                        s +
-                        "! Please consider updating at " +
-                        "https://github.com/TudbuT/ttc/releases/tag/" +
-                        s
-                );
-            }
+        String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
+        if(s == null) {
+            ChatUtils.print("Unable to check for a new version! Check your connection!");
         }
-        catch (IOException e) {
-            ChatUtils.print("Unable to check for a new version!");
-            e.printStackTrace();
+        else if (!s.equals(TTC.VERSION)) {
+            ChatUtils.print(
+                    "§a§lA new TTC version was found! Current: " +
+                    TTC.VERSION +
+                    ", New: " +
+                    s +
+                    "! Please consider updating at " +
+                    "https://github.com/TudbuT/ttc/releases/tag/" +
+                    s
+            );
         }
     }
     

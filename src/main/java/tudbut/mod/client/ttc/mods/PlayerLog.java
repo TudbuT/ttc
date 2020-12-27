@@ -7,9 +7,14 @@ import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
 
-public class LeavePos extends Module {
+public class PlayerLog extends Module {
     NetworkPlayerInfo[] playersLastTick;
     EntityPlayer[] visiblePlayersLastTick;
+    
+    @Override
+    public boolean defaultEnabled() {
+        return true;
+    }
     
     @Override
     public void onTick() {

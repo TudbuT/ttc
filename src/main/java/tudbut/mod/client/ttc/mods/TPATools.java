@@ -11,7 +11,7 @@ import tudbut.mod.client.ttc.utils.ThreadManager;
 import java.util.Objects;
 
 public class TPATools extends Module {
-    private int delay = 1000;
+    public int delay = 1000;
     private boolean stop = false;
     
     static TPATools instance;

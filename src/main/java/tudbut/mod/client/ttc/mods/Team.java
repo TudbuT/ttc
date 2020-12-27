@@ -99,7 +99,7 @@ public class Team extends Module {
                             }
                             catch (Throwable e) { }
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(TPATools.getInstance().delay);
                             }
                             catch (Exception e) {
                                 e.printStackTrace();
@@ -120,7 +120,7 @@ public class Team extends Module {
                             }
                             catch (Throwable e) { }
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(TPATools.getInstance().delay);
                             }
                             catch (Exception e) {
                                 e.printStackTrace();
@@ -141,7 +141,7 @@ public class Team extends Module {
                             }
                             catch (Throwable e) { }
                             try {
-                                Thread.sleep(1000);
+                                Thread.sleep(TPATools.getInstance().delay);
                             }
                             catch (Exception e) {
                                 e.printStackTrace();
