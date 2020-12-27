@@ -96,14 +96,9 @@ public class Team extends Module {
                             try {
                                 TTC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                                 ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                            }
-                            catch (Throwable e) { }
-                            try {
                                 Thread.sleep(TPATools.getInstance().delay);
                             }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            catch (Throwable ignore) { }
                         }
                     }
                     ChatUtils.print("Done!");
@@ -117,14 +112,9 @@ public class Team extends Module {
                             try {
                                 TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " TTC[0]");
                                 ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                            }
-                            catch (Throwable e) { }
-                            try {
                                 Thread.sleep(TPATools.getInstance().delay);
                             }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            catch (Throwable ignore) { }
                         }
                     }
                     ChatUtils.print("Done!");
@@ -138,14 +128,9 @@ public class Team extends Module {
                             try {
                                 TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s.substring("dm ".length()));
                                 ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                            }
-                            catch (Throwable e) { }
-                            try {
                                 Thread.sleep(TPATools.getInstance().delay);
                             }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            catch (Throwable ignore) { }
                         }
                     }
                     ChatUtils.print("Done!");

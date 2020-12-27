@@ -34,14 +34,9 @@ public class DM extends Module {
                 try {
                     TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s);
                     ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                }
-                catch (Throwable e) { }
-                try {
                     Thread.sleep(TPATools.getInstance().delay);
                 }
-                catch (Exception e) {
-                    e.printStackTrace();
-                }
+                catch (Throwable ignore) { }
             }
             ChatUtils.print("Done!");
         });

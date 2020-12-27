@@ -1,9 +1,15 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC client
 §k||||||||||||||||||||||||||||||||
+§avB1.0.3e
+§7BETA
+1.0.3
+§8e
 §a§lHelp
 
 §aCurrent prefix: %p
+
+§aClickGUI opens with: COMMA (,)
 
 §aCommands:
 

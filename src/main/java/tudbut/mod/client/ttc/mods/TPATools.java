@@ -88,14 +88,9 @@ public class TPATools extends Module {
                     try {
                         TTC.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                    }
-                    catch (Throwable e) { }
-                    try {
                         Thread.sleep(delay);
                     }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    catch (Throwable ignore) { }
                 }
                 ChatUtils.print("Done!");
             });
@@ -109,14 +104,9 @@ public class TPATools extends Module {
                     try {
                         TTC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
+                        Thread.sleep(TPATools.getInstance().delay);
                     }
-                    catch (Throwable e) { }
-                    try {
-                        Thread.sleep(delay);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    catch (Throwable ignore) { }
                 }
                 ChatUtils.print("Done!");
             });
