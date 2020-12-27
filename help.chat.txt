@@ -1,0 +1,26 @@
+§k||||||||||||||||
+§k|||§r§c§lTTC client|||
+§k||||||||||||||||
+§a§lHelp
+
+§aCurrent prefix: %p
+
+§aCommands:
+
+§d%pt <module>
+§bToggle a module
+§7where <module> is a module.
+
+§d%pdm <message>
+§bDM everyone on the server
+§7where <message> is any message.
+
+§d%psay <anything...>
+§bSay something, that would be blocked normally
+§7where <anything> is anything.
+
+§d%pprefix <prefix>
+§bSet the prefix of commands
+§7where <prefix> is anything.
+
+§k||||||||||||||||
