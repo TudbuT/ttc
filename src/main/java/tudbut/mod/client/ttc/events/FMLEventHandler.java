@@ -57,7 +57,7 @@ public class FMLEventHandler {
                 }
                 
                 if(s.equals("help")) {
-                    String help = Utils.removeNewlines(Utils.getRemote("help.chat.txt", false));
+                    String help = Utils.getRemote("help.chat.txt", false);
                     if(help == null) {
                         ChatUtils.print("Unable retrieve help message! Check your connection!");
                     }
@@ -106,13 +106,13 @@ public class FMLEventHandler {
     @SubscribeEvent
     public void onJoinServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         ThreadManager.run(() -> {
+            try {
+                Thread.sleep(10000);
+            }
+            catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             while (TTC.mc.world != null) {
-                try {
-                    Thread.sleep(10000);
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
                 if (s == null) {
                     ChatUtils.print("Unable to check for a new version! Check your connection!");
@@ -128,7 +128,7 @@ public class FMLEventHandler {
                     );
                 }
                 try {
-                    Thread.sleep(10000);
+                    Thread.sleep(20000);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();

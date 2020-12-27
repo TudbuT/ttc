@@ -27,7 +27,7 @@ public class Utils {
             String s;
             StringBuilder builder = new StringBuilder();
             while ((s = reader.readLine()) != null) {
-                builder.append(s + "\n");
+                builder.append(s).append("\n");
             }
     
             return builder.toString();

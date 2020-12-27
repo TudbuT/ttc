@@ -1,6 +1,6 @@
-§k||||||||||||||||
-§k|||§r§c§lTTC client|||
-§k||||||||||||||||
+§k||||||||||||||||||||||||||||||||
+§c§lTTC client
+§k||||||||||||||||||||||||||||||||
 §a§lHelp
 
 §aCurrent prefix: %p
@@ -23,4 +23,4 @@
 §bSet the prefix of commands
 §7where <prefix> is anything.
 
-§k||||||||||||||||
+§k||||||||||||||||||||||||||||||||
