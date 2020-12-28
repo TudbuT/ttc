@@ -1,10 +1,10 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC client
 §k||||||||||||||||||||||||||||||||
-§avB1.0.3e
+§avB1.0.5a
 BETA
-§71.0.4
-§8b
+§71.0.5
+§8a
 §a§lHelp
 
 §aCurrent prefix: %p
@@ -18,7 +18,11 @@ BETA
 §7where <module> is a module.
 
 §d%pdm <users...>
-§bSet the users in the conversation
+§bSet the users in the conversation (DM module)
+§7where <users...> are usernames
+
+§d%pdmchat <users...>
+§bSet the users in the conversation (DMChat module)
 §7where <users...> are usernames
 
 §d%pdmall <message>

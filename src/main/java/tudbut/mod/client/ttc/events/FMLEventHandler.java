@@ -11,10 +11,7 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.ttc.TTC;
-import tudbut.mod.client.ttc.mods.ChatColor;
-import tudbut.mod.client.ttc.mods.ChatSuffix;
-import tudbut.mod.client.ttc.mods.DM;
-import tudbut.mod.client.ttc.mods.TPAParty;
+import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
@@ -95,6 +92,22 @@ public class FMLEventHandler {
                 }
             });
         }
+        else if(DMChat.getInstance().enabled) {
+            event.setCanceled(true);
+            ChatUtils.history(event.getOriginalMessage());
+            ThreadManager.run(() -> {
+                ChatUtils.print("<" + TTC.player.getName() + "> " + event.getOriginalMessage());
+                for (int i = 0; i < DMChat.getInstance().users.length; i++) {
+                    TTC.player.sendChatMessage("/tell " + DMChat.getInstance().users[i] + " " + event.getOriginalMessage());
+                    try {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+        }
         else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
             TTC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + (chatHelper == 0 && ChatSuffix.getInstance().enabled ? " ›TTC‹" : ""));
@@ -117,6 +130,8 @@ public class FMLEventHandler {
             if(TTC.modules[i].enabled)
                 TTC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText());
         }
+        if(DMChat.getInstance().enabled)
+            event.setCanceled(true);
     }
     
     @SubscribeEvent
