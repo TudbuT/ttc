@@ -23,7 +23,7 @@ import java.util.Map;
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.0.4a";
+    public static final String VERSION = "vB1.0.4b";
     
     public static Module[] modules;
     public static EntityPlayerSP player;
@@ -70,9 +70,9 @@ public class TTC {
                 new ChatColor(),
                 new Trap(),
                 new PlayerLog(),
-                new ClickGUI(),
                 new DMAll(),
                 new DM(),
+                new ClickGUI(),
         };
         
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());

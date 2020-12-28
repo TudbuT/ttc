@@ -3,8 +3,8 @@
 §k||||||||||||||||||||||||||||||||
 §avB1.0.3e
 BETA
-§71.0.3
-§8e
+§71.0.4
+§8b
 §a§lHelp
 
 §aCurrent prefix: %p
@@ -32,5 +32,9 @@ BETA
 §d%pprefix <prefix>
 §bSet the prefix of commands
 §7where <prefix> is anything.
+
+§d%pteam <add/remove> <username>
+§bAdd/remove someone from your team
+§7where <username> is any username.
 
 §k||||||||||||||||||||||||||||||||
