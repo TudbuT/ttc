@@ -23,7 +23,7 @@ import java.util.Map;
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.0.3e";
+    public static final String VERSION = "vB1.0.4a";
     
     public static Module[] modules;
     public static EntityPlayerSP player;
@@ -71,6 +71,7 @@ public class TTC {
                 new Trap(),
                 new PlayerLog(),
                 new ClickGUI(),
+                new DMAll(),
                 new DM(),
         };
         
@@ -107,6 +108,7 @@ public class TTC {
                         cfg.put("prefix", prefix);
         
                         file.setContent(Utils.mapToString(cfg));
+                        System.out.println("Saved config");
                     }
                     catch (IOException e) {
                         e.printStackTrace();

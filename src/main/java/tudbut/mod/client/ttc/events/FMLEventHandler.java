@@ -13,6 +13,7 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.ChatColor;
 import tudbut.mod.client.ttc.mods.ChatSuffix;
+import tudbut.mod.client.ttc.mods.DM;
 import tudbut.mod.client.ttc.mods.TPAParty;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.ThreadManager;
@@ -78,6 +79,21 @@ public class FMLEventHandler {
                 ChatUtils.print("Command failed!");
             }
             
+        }
+        else if(DM.getInstance().enabled) {
+            event.setCanceled(true);
+            ChatUtils.history(event.getOriginalMessage());
+            ThreadManager.run(() -> {
+                for (int i = 0; i < DM.getInstance().users.length; i++) {
+                    TTC.player.sendChatMessage("/tell " + DM.getInstance().users[i] + " " + event.getOriginalMessage());
+                    try {
+                        Thread.sleep(1000);
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
         else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);

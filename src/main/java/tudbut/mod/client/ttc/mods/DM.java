@@ -1,44 +1,71 @@
 package tudbut.mod.client.ttc.mods;
 
-import net.minecraft.client.network.NetworkPlayerInfo;
-import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
-import tudbut.mod.client.ttc.utils.ThreadManager;
 
-import java.util.Objects;
+import java.util.Arrays;
 
 public class DM extends Module {
+    public static DM instance;
     {
-        enabled = true;
+        instance = this;
     }
     
-    public boolean displayOnClickGUI() {
-        return false;
+    public static DM getInstance() {
+        return instance;
     }
+    
+    public String[] users = new String[0];
     
     @Override
     public void onTick() {
     }
     
     @Override
-    public void onEveryTick() {
-        enabled = true;
+    public void onChat(String s, String[] args) {
+        users = args;
     }
     
     @Override
-    public void onChat(String s, String[] args) {
-        ChatUtils.print("Sending...");
-        ThreadManager.run(() -> {
-            for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
-                try {
-                    TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s);
-                    ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                    Thread.sleep(TPATools.getInstance().delay);
-                }
-                catch (Throwable ignore) { }
+    public void onServerChat(String s, String formatted) {
+        try {
+            String name = Arrays.stream(users).filter(
+                    theName ->
+                            s.startsWith(theName + " whispers:") ||
+                            s.startsWith("~" + theName + " whispers:") ||
+                            s.startsWith(theName + " whispers to you:") ||
+                            s.startsWith("~" + theName + " whispers to you:") ||
+                            s.startsWith("From " + theName + ":") ||
+                            s.startsWith("From ~" + theName + ":")
+            ).iterator().next();
+            if(name != null) {
+                ChatUtils.print("§b§lDM from conversation partner: ");
             }
-            ChatUtils.print("Done!");
-        });
+        } catch (Exception ignore) { }
+    }
+    
+    @Override
+    public void loadConfig() {
+        users = cfg.get("users").split(" ");
+    }
+    
+    @Override
+    public String saveConfig() {
+        boolean b = enabled;
+        enabled = false;
+        
+        return super.saveConfig() + ((enabled = b) ? "" : "");
+    }
+    
+    @Override
+    public void updateConfig() {
+        StringBuilder s = new StringBuilder();
+        for (int i = 0; i < users.length; i++) {
+            s.append(users[i]);
+            s.append(" ");
+        }
+        if(s.length() >= 1)
+            s.deleteCharAt(s.length() - 1);
+        cfg.put("users", s.toString());
     }
 }

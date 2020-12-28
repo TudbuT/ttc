@@ -2,8 +2,8 @@
 §c§lTTC client
 §k||||||||||||||||||||||||||||||||
 §avB1.0.3e
-§7BETA
-1.0.3
+BETA
+§71.0.3
 §8e
 §a§lHelp
 
@@ -17,7 +17,11 @@
 §bToggle a module
 §7where <module> is a module.
 
-§d%pdm <message>
+§d%pdm <users...>
+§bSet the users in the conversation
+§7where <users...> are usernames
+
+§d%pdmall <message>
 §bDM everyone on the server
 §7where <message> is any message.
 
