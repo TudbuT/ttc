@@ -190,6 +190,7 @@ public class FMLEventHandler {
         EntityPlayerSP player = TTC.player;
         if(player == null)
             return;
+        ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
             if(TTC.modules[i].enabled)
                 try {

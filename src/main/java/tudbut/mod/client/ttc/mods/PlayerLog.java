@@ -2,10 +2,15 @@ package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.Vec3d;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.events.ParticleLoop;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
+
+import java.util.Date;
 
 public class PlayerLog extends Module {
     NetworkPlayerInfo[] playersLastTick;
@@ -51,6 +56,46 @@ public class PlayerLog extends Module {
                                             ((int) (vec.z * 100)) / 100 + " " +
                                             "!"
                                     );
+                                    long time = new Date().getTime() + 30 * 1000;
+                                    final int[] k = {-1};
+                                    ParticleLoop.register(new ParticleLoop.Particle() {
+                                        @Override
+                                        public boolean summon() {
+                                            return enabled && new Date().getTime() < time;
+                                        }
+    
+                                        @Override
+                                        public EnumParticleTypes getType() {
+                                            return EnumParticleTypes.FLAME;
+                                        }
+    
+                                        @Override
+                                        public Vec3d getPosition() {
+                                            k[0]++;
+                                            if(k[0] > 7)
+                                                k[0] = 0;
+                                            switch (k[0]) {
+                                                case 0:
+                                                    return vec.addVector(-0.3, 0.0, -0.3);
+                                                case 1:
+                                                    return vec.addVector(+0.3, 0.0, -0.3);
+                                                case 2:
+                                                    return vec.addVector(-0.3, 0.0, +0.3);
+                                                case 3:
+                                                    return vec.addVector(+0.3, 0.0, +0.3);
+                                                case 4:
+                                                    return vec.addVector(-0.3, 1.8, -0.3);
+                                                case 5:
+                                                    return vec.addVector(+0.3, 1.8, -0.3);
+                                                case 6:
+                                                    return vec.addVector(-0.3, 1.8, +0.3);
+                                                case 7:
+                                                    return vec.addVector(+0.3, 1.8, +0.3);
+                                                    
+                                            }
+                                            return vec;
+                                        }
+                                    });
                                 }
                             }
                         }
