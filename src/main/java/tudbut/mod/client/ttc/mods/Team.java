@@ -91,7 +91,7 @@ public class Team extends Module {
             case "tpahere":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
-                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                         if(names.contains(info.getGameProfile().getName())) {
                             try {
                                 TTC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
@@ -107,7 +107,7 @@ public class Team extends Module {
             case "here":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
-                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                         if(names.contains(info.getGameProfile().getName())) {
                             try {
                                 TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " TTC[0]");
@@ -123,7 +123,7 @@ public class Team extends Module {
             case "dm":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
-                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                         if(names.contains(info.getGameProfile().getName())) {
                             try {
                                 TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s.substring("dm ".length()));

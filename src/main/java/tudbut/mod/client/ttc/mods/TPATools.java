@@ -82,7 +82,7 @@ public class TPATools extends Module {
         if(s.equalsIgnoreCase("tpa")) {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
-                for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                     if(stop)
                         return;
                     try {
@@ -98,7 +98,7 @@ public class TPATools extends Module {
         if(s.equalsIgnoreCase("tpahere")) {
             ChatUtils.print("Sending...");
             ThreadManager.run(() -> {
-                for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+                for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                     if(stop)
                         return;
                     try {

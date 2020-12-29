@@ -30,7 +30,7 @@ public class DMAll extends Module {
     public void onChat(String s, String[] args) {
         ChatUtils.print("Sending...");
         ThreadManager.run(() -> {
-            for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap()) {
+            for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                 try {
                     TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s);
                     ChatUtils.print("Sent to " + info.getGameProfile().getName());
