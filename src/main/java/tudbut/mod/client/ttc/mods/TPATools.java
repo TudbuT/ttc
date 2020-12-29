@@ -45,6 +45,7 @@ public class TPATools extends Module {
         }));
         subButtons.add(new GuiTTC.Button("Stop", text -> {
             stop = true;
+            TTC.player.sendChatMessage("/tpacancel");
         
             ThreadManager.run(() -> {
                 text.set("Done");
