@@ -38,6 +38,10 @@ public abstract class Module {
     
     public abstract void onChat(String s, String[] args);
     
+    public void onEveryChat(String s, String[] args) {
+    
+    }
+    
     public void onEnable() {
     
     }

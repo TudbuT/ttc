@@ -66,11 +66,12 @@ public class FMLEventHandler {
                 }
                 
                 for (int i = 0; i < TTC.modules.length; i++) {
-                    if(TTC.modules[i].enabled)
-                        if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
-                            String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
+                    if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
+                        String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
+                        if (TTC.modules[i].enabled)
                             TTC.modules[i].onChat(args, args.split(" "));
-                        }
+                        TTC.modules[i].onEveryChat(args, args.split(" "));
+                    }
                 }
             } catch (Exception e) {
                 ChatUtils.print("Command failed!");

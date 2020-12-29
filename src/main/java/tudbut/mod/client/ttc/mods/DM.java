@@ -22,7 +22,10 @@ public class DM extends Module {
     }
     
     @Override
-    public void onChat(String s, String[] args) {
+    public void onChat(String s, String[] args) { }
+    
+    @Override
+    public void onEveryChat(String s, String[] args) {
         users = args;
     }
     
