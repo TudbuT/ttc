@@ -3,7 +3,7 @@
   "modid": "ttc",
   "name": "TTC Client",
   "description": "",
-  "version": "vB1.2.0b",
+  "version": "vB1.2.0c",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",

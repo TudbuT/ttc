@@ -191,18 +191,22 @@ public class Team extends Module {
             if(name != null) {
                 String msg = s.split(": ")[1];
                 if (msg.startsWith("TTC")) {
-                    if(msg.substring("TTC".length()).equals("[0]") && tpaHere) {
+                    if(msg.equals("TTC[0]") && tpaHere) {
                         TTC.player.sendChatMessage("/tpa " + name);
                         ChatUtils.print("Sent TPA to " + name + ".");
                     }
-                    if(msg.substring("TTC".length()).equals("[1]") && tpa) {
+                    if(msg.equals("TTC[1]") && tpa) {
                         TTC.player.sendChatMessage("/tpahere " + name);
                         ChatUtils.print("Sent TPAHere to " + name + ".");
+                    }
+                    if(msg.equals("TTC[3]")) {
+                        ChatUtils.print("§c§lYou have been removed from the Team of " + name + "! \n" +
+                                        "§cRun ,team add " + name + " to remove them as well!");
                     }
                     return true;
                 }
                 
-                ChatUtils.print("§b§lDM from Team member: " + s.substring(s.indexOf(":") + 1));
+                ChatUtils.print("§b§lDM from Team member: " + s.substring(s.indexOf(": ") + 2));
                 return true;
             }
             for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
@@ -216,13 +220,9 @@ public class Team extends Module {
                     try {
                         String msg = s.split(": ")[1];
                         if (msg.startsWith("TTC")) {
-                            if(msg.substring("TTC".length()).equals("[2]")) {
+                            if(msg.equals("TTC[2]")) {
                                 ChatUtils.print("§c§lYou have been added to the Team of " + theName + "! \n" +
                                                 "§cRun ,team add " + theName + " to add them as well!");
-                            }
-                            if(msg.substring("TTC".length()).equals("[3]")) {
-                                ChatUtils.print("§c§lYou have been removed from the Team of " + theName + "! \n" +
-                                                "§cRun ,team add " + theName + " to remove them as well!");
                             }
                             return true;
                         }

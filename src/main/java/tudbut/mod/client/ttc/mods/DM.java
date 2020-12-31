@@ -42,7 +42,7 @@ public class DM extends Module {
                             s.startsWith("From ~" + theName + ":")
             ).iterator().next();
             if(name != null) {
-                ChatUtils.print("§b§lDM from conversation partner: " + s.substring(s.indexOf(":") + 1));
+                ChatUtils.print("§b§lDM from conversation partner: §r<" + name + "> " + s.substring(s.indexOf(": ") + 2));
                 return true;
             }
         } catch (Exception ignore) { }
