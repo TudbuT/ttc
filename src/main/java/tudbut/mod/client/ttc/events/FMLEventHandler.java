@@ -1,6 +1,7 @@
 package tudbut.mod.client.ttc.events;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.ClientChatEvent;
@@ -172,15 +173,17 @@ public class FMLEventHandler {
     @SubscribeEvent
     public void onJoin(EntityJoinWorldEvent event) {
         TTC.player = Minecraft.getMinecraft().player;
+        TTC.world = Minecraft.getMinecraft().world;
     }
     
     @SubscribeEvent
     public void onDeath(LivingDeathEvent event) {
         try {
-            if (event.getEntity().getName().equals(TTC.player.getName()) && event.getEntity() instanceof EntityPlayer) {
+            if (event.getEntity().getName().equals(TTC.player.getName()) && EntityPlayer.class.isAssignableFrom(event.getEntity().getClass())) {
                 TPAParty.getInstance().enabled = false;
                 TPAParty.getInstance().onDisable();
                 TTC.player = Minecraft.getMinecraft().player;
+                TTC.world = Minecraft.getMinecraft().world;
                 ChatUtils.print("§c§l§k|||§c§l You died at " + event.getEntity().getPosition());
             }
         } catch (Exception ignore) { }

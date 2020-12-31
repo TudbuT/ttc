@@ -2,6 +2,7 @@ package tudbut.mod.client.ttc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -23,10 +24,11 @@ import java.util.Map;
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.1.2a";
+    public static final String VERSION = "vB1.1.2b";
     
     public static Module[] modules;
     public static EntityPlayerSP player;
+    public static World world;
     public static Minecraft mc = Minecraft.getMinecraft();
     public static FileRW file;
     public static Map<String, String> cfg;
