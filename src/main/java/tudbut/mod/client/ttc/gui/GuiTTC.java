@@ -1,6 +1,9 @@
 package tudbut.mod.client.ttc.gui;
 
+import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import org.lwjgl.input.Cursor;
+import org.lwjgl.input.Mouse;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.ClickGUI;
 import tudbut.mod.client.ttc.utils.Module;
@@ -35,10 +38,14 @@ public class GuiTTC extends GuiScreen {
     public void initGui()
     {
         mc.mouseHelper.ungrabMouseCursor();
+        while(Mouse.isGrabbed())
+            Mouse.setGrabbed(false);
         buttons = new Button[256];
         
         resetButtons();
         //this.buttonList.add(new GuiButton(200, this.width / 2 - 100, this.height - 27, I18n.format("gui.done", new Object[0])));
+        super.buttonList.clear();
+        super.buttonList.add(new GuiButton(0, -500, -500, ""));
         super.initGui();
     }
     
@@ -156,10 +163,15 @@ public class GuiTTC extends GuiScreen {
         updateButtons();
         
         this.drawDefaultBackground();
-    
+        
+        
         for (int i = 0; i < buttons.length; i++) {
             if(buttons[i] != null)
                 buttons[i].draw(this);
+        }
+        
+        if(ClickGUI.getInstance().mouseFix) {
+            drawRect(mouseX - 2, mouseY - 2, mouseX + 2, mouseY + 2, 0xffffffff);
         }
         
         super.drawScreen(mouseX, mouseY, partialTicks);

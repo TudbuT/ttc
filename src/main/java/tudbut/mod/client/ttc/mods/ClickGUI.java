@@ -1,5 +1,6 @@
 package tudbut.mod.client.ttc.mods;
 
+import net.minecraft.client.gui.GuiIngameMenu;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
@@ -10,6 +11,7 @@ import tudbut.mod.client.ttc.utils.ThreadManager;
 public class ClickGUI extends Module {
     
     static ClickGUI instance;
+    public boolean mouseFix = false;
     
     public static ClickGUI getInstance() {
         return instance;
@@ -30,6 +32,14 @@ public class ClickGUI extends Module {
             enabled = true;
             onEnable();
         }));
+        subButtons.add(new GuiTTC.Button("Mouse fix: " + mouseFix, text -> {
+            mouseFix = !mouseFix;
+            text.set("Mouse fix: " + mouseFix);
+        }));
+    }
+    
+    private void updateButtons() {
+        subButtons.get(1).text.set("Mouse fix: " + mouseFix);
     }
     
     @Override
@@ -69,6 +79,18 @@ public class ClickGUI extends Module {
     @Override
     public void onChat(String s, String[] args) {
     
+    }
+    
+    @Override
+    public void loadConfig() {
+        mouseFix = Boolean.getBoolean(cfg.get("mouseFix"));
+        
+        updateButtons();
+    }
+    
+    @Override
+    public void updateConfig() {
+        cfg.put("mouseFix", String.valueOf(mouseFix));
     }
     
     @Override
