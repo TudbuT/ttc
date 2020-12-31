@@ -205,8 +205,8 @@ public class Team extends Module {
                     }
                     return true;
                 }
-                
-                ChatUtils.print("§b§lDM from Team member: " + s.substring(s.indexOf(": ") + 2));
+    
+                ChatUtils.print("§b§lDM from team member: §r<" + name + "> " + s.substring(s.indexOf(": ") + 2));
                 return true;
             }
             for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {

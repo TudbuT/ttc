@@ -24,7 +24,7 @@ import java.util.Map;
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.2.0d";
+    public static final String VERSION = "vB1.2.0e";
     
     public static Module[] modules;
     public static EntityPlayerSP player;
