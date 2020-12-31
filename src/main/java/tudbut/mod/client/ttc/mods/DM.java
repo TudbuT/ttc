@@ -30,7 +30,7 @@ public class DM extends Module {
     }
     
     @Override
-    public void onServerChat(String s, String formatted) {
+    public boolean onServerChat(String s, String formatted) {
         try {
             String name = Arrays.stream(users).filter(
                     theName ->
@@ -42,9 +42,11 @@ public class DM extends Module {
                             s.startsWith("From ~" + theName + ":")
             ).iterator().next();
             if(name != null) {
-                ChatUtils.print("§b§lDM from conversation partner: ");
+                ChatUtils.print("§b§lDM from conversation partner: " + s.substring(s.indexOf(":") + 1));
+                return true;
             }
         } catch (Exception ignore) { }
+        return false;
     }
     
     @Override

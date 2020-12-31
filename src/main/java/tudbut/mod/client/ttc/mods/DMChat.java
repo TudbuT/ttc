@@ -30,7 +30,7 @@ public class DMChat extends Module {
     }
     
     @Override
-    public void onServerChat(String s, String formatted) {
+    public boolean onServerChat(String s, String formatted) {
         try {
             String name = Arrays.stream(users).filter(
                     theName ->
@@ -45,6 +45,7 @@ public class DMChat extends Module {
                 ChatUtils.print("<" + name + "> " + s.substring(s.indexOf(": ") + 2));
             }
         } catch (Exception ignore) { }
+        return true;
     }
     
     @Override

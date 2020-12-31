@@ -26,9 +26,10 @@ public class TPAParty extends Module {
     }
     
     @Override
-    public void onServerChat(String s, String formatted) {
+    public boolean onServerChat(String s, String formatted) {
         if(s.contains("has requested to teleport to you.") && !s.startsWith("<")) {
             TTC.player.sendChatMessage("/tpaccept");
         }
+        return false;
     }
 }

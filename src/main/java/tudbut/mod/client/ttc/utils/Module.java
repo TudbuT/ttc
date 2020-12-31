@@ -50,8 +50,8 @@ public abstract class Module {
     
     }
     
-    public void onServerChat(String s, String formatted) {
-    
+    public boolean onServerChat(String s, String formatted) {
+        return true;
     }
     
     public void loadConfig(Map<String, String> map) {

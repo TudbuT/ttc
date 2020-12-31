@@ -75,10 +75,12 @@ public class Team extends Module {
                 names.remove(args[1]);
                 names.add(args[1]);
                 ChatUtils.print("Done!");
+                TTC.player.sendChatMessage("/tell " + args[1] + " TTC[2]");
                 break;
             case "remove":
                 names.remove(args[1]);
                 ChatUtils.print("Done!");
+                TTC.player.sendChatMessage("/tell " + args[1] + " TTC[3]");
                 break;
             case "settpa":
                 tpa = Boolean.parseBoolean(args[1]);
@@ -120,6 +122,19 @@ public class Team extends Module {
                     ChatUtils.print("Done!");
                 });
                 break;
+            case "go":
+                ThreadManager.run(() -> {
+                    for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
+                        if(info.getGameProfile().getName().equals(args[1])) {
+                            try {
+                                TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " TTC[1]");
+                            }
+                            catch (Throwable ignore) { }
+                        }
+                    }
+                    ChatUtils.print("Sent!");
+                });
+                break;
             case "dm":
                 ChatUtils.print("Sending...");
                 ThreadManager.run(() -> {
@@ -155,7 +170,7 @@ public class Team extends Module {
     }
     
     @Override
-    public void onServerChat(String s, String formatted) {
+    public boolean onServerChat(String s, String formatted) {
         if(tpa && s.contains("has requested to teleport to you.") && names.stream().anyMatch(name -> s.startsWith(name + " ") || s.startsWith("~" + name + " "))) {
             TTC.player.sendChatMessage("/tpaccept");
         }
@@ -180,12 +195,43 @@ public class Team extends Module {
                         TTC.player.sendChatMessage("/tpa " + name);
                         ChatUtils.print("Sent TPA to " + name + ".");
                     }
-                    return;
+                    if(msg.substring("TTC".length()).equals("[1]") && tpa) {
+                        TTC.player.sendChatMessage("/tpahere " + name);
+                        ChatUtils.print("Sent TPAHere to " + name + ".");
+                    }
+                    return true;
                 }
                 
-                ChatUtils.print("§b§lDM from Team member: ");
+                ChatUtils.print("§b§lDM from Team member: " + s.substring(s.indexOf(":") + 1));
+                return true;
+            }
+            for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
+                String theName = info.getGameProfile().getName();
+                if (s.startsWith(theName + " whispers:") ||
+                    s.startsWith("~" + theName + " whispers:") ||
+                    s.startsWith(theName + " whispers to you:") ||
+                    s.startsWith("~" + theName + " whispers to you:") ||
+                    s.startsWith("From " + theName + ":") ||
+                    s.startsWith("From ~" + theName + ":")) {
+                    try {
+                        String msg = s.split(": ")[1];
+                        if (msg.startsWith("TTC")) {
+                            if(msg.substring("TTC".length()).equals("[2]")) {
+                                ChatUtils.print("§c§lYou have been added to the Team of " + theName + "! \n" +
+                                                "§cRun ,team add " + theName + " to add them as well!");
+                            }
+                            if(msg.substring("TTC".length()).equals("[3]")) {
+                                ChatUtils.print("§c§lYou have been removed from the Team of " + theName + "! \n" +
+                                                "§cRun ,team add " + theName + " to remove them as well!");
+                            }
+                            return true;
+                        }
+                    }
+                    catch (Throwable ignore) { }
+                }
             }
         } catch (Exception ignore) { }
+        return false;
     }
     
     @Override

@@ -130,10 +130,9 @@ public class FMLEventHandler {
         }
         for (int i = 0; i < TTC.modules.length; i++) {
             if(TTC.modules[i].enabled)
-                TTC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText());
+               if(TTC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText()))
+                   event.setCanceled(true);
         }
-        if(DMChat.getInstance().enabled)
-            event.setCanceled(true);
     }
     
     @SubscribeEvent
