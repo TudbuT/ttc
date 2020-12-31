@@ -201,7 +201,7 @@ public class Team extends Module {
                     }
                     if(msg.equals("TTC[3]")) {
                         ChatUtils.print("§c§lYou have been removed from the Team of " + name + "! \n" +
-                                        "§cRun ,team add " + name + " to remove them as well!");
+                                        "§cRun ,team remove " + name + " to remove them as well!");
                     }
                     return true;
                 }
