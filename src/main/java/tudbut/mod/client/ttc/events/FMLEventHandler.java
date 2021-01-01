@@ -178,11 +178,9 @@ public class FMLEventHandler {
     @SubscribeEvent
     public void onDeath(LivingDeathEvent event) {
         try {
-            if (event.getEntity().getName().equals(TTC.player.getName()) && EntityPlayer.class.isAssignableFrom(event.getEntity().getClass())) {
+            if (event.getEntity().getName().equals(TTC.player.getName()) && event.getEntity().getClass().getSimpleName().contains("Player")) {
                 TPAParty.getInstance().enabled = false;
                 TPAParty.getInstance().onDisable();
-                TTC.player = Minecraft.getMinecraft().player;
-                TTC.world = Minecraft.getMinecraft().world;
                 ChatUtils.print("§c§l§k|||§c§l You died at " + event.getEntity().getPosition());
             }
         } catch (Exception ignore) { }
