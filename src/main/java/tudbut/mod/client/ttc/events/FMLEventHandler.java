@@ -160,7 +160,7 @@ public class FMLEventHandler {
                     );
                 }
                 try {
-                    Thread.sleep(20000);
+                    Thread.sleep(60 * 1000);
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();
