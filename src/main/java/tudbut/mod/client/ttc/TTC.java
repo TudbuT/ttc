@@ -18,13 +18,15 @@ import tudbut.mod.client.ttc.utils.Utils;
 
 import javax.swing.*;
 import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @Mod(modid = TTC.MODID, name = TTC.NAME, version = TTC.VERSION)
 public class TTC {
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.2.0g";
+    public static final String VERSION = "vB1.2.1a";
     
     public static Module[] modules;
     public static EntityPlayerSP player;
@@ -50,16 +52,23 @@ public class TTC {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         logger.info("TTC by TudbuT");
+        long sa = new Date().getTime();
         ThreadManager.run(() -> {
             JOptionPane.showMessageDialog(null, "TTC by TudbuT");
         });
-        player = Minecraft.getMinecraft().player;
+        System.out.println("Init...");
+        sa = new Date().getTime();
         try {
             cfg = Utils.stringToMap(file.getContent());
         }
         catch (Exception e) {
             e.printStackTrace();
         }
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
+    
+        System.out.println("Constructing modules...");
+        sa = new Date().getTime();
         modules = new Module[] {
                 new AutoTotem(),
                 new TPAParty(),
@@ -77,9 +86,13 @@ public class TTC {
                 new DMChat(),
                 new ClickGUI(),
         };
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
         
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
-        
+    
+        System.out.println("Loading config...");
+        sa = new Date().getTime();
         for (int i = 0; i < modules.length; i++) {
             try {
                 logger.info(modules[i].toString());
@@ -93,14 +106,11 @@ public class TTC {
             }
         }
         prefix = cfg.getOrDefault("prefix", ",");
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
     
-        try {
-            Thread.sleep(2000);
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    
+        System.out.println("Starting threads...");
+        sa = new Date().getTime();
         ThreadManager.run(() -> {
             while (true) {
                 try {
@@ -111,7 +121,7 @@ public class TTC {
                         cfg.put("prefix", prefix);
         
                         file.setContent(Utils.mapToString(cfg));
-                        System.out.println("Saved config");
+                        //System.out.println("Saved config");
                     }
                     catch (IOException e) {
                         e.printStackTrace();
@@ -123,5 +133,7 @@ public class TTC {
                 }
             }
         });
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
     }
 }

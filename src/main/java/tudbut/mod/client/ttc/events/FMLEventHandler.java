@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
@@ -179,9 +180,10 @@ public class FMLEventHandler {
     public void onDeath(LivingDeathEvent event) {
         try {
             if (event.getEntity().getName().equals(TTC.player.getName()) && event.getEntity().getClass().getSimpleName().contains("Player")) {
+                BlockPos pos = event.getEntity().getPosition();
+                ChatUtils.print("§c§l§k|||§c§l You died at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
                 TPAParty.getInstance().enabled = false;
                 TPAParty.getInstance().onDisable();
-                ChatUtils.print("§c§l§k|||§c§l You died at " + event.getEntity().getPosition());
             }
         } catch (Exception ignore) { }
     }

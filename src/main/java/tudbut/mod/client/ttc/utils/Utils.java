@@ -39,16 +39,18 @@ public class Utils {
     public static Map<String, String> stringToMap(String mapStringParsable) {
         HashMap<String, String> map = new HashMap<>();
         
-        for (int i = 0; i < mapStringParsable.split(";").length; i++) {
-            String tile = mapStringParsable.split(";")[i];
+        String[] splitTiles = mapStringParsable.split(";");
+        for (int i = 0; i < splitTiles.length; i++) {
+            String tile = splitTiles[i];
+            String[] splitTile = tile.split(":");
             if (tile.contains(":")) {
-                if (tile.split(":").length == 2)
+                if (splitTile.length == 2)
                     map.put(
-                            tile.split(":")[0].replaceAll("%I", ":").replaceAll("%B", ";").replaceAll("%P", "%"),
-                            tile.split(":")[1].equals("%N") ? null : tile.split(":")[1].replaceAll("%I", ":").replaceAll("%B", ";").replaceAll("%P", "%")
+                            splitTile[0].replaceAll("%I", ":").replaceAll("%B", ";").replaceAll("%P", "%"),
+                            splitTile[1].equals("%N") ? null : splitTile[1].replaceAll("%I", ":").replaceAll("%B", ";").replaceAll("%P", "%")
                     );
                 else
-                    map.put(tile.split(":")[0].replaceAll("%I", ":").replaceAll("%B", ";").replaceAll("%P", "%"), "");
+                    map.put(splitTile[0].replaceAll("%I", ":").replaceAll("%B", ";").replaceAll("%P", "%"), "");
             }
         }
         
