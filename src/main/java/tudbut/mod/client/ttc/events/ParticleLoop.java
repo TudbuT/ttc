@@ -21,7 +21,8 @@ public class ParticleLoop {
         for (int i = 0; i < particles.length; i++) {
             if(particles[i].summon()) {
                 Vec3d pos = particles[i].getPosition();
-                TTC.mc.world.spawnParticle(particles[i].getType(), true, pos.x, pos.y, pos.z, 0, 0, 0);
+                if(TTC.mc.world != null)
+                    TTC.mc.world.spawnParticle(particles[i].getType(), true, pos.x, pos.y, pos.z, 0, 0, 0);
             }
             else
                 particleMap.remove(particles[i]);
