@@ -1,6 +1,5 @@
 package tudbut.mod.client.ttc.mods;
 
-import net.minecraft.client.gui.GuiIngameMenu;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
@@ -11,18 +10,12 @@ import tudbut.mod.client.ttc.utils.ThreadManager;
 public class ClickGUI extends Module {
     
     static ClickGUI instance;
+    // TMP fix for mouse not showing
     public boolean mouseFix = false;
-    
-    public static ClickGUI getInstance() {
-        return instance;
-    }
-    
-    public ClickGUI() {
-        instance = this;
-    }
     
     {
         subButtons.add(new GuiTTC.Button("Reset layout", text -> {
+            // Reset cClickGUI by closing it, resetting its values, and opening it
             enabled = false;
             onDisable();
             for (Module module : TTC.modules) {
@@ -38,26 +31,37 @@ public class ClickGUI extends Module {
         }));
     }
     
+    public ClickGUI() {
+        instance = this;
+    }
+    
+    public static ClickGUI getInstance() {
+        return instance;
+    }
+    
     private void updateButtons() {
         subButtons.get(1).text.set("Mouse fix: " + mouseFix);
     }
     
     @Override
     public void onEnable() {
+        // Show the GUI
         ThreadManager.run(() -> {
             try {
-                Thread.sleep(100);
+                // Override other GUIs
+                Thread.sleep(10);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
             }
             ChatUtils.print("Showing ClickGUI");
-            TTC.mc.displayGuiScreen(new GuiTTC(TTC.mc.currentScreen));
+            TTC.mc.displayGuiScreen(new GuiTTC());
         });
     }
     
     @Override
     public void onDisable() {
+        // Kill the GUI
         if (TTC.mc.currentScreen != null && TTC.mc.currentScreen.getClass() == GuiTTC.class)
             TTC.mc.displayGuiScreen(null);
     }
@@ -68,8 +72,9 @@ public class ClickGUI extends Module {
     
     @Override
     public void onEveryTick() {
-        if(Keyboard.isKeyDown(Keyboard.KEY_COMMA) && TTC.mc.currentScreen == null) {
-            if(!enabled) {
+        // Keybind to show GUI
+        if (Keyboard.isKeyDown(Keyboard.KEY_COMMA) && TTC.mc.currentScreen == null) {
+            if (!enabled) {
                 enabled = true;
                 onEnable();
             }

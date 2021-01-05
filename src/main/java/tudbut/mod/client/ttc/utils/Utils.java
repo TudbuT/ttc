@@ -10,30 +10,32 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Utils {
+public class Utils { // A bunch of utils that don't deserve their own class, self-explanatory
     
     public static String removeNewlines(String s) {
-        if(s == null)
+        if (s == null)
             return null;
         return s.replaceAll("\n", "").replaceAll("\r", "");
     }
     
+    // Get a file from the GIT repo, the master argument indicates if it should always be taken from
+    // the newest version, or if it should always use the one for the current version
     public static String getRemote(String file, boolean master) {
         try {
             URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/ttc/" + (master ? "master" : TTC.VERSION) + "/" + file);
             InputStream stream = updateCheckURL.openConnection().getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-    
+            
             String s;
             StringBuilder builder = new StringBuilder();
             while ((s = reader.readLine()) != null) {
                 builder.append(s).append("\n");
             }
-    
+            
             return builder.toString();
         }
         catch (IOException ignore) { }
-        return null;
+        return null; // No internet access
     }
     
     public static Map<String, String> stringToMap(String mapStringParsable) {

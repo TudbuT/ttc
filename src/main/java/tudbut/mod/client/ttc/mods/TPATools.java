@@ -11,18 +11,10 @@ import tudbut.mod.client.ttc.utils.ThreadManager;
 import java.util.Objects;
 
 public class TPATools extends Module {
+    static TPATools instance;
+    // I hate antispam
     public int delay = 1000;
     private boolean stop = false;
-    
-    static TPATools instance;
-    
-    public static TPATools getInstance() {
-        return instance;
-    }
-    
-    public TPATools() {
-        instance = this;
-    }
     
     {
         subButtons.add(new GuiTTC.Button("Send /tpa to everyone", text -> {
@@ -32,21 +24,24 @@ public class TPATools extends Module {
             onChat("tpahere", null);
         }));
         subButtons.add(new GuiTTC.Button("Delay: " + delay, text -> {
-            if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+            // I hate antispam
+            
+            
+            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
                 delay -= 1000;
             else
                 delay += 1000;
             
-            if(delay > 5000)
+            if (delay > 5000)
                 delay = 1000;
-            if(delay < 1000)
+            if (delay < 1000)
                 delay = 5000;
             text.set("Delay: " + delay);
         }));
         subButtons.add(new GuiTTC.Button("Stop", text -> {
             stop = true;
             TTC.player.sendChatMessage("/tpacancel");
-        
+            
             ThreadManager.run(() -> {
                 text.set("Done");
                 try {
@@ -59,6 +54,14 @@ public class TPATools extends Module {
                 text.set("Stop");
             });
         }));
+    }
+    
+    public TPATools() {
+        instance = this;
+    }
+    
+    public static TPATools getInstance() {
+        return instance;
     }
     
     public void updateButtons() {
@@ -75,36 +78,47 @@ public class TPATools extends Module {
     
     @Override
     public void onChat(String s, String[] args) {
-        if(s.equalsIgnoreCase("delay")) {
+        if (s.equalsIgnoreCase("delay")) {
+            // I hate antispam
             delay = Integer.parseInt(args[1]);
             ChatUtils.print("Set!");
         }
         
-        if(s.equalsIgnoreCase("tpa")) {
+        if (s.equalsIgnoreCase("tpa")) {
             ChatUtils.print("Sending...");
+            // This would stop the game if it wasn't in a separate thread
             ThreadManager.run(() -> {
+                // Loop through all players
                 for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
-                    if(stop)
+                    if (stop)
                         return;
                     try {
+                        // Send /tpa <player>
                         TTC.mc.player.sendChatMessage("/tpa " + info.getGameProfile().getName());
+                        // Notify the user
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
-                        Thread.sleep(delay);
+                        // I hate antispam
+                        Thread.sleep(TPATools.getInstance().delay);
                     }
                     catch (Throwable ignore) { }
                 }
                 ChatUtils.print("Done!");
             });
         }
-        if(s.equalsIgnoreCase("tpahere")) {
+        if (s.equalsIgnoreCase("tpahere")) {
             ChatUtils.print("Sending...");
+            // This would stop the game if it wasn't in a separate thread
             ThreadManager.run(() -> {
+                // Loop through all players
                 for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
-                    if(stop)
+                    if (stop)
                         return;
                     try {
+                        // Send /tpahere <player>
                         TTC.mc.player.sendChatMessage("/tpahere " + info.getGameProfile().getName());
+                        // Notify the user
                         ChatUtils.print("Sent to " + info.getGameProfile().getName());
+                        // I hate antispam
                         Thread.sleep(TPATools.getInstance().delay);
                     }
                     catch (Throwable ignore) { }

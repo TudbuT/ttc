@@ -7,6 +7,8 @@ import java.util.Arrays;
 
 public class DMChat extends Module {
     public static DMChat instance;
+    public String[] users = new String[0];
+    
     {
         instance = this;
     }
@@ -14,8 +16,6 @@ public class DMChat extends Module {
     public static DMChat getInstance() {
         return instance;
     }
-    
-    public String[] users = new String[0];
     
     @Override
     public void onTick() {
@@ -32,6 +32,7 @@ public class DMChat extends Module {
     @Override
     public boolean onServerChat(String s, String formatted) {
         try {
+            // See if it is a DM from a DM partner
             String name = Arrays.stream(users).filter(
                     theName ->
                             s.startsWith(theName + " whispers:") ||
@@ -41,10 +42,12 @@ public class DMChat extends Module {
                             s.startsWith("From " + theName + ":") ||
                             s.startsWith("From ~" + theName + ":")
             ).iterator().next();
-            if(name != null) {
+            if (name != null) {
                 ChatUtils.print("<" + name + "> " + s.substring(s.indexOf(": ") + 2));
             }
-        } catch (Exception ignore) { }
+        }
+        catch (Exception ignore) { }
+        // Cancel the display of any message
         return true;
     }
     
@@ -68,7 +71,7 @@ public class DMChat extends Module {
             s.append(users[i]);
             s.append(" ");
         }
-        if(s.length() >= 1)
+        if (s.length() >= 1)
             s.deleteCharAt(s.length() - 1);
         cfg.put("users", s.toString());
     }

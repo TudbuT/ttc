@@ -18,13 +18,15 @@ public class Trap extends Module {
                 try {
                     if (TTC.mc.world != null) {
                         for (EntityPlayer player : TTC.mc.world.playerEntities) {
-                            if (!Team.getInstance().names.contains(player.getName())) {
+                            if (!Team.getInstance().names.contains(player.getName()) && player.getDistance(TTC.player) < 5) {
+                                // Trap the player
                                 trap(player);
                             }
                         }
                     }
-                } catch (Exception e) {
-            
+                }
+                catch (Exception ignored) {
+                
                 }
             }
         });
@@ -35,8 +37,8 @@ public class Trap extends Module {
         ticked = true;
     }
     
-    public void waitForTick() throws InterruptedException {
-        while (!ticked);
+    public void waitForTick() throws InterruptedException /* Thread.sleep wants this. */ {
+        while (!ticked) ;
         Thread.sleep(1);
         ticked = false;
     }
@@ -45,8 +47,9 @@ public class Trap extends Module {
     public void onChat(String s, String[] args) {
     }
     
+    // Method to avoid having to type stuff
     public void add(BlockPos[] positions, int i, int x, int y, int z) {
-        positions[i] = positions[i].add(x,y,z);
+        positions[i] = positions[i].add(x, y, z);
     }
     
     public void trap(EntityPlayer player) {
@@ -55,18 +58,20 @@ public class Trap extends Module {
             positions[i] = new BlockPos(player.getPositionVector());
         }
         
-        add(positions,  0, +1, -1, +0);
-        add(positions,  1, +0, -1, +0);
-        add(positions,  2, -1, -1, +0);
-        add(positions,  3, +0, -1, +1);
-        add(positions,  4, +0, -1, -1);
+        // Magic positions.
         
-        add(positions,  5, +1, +0, +0);
-        add(positions,  6, -1, +0, +0);
-        add(positions,  7, +0, +0, +1);
-        add(positions,  8, +0, +0, -1);
+        add(positions, 0, +1, -1, +0);
+        add(positions, 1, +0, -1, +0);
+        add(positions, 2, -1, -1, +0);
+        add(positions, 3, +0, -1, +1);
+        add(positions, 4, +0, -1, -1);
         
-        add(positions,  9, +1, +1, +0);
+        add(positions, 5, +1, +0, +0);
+        add(positions, 6, -1, +0, +0);
+        add(positions, 7, +0, +0, +1);
+        add(positions, 8, +0, +0, -1);
+        
+        add(positions, 9, +1, +1, +0);
         add(positions, 10, -1, +1, +0);
         add(positions, 11, +0, +1, +1);
         add(positions, 12, +0, +1, -1);
@@ -77,15 +82,20 @@ public class Trap extends Module {
         add(positions, 16, +0, +2, +1);
         add(positions, 17, +0, +2, -1);
         
+        // Loop through the positions
         for (int i = 0; i < positions.length; i++) {
             try {
+                // Minecraft wants this
                 waitForTick();
+                // Place
                 BlockUtils.placeBlock(positions[i], false);
+                // Debug
                 System.out.println(positions[i]);
+                // Wait
                 Thread.sleep(50);
             }
             catch (Exception e) {
-                e.printStackTrace();
+                e.printStackTrace(); // Thread.sleep wants this.
             }
         }
     }

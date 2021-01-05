@@ -12,6 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
+@Deprecated
 public class AltControl extends Module {
     
     Bus connection;
@@ -61,10 +62,9 @@ public class AltControl extends Module {
                                     Bus bus = new Bus(socket);
                                     bus.write(TTCIC.PacketsSC.INIT.run(""));
                                     TTCIC.PacketCS cs = TTCIC.deserializeCS(bus.readS());
-                                    if(cs.packetType() == TTCIC.PacketsCS.INIT && cs.data().equals("")) {
+                                    if (cs.packetType() == TTCIC.PacketsCS.INIT && cs.data().equals("")) {
                                         sockets.add(new Bus(socket));
-                                    }
-                                    else {
+                                    } else {
                                         bus.write(TTCIC.PacketsSC.CLOSE.run(""));
                                     }
                                 }
@@ -98,7 +98,7 @@ public class AltControl extends Module {
                         bus.write(data);
                     }
                 }
-    
+                
                 @Override
                 public String readS() {
                     return queue.next();

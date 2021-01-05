@@ -29,11 +29,17 @@ public class DMAll extends Module {
     @Override
     public void onChat(String s, String[] args) {
         ChatUtils.print("Sending...");
+        
+        // This would stop the game if it wasn't in a separate thread
         ThreadManager.run(() -> {
+            // Loop through all players
             for (NetworkPlayerInfo info : Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0])) {
                 try {
+                    // Send a DM to the player
                     TTC.mc.player.sendChatMessage("/tell " + info.getGameProfile().getName() + " " + s);
+                    // Notify the user
                     ChatUtils.print("Sent to " + info.getGameProfile().getName());
+                    // I hate antispam
                     Thread.sleep(TPATools.getInstance().delay);
                 }
                 catch (Throwable ignore) { }

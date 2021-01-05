@@ -1,14 +1,12 @@
 package tudbut.mod.client.ttc.events;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
@@ -18,32 +16,35 @@ import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-
 public class FMLEventHandler {
     
-    private int chatHelper = 0;
+    // For the ChatSuffix to know when to appear
+    private int chatSuffixHelper = 0;
     
+    // Fired when enter is pressed in chat
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
-        if(event.getOriginalMessage().startsWith(TTC.prefix)) {
+        // Only for TTC commands
+        if (event.getOriginalMessage().startsWith(TTC.prefix)) {
             
+            // Don't send
             event.setCanceled(true);
             ChatUtils.print("Blocked message");
+            // When canceled, the event blocks adding the message to the chat history,
+            // so it'll cause confusion if this line doesn't exist
             ChatUtils.history(event.getOriginalMessage());
+            
+            // The command without the prefix
             String s = event.getOriginalMessage().substring(TTC.prefix.length());
             
             try {
+                // Toggle a module
                 if (s.startsWith("t ")) {
                     for (int i = 0; i < TTC.modules.length; i++) {
                         if (TTC.modules[i].getClass().getSimpleName().equalsIgnoreCase(s.substring("t ".length()))) {
                             ChatUtils.print(String.valueOf(!TTC.modules[i].enabled));
                             
-                            if(TTC.modules[i].enabled = !TTC.modules[i].enabled)
+                            if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
                                 TTC.modules[i].onEnable();
                             else
                                 TTC.modules[i].onDisable();
@@ -51,22 +52,23 @@ public class FMLEventHandler {
                     }
                 }
                 
+                // Ignore any commands and say something
                 if (s.startsWith("say ")) {
                     TTC.player.sendChatMessage(s.substring("say ".length()));
                     ChatUtils.history(event.getOriginalMessage());
                 }
                 
-                if(s.equals("help")) {
+                if (s.equals("help")) {
                     String help = Utils.getRemote("help.chat.txt", false);
-                    if(help == null) {
+                    if (help == null) {
                         ChatUtils.print("Unable retrieve help message! Check your connection!");
-                    }
-                    else {
+                    } else {
                         help = help.replaceAll("%p", TTC.prefix);
                         ChatUtils.print(help);
                     }
                 }
                 
+                // Module-specific commands
                 for (int i = 0; i < TTC.modules.length; i++) {
                     if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
                         String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
@@ -75,12 +77,15 @@ public class FMLEventHandler {
                         TTC.modules[i].onEveryChat(args, args.split(" "));
                     }
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 ChatUtils.print("Command failed!");
+                e.printStackTrace(ChatUtils.chatPrinterDebug());
             }
             
         }
-        else if(DM.getInstance().enabled) {
+        // A lil extra for the DM module
+        else if (DM.getInstance().enabled) {
             event.setCanceled(true);
             ChatUtils.history(event.getOriginalMessage());
             ThreadManager.run(() -> {
@@ -91,11 +96,13 @@ public class FMLEventHandler {
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
+                        e.printStackTrace(ChatUtils.chatPrinterDebug());
                     }
                 }
             });
         }
-        else if(DMChat.getInstance().enabled) {
+        // A lil extra for the DMChat module
+        else if (DMChat.getInstance().enabled) {
             event.setCanceled(true);
             ChatUtils.history(event.getOriginalMessage());
             ThreadManager.run(() -> {
@@ -111,39 +118,49 @@ public class FMLEventHandler {
                 }
             });
         }
-        else if(!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
+        // Don't add chatcolor to commands!
+        else if (!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
-            TTC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + (chatHelper == 0 && ChatSuffix.getInstance().enabled ? " ›TTC‹" : ""));
-            chatHelper++;
-            if(chatHelper == 6)
-                chatHelper = 0;
+            TTC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + (chatSuffixHelper == 0 && ChatSuffix.getInstance().enabled ? " ›TTC‹" : ""));
+            chatSuffixHelper++;
+            if (chatSuffixHelper == 6)
+                chatSuffixHelper = 0;
             
             ChatUtils.history(event.getOriginalMessage());
         }
     }
     
+    // When a message is received, those will often require parsing
     @SubscribeEvent
     public void onServerChat(ClientChatReceivedEvent event) {
-        if(event.getMessage().getUnformattedText().startsWith("BayMax") && event.getMessage().getUnformattedText().contains("Please type '")) {
+        // BayMax AC will ask you for a captcha when you chat too much or spam,
+        // this will automatically solve it
+        if (event.getMessage().getUnformattedText().startsWith("BayMax") && event.getMessage().getUnformattedText().contains("Please type '")) {
             String key = event.getMessage().getUnformattedText().substring("BayMax _ Please type '".length(), "BayMax _ Please type '".length() + 4);
             TTC.player.sendChatMessage(key);
             ChatUtils.print("Auto-solved");
         }
+        // Trigger module event for server chat, the modules can cancel display of the message
         for (int i = 0; i < TTC.modules.length; i++) {
-            if(TTC.modules[i].enabled)
-               if(TTC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText()))
-                   event.setCanceled(true);
+            if (TTC.modules[i].enabled)
+                if (TTC.modules[i].onServerChat(event.getMessage().getUnformattedText(), event.getMessage().getFormattedText()))
+                    event.setCanceled(true);
         }
     }
     
+    // When the client joins a server
     @SubscribeEvent
     public void onJoinServer(FMLNetworkEvent.ClientConnectedToServerEvent event) {
+        ChatUtils.print("§a§lTTC has a Discord server: https://discord.gg/2WsVCQDpwy!");
+        
+        // Check for a new version
         ThreadManager.run(() -> {
             try {
                 Thread.sleep(10000);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
+                e.printStackTrace(ChatUtils.chatPrinterDebug());
             }
             while (TTC.mc.world != null) {
                 String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
@@ -165,40 +182,47 @@ public class FMLEventHandler {
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();
+                    e.printStackTrace(ChatUtils.chatPrinterDebug());
                 }
             }
         });
     }
     
+    // When any entity appears on screen, useful for setting player and world
     @SubscribeEvent
     public void onJoin(EntityJoinWorldEvent event) {
+        // Setting player and world
         TTC.player = Minecraft.getMinecraft().player;
         TTC.world = Minecraft.getMinecraft().world;
     }
     
-    @SubscribeEvent
-    public void onDeath(LivingDeathEvent event) {
-        try {
-            if (event.getEntity().getName().equals(TTC.player.getName()) && event.getEntity().getClass().getSimpleName().contains("Player")) {
-                BlockPos pos = event.getEntity().getPosition();
-                ChatUtils.print("§c§l§k|||§c§l You died at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
-                TPAParty.getInstance().enabled = false;
-                TPAParty.getInstance().onDisable();
-            }
-        } catch (Exception ignore) { }
+    // When the player dies, NOT called by FML
+    public void onDeath(EntityPlayer player) {
+        TPAParty.getInstance().enabled = false;
+        TPAParty.getInstance().onDisable();
+        BlockPos pos = player.getPosition();
+        ChatUtils.print("§c§l§k|||§c§l You died at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
     }
     
+    // Fired every tick
     @SubscribeEvent
     public void onTick(TickEvent event) {
         EntityPlayerSP player = TTC.player;
-        if(player == null)
+        if (player == null)
             return;
+        if (player.getHealth() <= 0) {
+            // >:(
+            onDeath(player);
+        }
         ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
-            if(TTC.modules[i].enabled)
+            if (TTC.modules[i].enabled)
                 try {
                     TTC.modules[i].onTick();
-                } catch (Exception ignore) {}
+                }
+                catch (Exception e) {
+                    e.printStackTrace(ChatUtils.chatPrinterDebug());
+                }
             TTC.modules[i].onEveryTick();
         }
     }

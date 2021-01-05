@@ -4,10 +4,13 @@ import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.Module;
 
 public class ChatColor extends Module {
-    
+    static ChatColor instance;
+    // Use "> " instead of ">"
     private boolean useSpace = false;
     
-    static ChatColor instance;
+    {
+        updateButtons();
+    }
     
     public ChatColor() {
         instance = this;
@@ -17,6 +20,7 @@ public class ChatColor extends Module {
         return instance;
     }
     
+    // Return the correct string
     public String get() {
         return (enabled ? (useSpace ? "> " : ">") : "");
     }
@@ -27,10 +31,6 @@ public class ChatColor extends Module {
             useSpace = !useSpace;
             text.set("Add space: " + useSpace);
         }));
-    }
-    
-    {
-        updateButtons();
     }
     
     @Override

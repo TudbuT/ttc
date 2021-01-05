@@ -2,30 +2,7 @@ package tudbut.mod.client.ttc.utils;
 
 import java.util.Arrays;
 
-public class TTCIC {
-    
-    public enum PacketsCS {
-        INIT("init"),
-        CLOSE("close"),
-        LIST("list"),
-        ;
-        
-        String msg = "TTCIC cs";
-        String id;
-        PacketsCS(String id) {
-            this.id = id;
-            msg += " " + id + " ";
-        }
-        
-        public String run(String data) {
-            return msg + data.replaceAll("%", "%0").replaceAll("\n", "%1");
-        }
-    }
-    
-    public interface PacketCS {
-        PacketsCS packetType();
-        String data();
-    }
+public class TTCIC { // Work in progress, will comment later!
     
     public static PacketCS deserializeCS(String msg) throws NotTTCICException {
         try {
@@ -43,38 +20,16 @@ public class TTCIC {
                 public PacketsCS packetType() {
                     return packetType;
                 }
-    
+                
                 @Override
                 public String data() {
                     return data;
                 }
             };
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new NotTTCICException();
         }
-    }
-    
-    public enum PacketsSC {
-        INIT("init"),
-        CLOSE("close"),
-        LIST("list"),
-        ;
-        
-        String msg = "TTCIC sc";
-        String id;
-        PacketsSC(String id) {
-            this.id = id;
-            msg += " " + id + " ";
-        }
-        
-        public String run(String data) {
-            return msg + data.replaceAll("%", "%0").replaceAll("\n", "%1");
-        }
-    }
-    
-    public interface PacketSC {
-        PacketsSC packetType();
-        String data();
     }
     
     public static PacketSC deserializeSC(String msg) throws NotTTCICException {
@@ -99,9 +54,60 @@ public class TTCIC {
                     return data;
                 }
             };
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new NotTTCICException();
         }
+    }
+    
+    public enum PacketsCS {
+        INIT("init"),
+        CLOSE("close"),
+        LIST("list"),
+        ;
+        
+        String msg = "TTCIC cs";
+        String id;
+        
+        PacketsCS(String id) {
+            this.id = id;
+            msg += " " + id + " ";
+        }
+        
+        public String run(String data) {
+            return msg + data.replaceAll("%", "%0").replaceAll("\n", "%1");
+        }
+    }
+    
+    public enum PacketsSC {
+        INIT("init"),
+        CLOSE("close"),
+        LIST("list"),
+        ;
+        
+        String msg = "TTCIC sc";
+        String id;
+        
+        PacketsSC(String id) {
+            this.id = id;
+            msg += " " + id + " ";
+        }
+        
+        public String run(String data) {
+            return msg + data.replaceAll("%", "%0").replaceAll("\n", "%1");
+        }
+    }
+    
+    public interface PacketCS {
+        PacketsCS packetType();
+        
+        String data();
+    }
+    
+    public interface PacketSC {
+        PacketsSC packetType();
+        
+        String data();
     }
     
     public static class NotTTCICException extends Exception {

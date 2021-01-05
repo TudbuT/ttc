@@ -7,49 +7,16 @@ import tudbut.mod.client.ttc.utils.ThreadManager;
 
 public class AutoConfig extends Module {
     
+    // true for Server mode, false for Custom mode
     private boolean mode = false;
     
+    // Settings for Custom mode
     private boolean stackedTots = false;
     private boolean pvp = false;
     private boolean tpa = false;
     
+    // Settings for Server mode
     private Server server = Server._8b8t;
-    
-    private enum Server {
-        _8b8t
-                ("8b8t.xyz",
-                 true , true , true ),
-        
-        _5b5t
-                ("5b5t.net",
-                 false, false, false),
-        
-        _0t0t
-                ("0b0t.org",
-                 false, false, true ),
-        
-        _2b2t
-                ("2b2t.org",
-                 false, false, false),
-        
-        crystalpvp
-                ("crystalpvp.cc",
-                 false, false, false),
-        
-        ;
-        
-        String name;
-        boolean stackedTots;
-        boolean pvp;
-        boolean tpa;
-        
-        Server(String name, boolean stackedTots, boolean pvp, boolean tpa) {
-            this.name = name;
-            this.stackedTots = stackedTots;
-            this.pvp = pvp;
-            this.tpa = tpa;
-        }
-    }
     
     @Override
     public void onEnable() {
@@ -63,26 +30,25 @@ public class AutoConfig extends Module {
             text.set("Mode: " + (mode ? "Server" : "Custom"));
             updateButtons();
         }));
-        if(mode) {
+        if (mode) {
             subButtons.add(new GuiTTC.Button("Server: " + server.name, text -> {
                 int i = server.ordinal();
                 
-                if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+                if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
                     i--;
                 else
                     i++;
                 
-                if(i >= Server.values().length)
+                if (i >= Server.values().length)
                     i = 0;
-                if(i < 0)
+                if (i < 0)
                     i = Server.values().length - 1;
                 
                 server = Server.values()[i];
                 
                 text.set("Server: " + server.name);
             }));
-        }
-        else {
+        } else {
             subButtons.add(new GuiTTC.Button("Has stacked totems: " + stackedTots, text -> {
                 stackedTots = !stackedTots;
                 text.set("Has stacked totems: " + stackedTots);
@@ -97,22 +63,23 @@ public class AutoConfig extends Module {
             }));
         }
         subButtons.add(new GuiTTC.Button("Set", text -> {
-            if(mode) {
+            // Confirm set
+            if (mode) {
                 stackedTots = server.stackedTots;
                 pvp = server.pvp;
                 tpa = server.tpa;
             }
             int i = 0;
-            if(stackedTots) {
+            if (stackedTots) {
                 i += (pvp ? 4 : 2);
             }
             AutoTotem.getInstance().orig_min_count = i;
             
             Team.getInstance().enabled = tpa;
-            if(!tpa)
+            if (!tpa)
                 TPAParty.getInstance().enabled = false;
             TPATools.getInstance().enabled = tpa;
-    
+            
             ThreadManager.run(() -> {
                 text.set("Done");
                 try {
@@ -158,5 +125,44 @@ public class AutoConfig extends Module {
         server = Server.values()[Integer.parseInt(cfg.get("server"))];
         
         updateButtons();
+    }
+    
+    // Settings for the unique servers
+    private enum Server {
+        _8b8t
+                ("8b8t.xyz",
+                 true, true, true),
+        
+        _5b5t
+                ("5b5t.net",
+                 false, false, false),
+        
+        _0t0t
+                ("0b0t.org",
+                 false, false, true),
+        
+        _2b2t
+                ("2b2t.org",
+                 false, false, false),
+        
+        crystalpvp
+                ("crystalpvp.cc",
+                 false, false, false),
+        
+        ;
+        
+        String name;
+        
+        // Settings
+        boolean stackedTots;
+        boolean pvp;
+        boolean tpa;
+        
+        Server(String name, boolean stackedTots, boolean pvp, boolean tpa) {
+            this.name = name;
+            this.stackedTots = stackedTots;
+            this.pvp = pvp;
+            this.tpa = tpa;
+        }
     }
 }

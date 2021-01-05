@@ -21,6 +21,8 @@ import java.util.Arrays;
 public class BlockUtils {
     
     private static final Minecraft mc = Minecraft.getMinecraft();
+    
+    // Sneak!
     public static ArrayList<Block> blackList = new ArrayList<Block>(Arrays.asList(
             Blocks.ENDER_CHEST,
             Blocks.CHEST,
@@ -53,6 +55,8 @@ public class BlockUtils {
             Blocks.BLACK_SHULKER_BOX
     ));
     
+    // Magic i don't want to explain, gets a placeable size of a neighbor block and places
+    // the block on it, uses getPlaceableSide
     public static void placeBlock(BlockPos pos, boolean rotate) {
         EnumFacing side = getPlaceableSide(pos);
         if (side == null) {
@@ -74,6 +78,7 @@ public class BlockUtils {
         }
     }
     
+    // Gets a block next to a block position
     private static EnumFacing getPlaceableSide(BlockPos pos) {
         for (EnumFacing side : EnumFacing.values()) {
             BlockPos neighbour = pos.offset(side);
@@ -85,13 +90,14 @@ public class BlockUtils {
                 return side;
             }
         }
-        return null;
+        return null; // :(
     }
     
     private static Vec3d eyesPos() {
         return new Vec3d(mc.player.posX, mc.player.posY + mc.player.getEyeHeight(), mc.player.posZ);
     }
     
+    // Skidded magic.
     private static float[] getLegitRotations(Vec3d vec) {
         Vec3d eyesPos = eyesPos();
         double diffX = vec.x - eyesPos.x;
@@ -103,6 +109,7 @@ public class BlockUtils {
         return new float[]{(float) (mc.player.rotationYaw + MathHelper.wrapDegrees(yaw - mc.player.rotationYaw)), (float) (mc.player.rotationPitch + MathHelper.wrapDegrees(pitch - mc.player.rotationPitch))};
     }
     
+    // Makes it more legit-looking
     public static void faceVectorPacketInstant(Vec3d vec) {
         float[] rotations = getLegitRotations(vec);
         mc.player.connection.sendPacket(

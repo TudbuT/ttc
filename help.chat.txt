@@ -3,8 +3,8 @@
 §k||||||||||||||||||||||||||||||||
 §avB1.2.1b
 BETA
-§71.2.1
-§8b
+§71.3.0
+§8a
 §a§lHelp
 
 §aCurrent prefix: %p
@@ -40,5 +40,7 @@ BETA
 §d%pteam <add/remove> <username>
 §bAdd/remove someone from your team
 §7where <username> is any username.
+
+$aDiscord: https://discord.gg/2WsVCQDpwy
 
 §k||||||||||||||||||||||||||||||||
