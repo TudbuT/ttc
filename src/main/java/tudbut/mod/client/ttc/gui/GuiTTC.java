@@ -39,6 +39,7 @@ public class GuiTTC extends GuiScreen {
         
         // Creates buttons
         buttons = new Button[256];
+        resetButtons();
         
         // Minecraft wants this
         super.buttonList.clear();
