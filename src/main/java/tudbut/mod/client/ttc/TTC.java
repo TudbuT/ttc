@@ -1,5 +1,6 @@
 package tudbut.mod.client.ttc;
 
+import de.tudbut.tools.FileRW;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.world.World;
@@ -11,7 +12,6 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 import tudbut.mod.client.ttc.events.FMLEventHandler;
 import tudbut.mod.client.ttc.mods.*;
-import tudbut.mod.client.ttc.utils.FileRW;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.3.0a";
+    public static final String VERSION = "vB1.3.0b";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
