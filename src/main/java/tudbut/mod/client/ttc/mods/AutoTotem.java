@@ -199,7 +199,8 @@ public class AutoTotem extends Module {
     }
     
     public void autoStack() {
-        if(orig_min_count == min_count)
+        
+        if(min_count == 0)
             return;
         
         EntityPlayerSP player = TTC.player;
@@ -211,74 +212,84 @@ public class AutoTotem extends Module {
         // TMP variable
         Integer slot;
     
-        // Get slots with totems
-        slot = InventoryUtils.getSlotWithItem(
-                player.inventoryContainer,
-                Items.TOTEM_OF_UNDYING,
-                new int[0],
-                min,
-                max
-        );
-        while (slot != null) {
-            slotsWithTotems.add(slot);
-            slot = InventoryUtils.getSlotWithItem(
-                    player.inventoryContainer,
-                    Items.TOTEM_OF_UNDYING,
-                    Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0])),
-                    min,
-                    max
-            );
-        }
+        do {
     
-        // Drop unusable stacks
-        if (slotsWithTotems.size() != 0) {
+            ArrayList<Integer> dropped = new ArrayList<>();
+            // Drop unusable stacks
+            if (slotsWithTotems.size() != 0) {
+                slot = InventoryUtils.getSlotWithItem(
+                        player.inventoryContainer,
+                        Items.TOTEM_OF_UNDYING,
+                        new int[0],
+                        0,
+                        min - 1
+                );
+        
+        
+                while (slot != null) {
+            
+                    // Drop stack contents of the slot
+                    InventoryUtils.drop(slot);
+                    System.out.println("Dropped item in " + slot);
+                    dropped.add(slot);
+            
+                    // Next
+                    slot = InventoryUtils.getSlotWithItem(
+                            player.inventoryContainer,
+                            Items.TOTEM_OF_UNDYING,
+                            Utils.objectArrayToNativeArray(dropped.toArray(new Integer[0])),
+                            0,
+                            min - 1
+                    );
+                }
+            }
+    
+            if(orig_min_count == min_count)
+                return;
+            
+            
+            slotsWithTotems.clear();
+            // Get slots with totems
             slot = InventoryUtils.getSlotWithItem(
                     player.inventoryContainer,
                     Items.TOTEM_OF_UNDYING,
                     new int[0],
-                    0,
-                    min - 1
+                    min,
+                    max
             );
-        
-        
-            while (slot != null) {
-            
-                // Drop stack contents of the slot
-                InventoryUtils.drop(slot);
-                System.out.println("Dropped item in " + slot);
-            
-                // Next
+            while (slot != null && slotsWithTotems.size() < 2) {
+                slotsWithTotems.add(slot);
                 slot = InventoryUtils.getSlotWithItem(
                         player.inventoryContainer,
                         Items.TOTEM_OF_UNDYING,
-                        new int[]{slot},
-                        0,
-                        min - 1
+                        Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0])),
+                        min,
+                        max
                 );
             }
-        }
     
-        // The slots found
-        int[] slots = Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0]));
+            // The slots found
+            int[] slots = Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0]));
     
-        // Combine totems
-        if (slots.length >= 2) {
-            // Get empty slot
-            slot = InventoryUtils.getSlotWithItem(player.inventoryContainer, Items.AIR, 0);
-            if (slot == null) {
-                InventoryUtils.drop(slots[0]);
-                return;
+            // Combine totems
+            if (slots.length >= 2) {
+                // Get empty slot
+                slot = InventoryUtils.getSlotWithItem(player.inventoryContainer, Items.AIR, 0);
+                if (slot == null) {
+                    InventoryUtils.drop(slots[0]);
+                    continue;
+                }
+                System.out.println("Combining " + slots[0] + " and " + slots[1] + " to " + slot);
+                // Pick first stack
+                InventoryUtils.clickSlot(slots[0], ClickType.PICKUP, 0);
+                // Pick second stack
+                InventoryUtils.clickSlot(slots[1], ClickType.PICKUP, 0);
+                // Put result in empty slot
+                InventoryUtils.clickSlot(slot, ClickType.PICKUP, 0);
+                // Drop junk
+                InventoryUtils.drop(slots[1]);
             }
-            System.out.println("Combining " + slots[0] + " and " + slots[1] + " to " + slot);
-            // Pick first stack
-            InventoryUtils.clickSlot(slots[0], ClickType.PICKUP, 0);
-            // Pick second stack
-            InventoryUtils.clickSlot(slots[1], ClickType.PICKUP, 0);
-            // Put result in empty slot
-            InventoryUtils.clickSlot(slot, ClickType.PICKUP, 0);
-            // Drop junk
-            InventoryUtils.drop(slots[1]);
-        }
+        } while (slotsWithTotems.size() >= 2);
     }
     
     @Override
