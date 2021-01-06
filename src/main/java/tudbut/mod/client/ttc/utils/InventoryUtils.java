@@ -6,6 +6,7 @@ import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import tudbut.mod.client.ttc.TTC;
@@ -20,7 +21,7 @@ public class InventoryUtils {
     }
     
     public static Integer getSlotWithItem(Container inv, Item item, int[] not, int amountMin, int amountMax) {
-        for (int i = 0; i < inv.getInventory().size(); i++) {
+        for (int i = 9; i < inv.getInventory().size(); i++) {
             a:
             {
                 for (int j = 0; j < not.length; j++) {
@@ -36,9 +37,19 @@ public class InventoryUtils {
         return null;
     }
     
+    // Drop contents of a slot
+    public static void drop(int slot) {
+        clickSlot(slot, ClickType.THROW, 1);
+    }
+    
+    // Virtually clicks a slot
+    public static void clickSlot(int slot, ClickType type, int key) {
+        TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, slot, key, type, TTC.mc.player);
+    }
+    
     // This only swaps between a slot and a hotbar slot!
     public static void swap(int slot, int hotbarSlot) {
-        TTC.mc.playerController.windowClick(TTC.mc.player.inventoryContainer.windowId, slot, hotbarSlot, ClickType.SWAP, TTC.mc.player);
+        clickSlot(slot, ClickType.SWAP, hotbarSlot);
     }
     
     // Swap two items in inventory

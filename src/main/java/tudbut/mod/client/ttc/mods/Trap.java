@@ -89,8 +89,6 @@ public class Trap extends Module {
                 waitForTick();
                 // Place
                 BlockUtils.placeBlock(positions[i], false);
-                // Debug
-                System.out.println(positions[i]);
                 // Wait
                 Thread.sleep(50);
             }

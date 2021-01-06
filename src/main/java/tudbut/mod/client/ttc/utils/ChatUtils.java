@@ -2,6 +2,7 @@ package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TextComponentString;
+import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.Debug;
 
 import java.io.OutputStream;
@@ -42,11 +43,11 @@ public class ChatUtils { // Everything here is kinda self-explanatory
             
             @Override
             public void write(int i) {
-                if (!Debug.getInstance().enabled)
-                    return;
                 
                 if ((char) i == '\n') {
-                    Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(s));
+                    if (Debug.getInstance().enabled)
+                        Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(s));
+                    System.out.println(s);
                     s = "";
                 } else
                     s += (char) i;
@@ -55,6 +56,6 @@ public class ChatUtils { // Everything here is kinda self-explanatory
     }
     
     public static PrintStream chatPrinterDebug() {
-        return new PrintStream(chatOut());
+        return new PrintStream(chatOutDebug());
     }
 }

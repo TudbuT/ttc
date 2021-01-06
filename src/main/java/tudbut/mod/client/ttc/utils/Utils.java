@@ -38,6 +38,19 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
         return null; // No internet access
     }
     
+    // Transforms Integer[] to int[]
+    public static int[] objectArrayToNativeArray(Integer[] oa) {
+        // Create the int array tp copy to
+        int[] na = new int[oa.length];
+    
+        // Convert the integers one by one
+        for (int i = 0; i < na.length; i++) {
+            na[i] = oa[i];
+        }
+        
+        return na;
+    }
+    
     public static Map<String, String> stringToMap(String mapStringParsable) {
         HashMap<String, String> map = new HashMap<>();
         

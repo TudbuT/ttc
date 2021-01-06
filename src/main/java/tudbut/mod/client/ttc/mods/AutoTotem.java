@@ -6,13 +6,15 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.init.Items;
+import net.minecraft.inventory.ClickType;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
-import tudbut.mod.client.ttc.utils.ChatUtils;
-import tudbut.mod.client.ttc.utils.InventoryUtils;
-import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.*;
+
+import java.util.ArrayList;
 
 public class AutoTotem extends Module {
     
@@ -24,6 +26,8 @@ public class AutoTotem extends Module {
     // If the user seems to be restocking after respawning, if this is the case,
     // don't switch until any inventories are closed
     public boolean isRestockingAfterRespawn = false;
+    // If totems should be stacked automatically
+    public boolean autoStack = false;
     
     {
         subButtons.add(new GuiTTC.Button("Count: " + orig_min_count, text -> {
@@ -36,6 +40,10 @@ public class AutoTotem extends Module {
             if (orig_min_count < 0)
                 orig_min_count = min_count = 12;
             text.set("Count: " + orig_min_count);
+        }));
+        subButtons.add(new GuiTTC.Button("AutoStack: " + autoStack, text -> {
+            autoStack = !autoStack;
+            text.set("AutoStack: " + autoStack);
         }));
         subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
         
@@ -52,7 +60,8 @@ public class AutoTotem extends Module {
     
     public void updateButtons() {
         subButtons.get(0).text.set("Count: " + orig_min_count);
-        subButtons.get(1).text.set("Actual count: " + min_count);
+        subButtons.get(1).text.set("AutoStack: " + autoStack);
+        subButtons.get(2).text.set("Actual count: " + min_count);
     }
     
     // Run checks and AI
@@ -68,11 +77,8 @@ public class AutoTotem extends Module {
         // Run AI
         updateTotCount();
         updateButtons();
-        
-        // Fuck me
-        if (min_count < 0) {
-            min_count = 0;
-        }
+        if(autoStack)
+            autoStack();
         
         ItemStack stack = player.getHeldItemOffhand();
         if (stack.getCount() <= min_count) {
@@ -190,6 +196,89 @@ public class AutoTotem extends Module {
         }
         
         // Found!
+    }
+    
+    public void autoStack() {
+        if(orig_min_count == min_count)
+            return;
+        
+        EntityPlayerSP player = TTC.player;
+        ArrayList<Integer> slotsWithTotems = new ArrayList<>();
+        // The minimal amount that is required to stack totems
+        int min = 2;
+        // Only restack when totems are likely not a normal stack
+        int max = 12;
+        // TMP variable
+        Integer slot;
+    
+        // Get slots with totems
+        slot = InventoryUtils.getSlotWithItem(
+                player.inventoryContainer,
+                Items.TOTEM_OF_UNDYING,
+                new int[0],
+                min,
+                max
+        );
+        while (slot != null) {
+            slotsWithTotems.add(slot);
+            slot = InventoryUtils.getSlotWithItem(
+                    player.inventoryContainer,
+                    Items.TOTEM_OF_UNDYING,
+                    Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0])),
+                    min,
+                    max
+            );
+        }
+    
+        // Drop unusable stacks
+        if (slotsWithTotems.size() != 0) {
+            slot = InventoryUtils.getSlotWithItem(
+                    player.inventoryContainer,
+                    Items.TOTEM_OF_UNDYING,
+                    new int[0],
+                    0,
+                    min - 1
+            );
+        
+        
+            while (slot != null) {
+            
+                // Drop stack contents of the slot
+                InventoryUtils.drop(slot);
+                System.out.println("Dropped item in " + slot);
+            
+                // Next
+                slot = InventoryUtils.getSlotWithItem(
+                        player.inventoryContainer,
+                        Items.TOTEM_OF_UNDYING,
+                        new int[]{slot},
+                        0,
+                        min - 1
+                );
+            }
+        }
+    
+        // The slots found
+        int[] slots = Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0]));
+    
+        // Combine totems
+        if (slots.length >= 2) {
+            // Get empty slot
+            slot = InventoryUtils.getSlotWithItem(player.inventoryContainer, Items.AIR, 0);
+            if (slot == null) {
+                InventoryUtils.drop(slots[0]);
+                return;
+            }
+            System.out.println("Combining " + slots[0] + " and " + slots[1] + " to " + slot);
+            // Pick first stack
+            InventoryUtils.clickSlot(slots[0], ClickType.PICKUP, 0);
+            // Pick second stack
+            InventoryUtils.clickSlot(slots[1], ClickType.PICKUP, 0);
+            // Put result in empty slot
+            InventoryUtils.clickSlot(slot, ClickType.PICKUP, 0);
+            // Drop junk
+            InventoryUtils.drop(slots[1]);
+        }
     }
     
     @Override
