@@ -297,11 +297,13 @@ public class AutoTotem extends Module {
     @Override
     public void loadConfig() {
         orig_min_count = min_count = Integer.parseInt(cfg.get("count"));
+        autoStack = Boolean.parseBoolean(cfg.get("autoStack"));
         updateButtons();
     }
     
     @Override
     public void updateConfig() {
         cfg.put("count", String.valueOf(orig_min_count));
+        cfg.put("autoStack", String.valueOf(autoStack));
     }
 }
