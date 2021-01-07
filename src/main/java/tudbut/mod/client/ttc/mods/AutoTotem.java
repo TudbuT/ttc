@@ -64,7 +64,7 @@ public class AutoTotem extends Module {
     public void updateButtons() {
         subButtons.get(0).text.set("Count: " + orig_min_count);
         subButtons.get(1).text.set("AutoStack: " + autoStack);
-        subButtons.get(2).text.set("Actual count: " + min_count);
+        subButtons.get(3).text.set("Actual count: " + min_count);
     }
     
     // Run checks and AI
