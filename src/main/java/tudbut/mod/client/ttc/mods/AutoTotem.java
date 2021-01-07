@@ -28,6 +28,9 @@ public class AutoTotem extends Module {
     public boolean isRestockingAfterRespawn = false;
     // If totems should be stacked automatically
     public boolean autoStack = false;
+    // If the AutoStack should always run, regardless of the count
+    private boolean autoStackIgnoreCount = false;
+    
     
     {
         subButtons.add(new GuiTTC.Button("Count: " + orig_min_count, text -> {
@@ -46,7 +49,9 @@ public class AutoTotem extends Module {
             text.set("AutoStack: " + autoStack);
         }));
         subButtons.add(new GuiTTC.Button("AutoStack now", text -> {
+            autoStackIgnoreCount = true;
             autoStack();
+            autoStackIgnoreCount = false;
         }));
         subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
         
@@ -247,7 +252,7 @@ public class AutoTotem extends Module {
                 }
             }
     
-            if(orig_min_count == min_count)
+            if(orig_min_count == min_count && !autoStackIgnoreCount)
                 return;
             
             

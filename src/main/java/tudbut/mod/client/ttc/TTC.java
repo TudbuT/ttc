@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.4.2b";
+    public static final String VERSION = "vB1.4.2c";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
