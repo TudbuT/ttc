@@ -21,6 +21,8 @@ public class FMLEventHandler {
     // For the ChatSuffix to know when to appear
     private int chatSuffixHelper = 0;
     
+    private boolean isDead = true;
+    
     // Fired when enter is pressed in chat
     @SubscribeEvent
     public void onChat(ClientChatEvent event) {
@@ -210,10 +212,13 @@ public class FMLEventHandler {
         EntityPlayerSP player = TTC.player;
         if (player == null)
             return;
-        if (player.getHealth() <= 0) {
+        if (player.getHealth() <= 0 && !isDead) {
+            isDead = true;
             // >:(
             onDeath(player);
         }
+        else
+            isDead = false;
         ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
             if (TTC.modules[i].enabled)

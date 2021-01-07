@@ -45,6 +45,9 @@ public class AutoTotem extends Module {
             autoStack = !autoStack;
             text.set("AutoStack: " + autoStack);
         }));
+        subButtons.add(new GuiTTC.Button("AutoStack now", text -> {
+            autoStack();
+        }));
         subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
         
         }));
@@ -208,7 +211,7 @@ public class AutoTotem extends Module {
         // The minimal amount that is required to stack totems
         int min = 2;
         // Only restack when totems are likely not a normal stack
-        int max = 12;
+        int max = 24;
         // TMP variable
         Integer slot;
     
