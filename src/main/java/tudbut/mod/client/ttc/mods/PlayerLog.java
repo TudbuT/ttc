@@ -60,7 +60,7 @@ public class PlayerLog extends Module {
                                             Math.round(vec.z * 100) / 100 + " " +
                                             "!"
                                     );
-                                    long time = new Date().getTime() + 30 * 1000;
+                                    long time = new Date().getTime() + 2 * 60 * 1000;
                                     final int[] k = {-1};
                                     // Render hitbox as particles using the ParticleLoop
                                     ParticleLoop.register(new ParticleLoop.Particle() {

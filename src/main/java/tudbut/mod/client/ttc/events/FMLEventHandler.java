@@ -212,13 +212,15 @@ public class FMLEventHandler {
         EntityPlayerSP player = TTC.player;
         if (player == null)
             return;
-        if (player.getHealth() <= 0 && !isDead) {
-            isDead = true;
-            // >:(
-            onDeath(player);
-        }
-        else
+        if (player.getHealth() <= 0) {
+            if (!isDead) {
+                isDead = true;
+                // >:(
+                onDeath(player);
+            }
+        } else {
             isDead = false;
+        }
         ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
             if (TTC.modules[i].enabled)
