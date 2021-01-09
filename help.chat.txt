@@ -1,9 +1,9 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC client
 §k||||||||||||||||||||||||||||||||
-§avB1.4.3a
+§avB1.4.4a
 BETA
-§71.4.3
+§71.4.4
 §8a
 §a§lHelp
 
@@ -41,6 +41,6 @@ BETA
 §bAdd/remove someone from your team
 §7where <username> is any username.
 
-$aDiscord: https://discord.gg/2WsVCQDpwy
+§aDiscord: https://discord.gg/2WsVCQDpwy
 
 §k||||||||||||||||||||||||||||||||

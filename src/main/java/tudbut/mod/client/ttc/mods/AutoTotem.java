@@ -212,35 +212,22 @@ public class AutoTotem extends Module {
             return;
         
         EntityPlayerSP player = TTC.player;
-        ArrayList<Integer> slotsWithTotems = new ArrayList<>();
+        ArrayList<Integer> slots = new ArrayList<>();
         // The minimal amount that is required to stack totems
         int min = 2;
         // Only restack when totems are likely not a normal stack
         int max = 24;
         // TMP variable
         Integer slot;
-    
-        do {
-    
-            ArrayList<Integer> dropped = new ArrayList<>();
+        
+        // Runs 50 times
+        for (int i = 0; i < 50; i++) {
+            
             // Drop unusable stacks
-            if (slotsWithTotems.size() != 0) {
-                slot = InventoryUtils.getSlotWithItem(
-                        player.inventoryContainer,
-                        Items.TOTEM_OF_UNDYING,
-                        new int[0],
-                        0,
-                        min - 1
-                );
-        
-        
-                while (slot != null) {
-            
-                    // Drop stack contents of the slot
-                    InventoryUtils.drop(slot);
-                    System.out.println("Dropped item in " + slot);
-                    dropped.add(slot);
-            
+            ArrayList<Integer> dropped = new ArrayList<>();
+            if (slots.size() != 0) {
+                
+                for (int j = 0; j < 100; j++) {
                     // Next
                     slot = InventoryUtils.getSlotWithItem(
                             player.inventoryContainer,
@@ -249,55 +236,61 @@ public class AutoTotem extends Module {
                             0,
                             min - 1
                     );
+        
+                    if (slot == null)
+                        break;
+        
+                    // Drop stack contents of the slot
+                    InventoryUtils.drop(slot);
+                    System.out.println("Dropped item in " + slot);
+                    dropped.add(slot);
                 }
+                
             }
     
             if(orig_min_count == min_count && !autoStackIgnoreCount)
                 return;
-            
-            
-            slotsWithTotems.clear();
+    
+    
             // Get slots with totems
-            slot = InventoryUtils.getSlotWithItem(
-                    player.inventoryContainer,
-                    Items.TOTEM_OF_UNDYING,
-                    new int[0],
-                    min,
-                    max
-            );
-            while (slot != null && slotsWithTotems.size() < 2) {
-                slotsWithTotems.add(slot);
+            slots.clear();
+            for (int j = 0; j < 100; j++) {
                 slot = InventoryUtils.getSlotWithItem(
                         player.inventoryContainer,
                         Items.TOTEM_OF_UNDYING,
-                        Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0])),
+                        Utils.objectArrayToNativeArray(slots.toArray(new Integer[0])),
                         min,
                         max
                 );
+                if(slot == null)
+                    break;
+                
+                slots.add(slot);
             }
     
-            // The slots found
-            int[] slots = Utils.objectArrayToNativeArray(slotsWithTotems.toArray(new Integer[0]));
-    
             // Combine totems
-            if (slots.length >= 2) {
+            while (slots.size() >= 2) {
                 // Get empty slot
                 slot = InventoryUtils.getSlotWithItem(player.inventoryContainer, Items.AIR, 0);
                 if (slot == null) {
-                    InventoryUtils.drop(slots[0]);
+                    InventoryUtils.drop(slots.get(0));
+                    slots.remove(0);
                     continue;
                 }
-                System.out.println("Combining " + slots[0] + " and " + slots[1] + " to " + slot);
+                System.out.println("Combining " + slots.get(0) + " and " + slots.get(1) + " to " + slot);
                 // Pick first stack
-                InventoryUtils.clickSlot(slots[0], ClickType.PICKUP, 0);
+                InventoryUtils.clickSlot(slots.get(0), ClickType.PICKUP, 0);
                 // Pick second stack
-                InventoryUtils.clickSlot(slots[1], ClickType.PICKUP, 0);
+                InventoryUtils.clickSlot(slots.get(1), ClickType.PICKUP, 0);
                 // Put result in empty slot
                 InventoryUtils.clickSlot(slot, ClickType.PICKUP, 0);
                 // Drop junk
-                InventoryUtils.drop(slots[1]);
+                InventoryUtils.drop(slots.get(1));
+    
+                slots.remove(0);
+                slots.remove(0);
             }
-        } while (slotsWithTotems.size() >= 2);
+        }
     }
     
     @Override
