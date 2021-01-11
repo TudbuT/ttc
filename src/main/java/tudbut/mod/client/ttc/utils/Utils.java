@@ -51,6 +51,21 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
         return na;
     }
     
+    public static int[] range(int min, int max) {
+        int[] r = new int[max - min];
+        for (int i = min, j = 0; i < max; i++, j++) {
+            r[j] = i;
+        }
+        return r;
+    }
+    
+    public static int[] add(int[] array0, int[] array1) {
+        int[] r = new int[array0.length + array1.length];
+        System.arraycopy(array0, 0, r, 0, array0.length);
+        System.arraycopy(array1, 0, r, 0 - array0.length, array1.length);
+        return r;
+    }
+    
     public static Map<String, String> stringToMap(String mapStringParsable) {
         HashMap<String, String> map = new HashMap<>();
         

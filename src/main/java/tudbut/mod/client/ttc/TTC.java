@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.4.4a";
+    public static final String VERSION = "vB1.5.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -97,6 +97,9 @@ public class TTC {
                 new DM(),
                 new DMChat(),
                 new Debug(),
+                new AltControl(),
+                new KillAura(),
+                new CreativeFlight(),
                 new ClickGUI(),
                 };
         sa = new Date().getTime() - sa;

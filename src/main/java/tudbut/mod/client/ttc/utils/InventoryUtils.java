@@ -17,11 +17,11 @@ public class InventoryUtils {
     private static boolean swapping = false;
     
     public static Integer getSlotWithItem(Container inv, Item item, int amount) {
-        return getSlotWithItem(inv, item, new int[0], amount, amount);
+        return getSlotWithItem(inv, item, Utils.range(0, 8), amount, amount);
     }
     
     public static Integer getSlotWithItem(Container inv, Item item, int[] not, int amountMin, int amountMax) {
-        for (int i = 9; i < inv.getInventory().size(); i++) {
+        for (int i = 1; i < inv.getInventory().size(); i++) {
             a:
             {
                 for (int j = 0; j < not.length; j++) {

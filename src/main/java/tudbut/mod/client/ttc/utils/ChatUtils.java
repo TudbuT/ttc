@@ -58,4 +58,15 @@ public class ChatUtils { // Everything here is kinda self-explanatory
     public static PrintStream chatPrinterDebug() {
         return new PrintStream(chatOutDebug());
     }
+    
+    public static void simulateSend(String msg, boolean addToHistory) {
+        msg = net.minecraftforge.event.ForgeEventFactory.onClientSendMessage(msg);
+        if (msg.isEmpty()) return;
+        if (addToHistory) {
+            TTC.mc.ingameGUI.getChatGUI().addToSentMessages(msg);
+        }
+        if (net.minecraftforge.client.ClientCommandHandler.instance.executeCommand(TTC.mc.player, msg) != 0)
+            return;
+        TTC.mc.player.sendChatMessage(msg);
+    }
 }
