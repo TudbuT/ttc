@@ -1,5 +1,8 @@
 package tudbut.mod.client.ttc.utils;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Lists;
+import net.minecraft.entity.Entity;
 import tudbut.mod.client.ttc.TTC;
 
 import java.io.BufferedReader;
@@ -8,9 +11,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Utils { // A bunch of utils that don't deserve their own class, self-explanatory
+    
+    public static <T> Entity[] getEntities(Class<? extends T> entityType, Predicate<? super T> filter) {
+        List<T> list = Lists.<T>newArrayList();
+        
+        List<Entity> loadedEntityList = TTC.world.loadedEntityList;
+        for (int i = 0; i < loadedEntityList.size(); i++) {
+            Entity entity4 = loadedEntityList.get(i);
+            if (entityType.isAssignableFrom(entity4.getClass()) && filter.apply((T) entity4)) {
+                list.add((T) entity4);
+            }
+        }
+        
+        return list.toArray(new Entity[0]);
+    }
     
     public static String removeNewlines(String s) {
         if (s == null)
@@ -42,7 +60,7 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
     public static int[] objectArrayToNativeArray(Integer[] oa) {
         // Create the int array tp copy to
         int[] na = new int[oa.length];
-    
+        
         // Convert the integers one by one
         for (int i = 0; i < na.length; i++) {
             na[i] = oa[i];

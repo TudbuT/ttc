@@ -227,9 +227,9 @@ public class FMLEventHandler {
             if(TTC.modules[i].key != null) {
                 if (Keyboard.isKeyDown(TTC.modules[i].key) && TTC.mc.currentScreen == null) {
                     if (!TTC.modules[i].keyDown) {
+                        TTC.modules[i].keyDown = true;
                         ChatUtils.print("§a" + TTC.modules[i].getClass().getSimpleName() + " now " + !TTC.modules[i].enabled);
                        
-                        TTC.modules[i].keyDown = true;
                         if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
                             TTC.modules[i].onEnable();
                         else

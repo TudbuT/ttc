@@ -1,11 +1,14 @@
 package tudbut.mod.client.ttc.mods;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.Utils;
 import tudbut.tools.Queue;
 
 import java.util.ArrayList;
@@ -14,7 +17,8 @@ import java.util.Date;
 public class KillAura extends Module {
     int delay = 200;
     long last = 0;
-    Queue<EntityPlayer> toAttack = new Queue<>();
+    boolean attackEntities = true;
+    Queue<Entity> toAttack = new Queue<>();
     ArrayList<String> targets = new ArrayList<>();
     
     static KillAura instance;
@@ -39,10 +43,15 @@ public class KillAura extends Module {
             
             text.set("Delay: " + delay);
         }));
+        subButtons.add(new GuiTTC.Button("Attack " + (attackEntities ? "all" : "players"), text -> {
+            attackEntities = !attackEntities;
+            text.set("Attack " + (attackEntities ? "all" : "players"));
+        }));
     }
     
     public void updateButtons() {
         subButtons.get(0).text.set("Delay: " + delay);
+        subButtons.get(1).text.set("Attack " + (attackEntities ? "all" : "players"));
     }
     
     @Override
@@ -55,8 +64,8 @@ public class KillAura extends Module {
                 if (TTC.world == null)
                     break a;
                 
-                EntityPlayer[] players = TTC.world.playerEntities.toArray(new EntityPlayer[0]);
                 if(!toAttack.hasNext()) {
+                    EntityPlayer[] players = TTC.world.playerEntities.toArray(new EntityPlayer[0]);
                     for (int i = 0; i < players.length; i++) {
                         if(
                                 players[i].getDistance(TTC.player) < 6 &&
@@ -74,6 +83,17 @@ public class KillAura extends Module {
                         }
                     }
                 }
+                if(!toAttack.hasNext()) {
+                    Entity[] entities = Utils.getEntities(EntityLivingBase.class, EntityLivingBase::isEntityAlive);
+                    for (int i = 0; i < entities.length; i++) {
+                        if(
+                                entities[i].getDistance(TTC.player) < 6 &&
+                                !entities[i].getUniqueID().equals(TTC.player.getUniqueID())
+                        ) {
+                            toAttack.add(entities[i]);
+                        }
+                    }
+                }
     
                 if(toAttack.hasNext())
                     attackNext();
@@ -82,9 +102,9 @@ public class KillAura extends Module {
     }
     
     public void attackNext() {
-        EntityPlayer player = toAttack.next();
+        Entity entity = toAttack.next();
     
-        TTC.mc.playerController.attackEntity(TTC.player, player);
+        TTC.mc.playerController.attackEntity(TTC.player, entity);
         TTC.player.swingArm(EnumHand.MAIN_HAND);
     }
     
@@ -96,11 +116,13 @@ public class KillAura extends Module {
     @Override
     public void updateConfig() {
         cfg.put("delay", String.valueOf(delay));
+        cfg.put("attackEntities", String.valueOf(attackEntities));
     }
     
     @Override
     public void loadConfig() {
         delay = Integer.parseInt(cfg.get("delay"));
+        attackEntities = Boolean.parseBoolean(cfg.get("attackEntities"));
         updateButtons();
     }
 }

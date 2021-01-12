@@ -28,7 +28,7 @@ public class Bind extends Module {
     @Override
     public void onEveryChat(String s, String[] args) {
         for (int i = 0; i < TTC.modules.length; i++) {
-            if (args[0].startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
+            if (args[0].equalsIgnoreCase(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
                 if(args.length == 2)
                     TTC.modules[i].key = Keyboard.getKeyIndex(args[1].toUpperCase());
                 else
