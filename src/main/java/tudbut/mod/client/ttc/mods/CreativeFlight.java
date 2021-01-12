@@ -25,7 +25,7 @@ public class CreativeFlight extends Module {
             init = true;
         }
         
-        if(Keyboard.isKeyDown(Keyboard.KEY_Z) || player.onGround) {
+        if((Keyboard.isKeyDown(Keyboard.KEY_Z) && TTC.mc.currentScreen == null) || player.onGround) {
             onDisable();
         }
     }

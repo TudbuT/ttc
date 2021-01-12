@@ -70,6 +70,7 @@ public class KillAura extends Module {
                         if(
                                 players[i].getDistance(TTC.player) < 6 &&
                                 !Team.getInstance().names.contains(players[i].getGameProfile().getName()) &&
+                                !Friend.getInstance().names.contains(players[i].getGameProfile().getName()) &&
                                 !players[i].getGameProfile().getName().equals(TTC.mc.getSession().getProfile().getName()) &&
                                 !AltControl.getInstance().isAlt(players[i])
                         ) {
@@ -83,12 +84,12 @@ public class KillAura extends Module {
                         }
                     }
                 }
-                if(!toAttack.hasNext()) {
+                if(!toAttack.hasNext() && attackEntities) {
                     Entity[] entities = Utils.getEntities(EntityLivingBase.class, EntityLivingBase::isEntityAlive);
                     for (int i = 0; i < entities.length; i++) {
                         if(
                                 entities[i].getDistance(TTC.player) < 6 &&
-                                !entities[i].getUniqueID().equals(TTC.player.getUniqueID())
+                                !(entities[i] instanceof EntityPlayer)
                         ) {
                             toAttack.add(entities[i]);
                         }
