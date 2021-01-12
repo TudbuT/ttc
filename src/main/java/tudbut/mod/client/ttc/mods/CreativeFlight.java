@@ -2,6 +2,7 @@ package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.player.PlayerCapabilities;
+import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.Module;
 
@@ -24,8 +25,8 @@ public class CreativeFlight extends Module {
             init = true;
         }
         
-        if(!TTC.mc.world.getBlockState(player.getPosition().add(0, -0.5, 0)).isTranslucent()) {
-            init = false;
+        if(Keyboard.isKeyDown(Keyboard.KEY_Z) || player.onGround) {
+            onDisable();
         }
     }
     

@@ -1,9 +1,9 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC connection
 §k||||||||||||||||||||||||||||||||
-§avB1.5.0a
+§avB1.5.1a
 BETA
-§71.5.0
+§71.5.1
 §8a
 §a§lHelp
 
@@ -40,6 +40,17 @@ BETA
 §d%pteam <add/remove> <username>
 §bAdd/remove someone from your team
 §7where <username> is any username.
+
+§a AltControl:
+
+To connect:
+- on main: ,altcontrol server
+- on all alts: ,altcontrol client
+To use:
+- ,altcontrol tpa
+- ,altcontrol kill <player>
+- ,altcontrol stop
+- ,altcontrol send <message>
 
 §aDiscord: https://discord.gg/2WsVCQDpwy
 

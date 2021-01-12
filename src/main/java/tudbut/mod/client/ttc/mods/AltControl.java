@@ -85,7 +85,7 @@ public class AltControl extends Module {
                 break;
             case UUID:
                 main.uuid = UUID.fromString(packet.content());
-                ChatUtils.print("Got UUID from alt " + main.name + ": " + packet.content());
+                ChatUtils.print("Got UUID from main " + main.name + ": " + packet.content());
                 break;
             case TPA:
                 ChatUtils.print("TPA'ing main account...");
@@ -128,9 +128,9 @@ public class AltControl extends Module {
                 else {
                     ChatUtils.print("Stopping killing player " + packet.content());
                     ChatUtils.simulateSend("#stop", false);
-                    aura.targets.remove(packet.content());
+                    aura.targets.removeIf(s -> s.equals(packet.content()));
                     if(!aura.targets.isEmpty()) {
-                        ChatUtils.print("Killing player " + packet.content());
+                        ChatUtils.print("Killing player " + aura.targets.get(0));
                         ChatUtils.simulateSend("#follow player " + aura.targets.get(0), false);
                     }
                 }
@@ -205,13 +205,17 @@ public class AltControl extends Module {
             if (s.equals("client")) {
                 client = new PBIC.Client("127.0.0.1", 50278);
                 ThreadManager.run("TTCIC client receive thread", () -> {
-                    try {
-                        while (true) {
-                            onPacketSC(getPacketSC(client.connection.readPacket()), client.connection);
+                    while (true) {
+                        String string = "UNKNOWN";
+                        try {
+                            PBIC.Packet packet = client.connection.readPacket();
+                            string = packet.getContent();
+                            onPacketSC(getPacketSC(packet), client.connection);
                         }
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            System.err.println("Packet: " + string);
+                        }
                     }
                 });
             }
