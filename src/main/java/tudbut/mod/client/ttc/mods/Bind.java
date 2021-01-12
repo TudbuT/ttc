@@ -30,7 +30,7 @@ public class Bind extends Module {
         for (int i = 0; i < TTC.modules.length; i++) {
             if (args[0].startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
                 if(args.length == 2)
-                    TTC.modules[i].key = Keyboard.getKeyIndex(args[1]);
+                    TTC.modules[i].key = Keyboard.getKeyIndex(args[1].toUpperCase());
                 else
                     TTC.modules[i].key = null;
             }

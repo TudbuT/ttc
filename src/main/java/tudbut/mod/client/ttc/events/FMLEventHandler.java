@@ -225,14 +225,19 @@ public class FMLEventHandler {
         ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
             if(TTC.modules[i].key != null) {
-                if(Keyboard.isKeyDown(TTC.modules[i].key)) {
-                    ChatUtils.print("§a" + TTC.modules[i].getClass().getSimpleName() + " now " + !TTC.modules[i].enabled);
-    
-                    if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
-                        TTC.modules[i].onEnable();
-                    else
-                        TTC.modules[i].onDisable();
+                if (Keyboard.isKeyDown(TTC.modules[i].key) && TTC.mc.currentScreen == null) {
+                    if (!TTC.modules[i].keyDown) {
+                        ChatUtils.print("§a" + TTC.modules[i].getClass().getSimpleName() + " now " + !TTC.modules[i].enabled);
+                       
+                        TTC.modules[i].keyDown = true;
+                        if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
+                            TTC.modules[i].onEnable();
+                        else
+                            TTC.modules[i].onDisable();
+                    }
                 }
+                else
+                    TTC.modules[i].keyDown = false;
             }
             
             if (TTC.modules[i].enabled)

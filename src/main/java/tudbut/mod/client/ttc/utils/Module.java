@@ -19,6 +19,7 @@ public abstract class Module {
     public Integer clickGuiX;
     public Integer clickGuiY;
     public Integer key;
+    public boolean keyDown;
     public ArrayList<GuiTTC.Button> subButtons = new ArrayList<>();
     
     public Module() {

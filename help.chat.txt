@@ -1,9 +1,9 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC connection
 §k||||||||||||||||||||||||||||||||
-§avB1.6.0a
+§avB1.6.1a
 BETA
-§71.6.0
+§71.6.1
 §8a
 §a§lHelp
 
@@ -40,6 +40,10 @@ BETA
 §d%pteam <add/remove> <username>
 §bAdd/remove someone from your team
 §7where <username> is any username.
+
+§d%pbind <module> [key]
+§bBind a module to a key
+§7where <module> is any module and [key] is either nothing or a key name.
 
 §a AltControl:
 
