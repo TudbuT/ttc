@@ -3,10 +3,7 @@ package tudbut.mod.client.ttc.mods;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.EntityPlayer;
 import tudbut.mod.client.ttc.TTC;
-import tudbut.mod.client.ttc.utils.ChatUtils;
-import tudbut.mod.client.ttc.utils.Module;
-import tudbut.mod.client.ttc.utils.ThreadManager;
-import tudbut.mod.client.ttc.utils.Utils;
+import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
 
 import java.io.IOException;
@@ -151,31 +148,43 @@ public class AltControl extends Module {
                 ChatUtils.print("Got UUID from alt " + altsMap.get(connection).name + ": " + packet.content());
                 connection.writePacket(getPacketSC(PacketsSC.UUID, TTC.mc.getSession().getProfile().getId().toString()));
                 
-                Map<String, String> map0 = new HashMap<>();
-                PBIC.Connection[] keys = altsMap.keySet().toArray(new PBIC.Connection[0]);
-                for (int i = 0; i < keys.length; i++) {
-                    Alt alt = altsMap.get(keys[i]);
-                    
-                    Map<String, String> map1 = new HashMap<>();
-                    map1.put("name", alt.name);
-                    map1.put("uuid", alt.uuid.toString());
-                    
-                    map0.put(String.valueOf(i), Utils.mapToString(map1));
-                }
-                sendPacketSC(PacketsSC.LIST, Utils.mapToString(map0));
+                sendList();
                 
                 break;
         }
     }
     
     public void sendPacketSC(PacketsSC type, String content) throws IOException {
+        ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
         PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
         for (int i = 0; i < connections.length; i++) {
-            connections[i].writePacket(getPacketSC(type, content));
+            try {
+                connections[i].writePacket(getPacketSC(type, content));
+            } catch (Exception ignore) { }
         }
     }
     
+    public void sendPacketDelayedSC(PacketsSC type, String content) {
+        ThreadManager.run(() -> {
+            ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
+            PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
+            for (int i = 0; i < connections.length; i++) {
+                try {
+                    connections[i].writePacket(getPacketSC(type, content));
+                }
+                catch (IOException ignore) { }
+                try {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    
     public void sendPacket(PacketsCS type, String content) throws IOException {
+        ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
         if(client == null)
             throw new RuntimeException();
         client.connection.writePacket(getPacketCS(type, content));
@@ -184,7 +193,7 @@ public class AltControl extends Module {
     @Override
     public void onChat(String s, String[] args) {
         try {
-            if (s.equals("server")) {
+            if (s.equals("server") && server == null) {
                 server = new PBIC.Server(50278);
                 server.start();
                 server.onJoin.add(() -> {
@@ -194,7 +203,6 @@ public class AltControl extends Module {
                         altsMap.put(theConnection, new Alt());
                         
                         while (true) {
-                            onPacketCS(getPacketCS(theConnection.readPacket()), theConnection);
                             String string = "UNKNOWN";
                             try {
                                 PBIC.Packet packet = theConnection.readPacket();
@@ -211,8 +219,10 @@ public class AltControl extends Module {
                         e.printStackTrace();
                     }
                 });
+                
+                ChatUtils.print("§aServer started");
             }
-            if (s.equals("client")) {
+            if (s.equals("client") && client == null) {
                 client = new PBIC.Client("127.0.0.1", 50278);
                 ThreadManager.run("TTCIC client receive thread", () -> {
                     while (true) {
@@ -237,6 +247,7 @@ public class AltControl extends Module {
                     sendPacketSC(PacketsSC.EXECUTE, st);
                 }
                 if(args[0].equals("kill") && s.contains(" ")) {
+                    sendList();
                     String st = s.substring(s.indexOf(" ") + 1);
                     sendPacketSC(PacketsSC.KILL, st);
                     ChatUtils.simulateSend("#follow player " + st, false);
@@ -268,11 +279,58 @@ public class AltControl extends Module {
             }
             
             if (s.equals("tpa")) {
-                sendPacketSC(PacketsSC.TPA, "");
+                sendList();
+                sendPacketDelayedSC(PacketsSC.TPA, "");
+            }
+            
+            if (s.equals("end")) {
+                if(client != null)
+                    client.connection.getBus().close();
+                client = null;
+                if(server != null) {
+                    server.busses.forEach(bus -> {
+                        try {
+                            bus.close();
+                        }
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    server.busses.clear();
+                    server.connections.clear();
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    private void sendList() throws IOException {
+        Map<String, String> map0 = new HashMap<>();
+        PBIC.Connection[] keys = altsMap.keySet().toArray(new PBIC.Connection[0]);
+        alts.clear();
+        for (int i = 0; i < keys.length; i++) {
+            Alt alt = altsMap.get(keys[i]);
+            alts.add(alt);
+
+            Map<String, String> map1 = new HashMap<>();
+            map1.put("name", alt.name);
+            map1.put("uuid", alt.uuid.toString());
+
+            map0.put(String.valueOf(i), Utils.mapToString(map1));
+        }
+        sendPacketSC(PacketsSC.LIST, Utils.mapToString(map0));
+    }
+    
+    @Override
+    public boolean onServerChat(String s, String formatted) {
+        if (
+                s.contains("has requested to teleport to you.") &&
+                alts.stream().anyMatch(alt -> s.startsWith(alt.name + " ") || s.startsWith("~" + alt.name + " "))
+        ) {
+            TTC.player.sendChatMessage("/tpaccept");
+        }
+        return false;
     }
     
     public static class Alt {
