@@ -18,6 +18,7 @@ public abstract class Module {
     public boolean enabled = defaultEnabled();
     public Integer clickGuiX;
     public Integer clickGuiY;
+    public Integer key;
     public ArrayList<GuiTTC.Button> subButtons = new ArrayList<>();
     
     public Module() {
@@ -60,8 +61,9 @@ public abstract class Module {
         if (cfg.containsKey("cgx") && cfg.containsKey("cgy")) {
             clickGuiX = Integer.parseInt(cfg.get("cgx"));
             clickGuiY = Integer.parseInt(cfg.get("cgy"));
-            System.out.println(clickGuiX);
-            System.out.println(clickGuiY);
+        }
+        if(cfg.containsKey("key")) {
+            key = Integer.parseInt(cfg.get("key"));
         }
         
         loadConfig();
@@ -83,6 +85,8 @@ public abstract class Module {
             cfg.put("cgx", clickGuiX + "");
             cfg.put("cgy", clickGuiY + "");
         }
+        if(key != null)
+            cfg.put("key", key + "");
         
         return Utils.mapToString(cfg);
     }

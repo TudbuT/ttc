@@ -10,6 +10,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.ChatUtils;
@@ -223,6 +224,17 @@ public class FMLEventHandler {
         }
         ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
+            if(TTC.modules[i].key != null) {
+                if(Keyboard.isKeyDown(TTC.modules[i].key)) {
+                    ChatUtils.print("§a" + TTC.modules[i].getClass().getSimpleName() + " now " + !TTC.modules[i].enabled);
+    
+                    if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
+                        TTC.modules[i].onEnable();
+                    else
+                        TTC.modules[i].onDisable();
+                }
+            }
+            
             if (TTC.modules[i].enabled)
                 try {
                     TTC.modules[i].onTick();
