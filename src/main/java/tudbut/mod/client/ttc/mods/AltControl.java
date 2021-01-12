@@ -195,6 +195,16 @@ public class AltControl extends Module {
                         
                         while (true) {
                             onPacketCS(getPacketCS(theConnection.readPacket()), theConnection);
+                            String string = "UNKNOWN";
+                            try {
+                                PBIC.Packet packet = theConnection.readPacket();
+                                string = packet.getContent();
+                                onPacketCS(getPacketCS(packet), theConnection);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                                System.err.println("Packet: " + string);
+                            }
                         }
                     }
                     catch (IOException e) {
