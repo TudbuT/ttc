@@ -52,21 +52,15 @@ public class Friend extends Module {
                 names.remove(args[1]);
                 names.add(args[1]);
                 ChatUtils.print("Done!");
-                
-                // If he also uses TTC, he'll be notified, if he doesn't, too bad!
-                TTC.player.sendChatMessage("/tell " + args[1] + " TTC[2]");
                 break;
             case "remove":
                 // Remove a player from the team
                 names.remove(args[1]);
                 ChatUtils.print("Done!");
-                
-                // If he also uses TTC, he'll be notified, if he doesn't, too bad!
-                TTC.player.sendChatMessage("/tell " + args[1] + " TTC[3]");
                 break;
             case "list":
                 // Print the member list
-                StringBuilder toPrint = new StringBuilder("Team members: ");
+                StringBuilder toPrint = new StringBuilder("Friend: ");
                 for (String name : names) {
                     toPrint.append(name).append(", ");
                 }

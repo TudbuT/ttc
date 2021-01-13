@@ -88,6 +88,8 @@ public abstract class Module {
         }
         if(key != null)
             cfg.put("key", key + "");
+        else
+            cfg.remove("key");
         
         return Utils.mapToString(cfg);
     }
