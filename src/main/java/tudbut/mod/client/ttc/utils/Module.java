@@ -21,10 +21,31 @@ public abstract class Module {
     public Integer key;
     public boolean keyDown;
     public ArrayList<GuiTTC.Button> subButtons = new ArrayList<>();
+    private GuiTTC.Button[] confirmationButtons = new GuiTTC.Button[3];
+    
+    {
+        confirmationButtons[0] = new GuiTTC.Button("Are you sure?", text -> {});
+        confirmationButtons[1] = new GuiTTC.Button("Yes", text -> {
+            displayConfirmation = false;
+            onConfirm(true);
+        });
+        confirmationButtons[2] = new GuiTTC.Button("No", text -> {
+            displayConfirmation = false;
+            onConfirm(false);
+        });
+    }
     
     public Module() {
         index = cIndex;
         cIndex++;
+    }
+    
+    protected boolean displayConfirmation = false;
+    
+    public final GuiTTC.Button[] getSubButtons() {
+        if(displayConfirmation)
+            return confirmationButtons;
+        return subButtons.toArray(new GuiTTC.Button[0]);
     }
     
     // Defaults to override
@@ -37,9 +58,15 @@ public abstract class Module {
     }
     
     // Event listeners
-    public abstract void onTick();
+    public abstract void onSubTick();
+    
+    public void onEverySubTick() { }
+    
+    public void onTick() { };
     
     public void onEveryTick() { }
+    
+    public void onConfirm(boolean result) { }
     
     public abstract void onChat(String s, String[] args);
     

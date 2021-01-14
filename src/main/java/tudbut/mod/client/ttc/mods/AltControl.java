@@ -3,6 +3,7 @@ package tudbut.mod.client.ttc.mods;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.player.EntityPlayer;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
 
@@ -23,6 +24,43 @@ public class AltControl extends Module {
     public static AltControl getInstance() {
         return instance;
     }
+    
+    private int confirmationInstance = 0;
+    private int mode = -1;
+    
+    {updateButtons();}
+    
+    private void updateButtons() {
+        subButtons.clear();
+        
+        if(mode == -1) {
+            subButtons.add(new GuiTTC.Button("Main mode", text -> {
+                if (mode != -1)
+                    return;
+        
+                displayConfirmation = true;
+                confirmationInstance = 0;
+            }));
+            subButtons.add(new GuiTTC.Button("Alt mode", text -> {
+                if (mode != -1)
+                    return;
+        
+                displayConfirmation = true;
+                confirmationInstance = 1;
+            }));
+        }
+        if(mode == 0) {
+            subButtons.add(new GuiTTC.Button("TPA alts here", text -> {
+                onChat("tpa", "tpa".split(" "));
+            }));
+            subButtons.add(new GuiTTC.Button("Stop alts", text -> {
+                onChat("stop", "stop".split(" "));
+            }));
+        }
+    }
+    
+    
+    
     
     public boolean isAlt(EntityPlayer player) {
         try {
@@ -50,6 +88,20 @@ public class AltControl extends Module {
     Map<PBIC.Connection, Alt> altsMap = new HashMap<>();
     
     @Override
+    public void onConfirm(boolean result) {
+        if(result) {
+            switch (confirmationInstance) {
+                case 0:
+                    onChat("server", "server".split(" "));
+                    break;
+                case 1:
+                    onChat("client", "client".split(" "));
+                    break;
+            }
+        }
+    }
+    
+    @Override
     public void onEnable() {
         alts = new ArrayList<>();
         Alt alt;
@@ -60,7 +112,7 @@ public class AltControl extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     
     }
     
@@ -68,7 +120,7 @@ public class AltControl extends Module {
     public void onPacketSC(PacketSC packet, PBIC.Connection connection) throws IOException {
         if(client == null)
             throw new RuntimeException();
-    
+        
         KillAura aura = KillAura.getInstance();
         switch (packet.type()) {
             case INIT:
@@ -220,6 +272,8 @@ public class AltControl extends Module {
                     }
                 });
                 
+                mode = 0;
+                
                 ChatUtils.print("§aServer started");
             }
             if (s.equals("client") && client == null) {
@@ -238,6 +292,7 @@ public class AltControl extends Module {
                         }
                     }
                 });
+                mode = 1;
             }
             
             if(args.length >= 2) {
@@ -267,7 +322,7 @@ public class AltControl extends Module {
                     }
                 }
             }
-    
+            
             if (s.equals("stop")) {
                 KillAura aura = KillAura.getInstance();
                 sendPacketSC(PacketsSC.STOP, "");
@@ -303,6 +358,8 @@ public class AltControl extends Module {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        
+        updateButtons();
     }
     
     private void sendList() throws IOException {
@@ -312,11 +369,11 @@ public class AltControl extends Module {
         for (int i = 0; i < keys.length; i++) {
             Alt alt = altsMap.get(keys[i]);
             alts.add(alt);
-
+            
             Map<String, String> map1 = new HashMap<>();
             map1.put("name", alt.name);
             map1.put("uuid", alt.uuid.toString());
-
+            
             map0.put(String.valueOf(i), Utils.mapToString(map1));
         }
         sendPacketSC(PacketsSC.LIST, Utils.mapToString(map0));

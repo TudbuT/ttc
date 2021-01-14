@@ -16,7 +16,7 @@ public class Bind extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     
     }
     

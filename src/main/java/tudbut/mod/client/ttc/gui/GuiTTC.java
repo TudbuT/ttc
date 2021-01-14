@@ -7,6 +7,7 @@ import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.ClickGUI;
 import tudbut.mod.client.ttc.utils.Module;
 
+import java.awt.*;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -91,7 +92,7 @@ public class GuiTTC extends GuiScreen {
             // Create the button
             int r = i;
             Button b = new Button(
-                    10 + (210 * x), 10 + (y * 40), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
+                    10 + (160 * x), 10 + (y * 30), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
                     (text) -> {
                         if (TTC.modules[r].enabled = !TTC.modules[r].enabled)
                             TTC.modules[r].onEnable();
@@ -140,6 +141,8 @@ public class GuiTTC extends GuiScreen {
         }
     }
     
+    
+    
     // Update cx and cy
     @Override
     protected void mouseClickMove(int mouseX, int mouseY, int clickedMouseButton, long timeSinceLastClick) {
@@ -167,6 +170,9 @@ public class GuiTTC extends GuiScreen {
         updateButtons();
         
         this.drawDefaultBackground();
+        
+        cx = mouseX;
+        cy = mouseY;
         
         // Ask the buttons to render themselves
         for (int i = 0; i < buttons.length; i++) {
@@ -229,17 +235,33 @@ public class GuiTTC extends GuiScreen {
             if (!display)
                 return;
             
-            drawRect(x, y, x + 200, y + 30, color);
-            gui.drawString(gui.fontRenderer, text.get(), x + 10, y + 11, 0xffffffff);
+            int color = this.color;
+    
+            if (gui.cx >= x && gui.cy >= y && gui.cx <= x + 150 && gui.cy <= y + 20) {
+                Color c = new Color(color, true);
+                int r, g, b, a;
+                r = c.getRed();
+                g = c.getGreen();
+                b = c.getBlue();
+                a = c.getAlpha();
+                r += 0x20;
+                g += 0x20;
+                b += 0x20;
+                a += 0x20;
+                color = new Color(Math.min(r, 0xff),Math.min(g, 0xff),Math.min(b, 0xff),Math.min(a, 0xff)).getRGB();
+            }
+            
+            drawRect(x, y, x + 150, y + 20, color);
+            gui.drawString(gui.fontRenderer, text.get(), x + 6, y + 6, 0xffffffff);
             
             // Draw sub buttons
             if (module != null && module.enabled) {
-                subButtons = module.subButtons.toArray(new Button[0]);
+                subButtons = module.getSubButtons();
                 
                 for (int i = 0; i < subButtons.length; i++) {
                     Button b = subButtons[i];
                     b.x = x;
-                    b.y = y + ((i + 1) * 30);
+                    b.y = y + ((i + 1) * 20);
                     b.color = 0x4000ff00;
                     b.draw(gui);
                 }
@@ -248,7 +270,7 @@ public class GuiTTC extends GuiScreen {
         
         public boolean mouseClicked(int clickX, int clickY, int button) {
             if (clickX >= x && clickY >= y) {
-                if (clickX <= x + 200 && clickY <= y + 30) {
+                if (clickX <= x + 150 && clickY <= y + 20) {
                     mouseDown = true;
                     mouseDownButton = button;
                     click(button);
@@ -256,7 +278,7 @@ public class GuiTTC extends GuiScreen {
                 }
             }
             if (module != null && module.enabled) {
-                subButtons = module.subButtons.toArray(new Button[0]);
+                subButtons = module.getSubButtons();
                 
                 for (int i = 0; i < subButtons.length; i++) {
                     if (subButtons[i].mouseClicked(clickX, clickY, button))
@@ -287,8 +309,8 @@ public class GuiTTC extends GuiScreen {
         protected void onTick(GuiTTC gui) {
             if (module != null) {
                 if (mouseDown && mouseDownButton == 1) {
-                    x = gui.cx - 100;
-                    y = gui.cy - 15;
+                    x = gui.cx - 150 / 2;
+                    y = gui.cy - 10;
                     x = (x / 5) * 5;
                     y = (y / 5) * 5;
                 }

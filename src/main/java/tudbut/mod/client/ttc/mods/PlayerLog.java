@@ -21,7 +21,7 @@ public class PlayerLog extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
         // Is online?
         if (TTC.mc.getConnection() == null)
             return;

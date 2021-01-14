@@ -9,7 +9,7 @@ import tudbut.mod.client.ttc.utils.Module;
 public class CreativeFlight extends Module {
     boolean init;
     @Override
-    public void onTick() {
+    public void onSubTick() {
         if(TTC.mc.world == null) {
             init = false;
             return;

@@ -74,7 +74,7 @@ public class AutoTotem extends Module {
     
     // Run checks and AI
     @Override
-    public void onTick() {
+    public void onSubTick() {
         EntityPlayerSP player = TTC.player;
         
         if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {

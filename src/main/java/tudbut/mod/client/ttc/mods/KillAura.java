@@ -55,7 +55,7 @@ public class KillAura extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
         if (new Date().getTime() >= last + delay) {
             last = new Date().getTime();
             a :

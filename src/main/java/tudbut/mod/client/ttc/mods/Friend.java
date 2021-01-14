@@ -35,12 +35,12 @@ public class Friend extends Module {
     }
     
     @Override
-    public void onEveryTick() {
+    public void onEverySubTick() {
         enabled = true;
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     
     }
     

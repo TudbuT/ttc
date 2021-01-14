@@ -69,12 +69,12 @@ public class TPATools extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     
     }
     
     @Override
-    public void onEveryTick() { }
+    public void onEverySubTick() { }
     
     @Override
     public void onChat(String s, String[] args) {

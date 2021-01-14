@@ -33,7 +33,7 @@ public class Trap extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
         ticked = true;
     }
     

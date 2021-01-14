@@ -19,9 +19,6 @@ import tudbut.mod.client.ttc.utils.Utils;
 
 public class FMLEventHandler {
     
-    // For the ChatSuffix to know when to appear
-    private int chatSuffixHelper = 0;
-    
     private boolean isDead = true;
     
     // Fired when enter is pressed in chat
@@ -124,10 +121,7 @@ public class FMLEventHandler {
         // Don't add chatcolor to commands!
         else if (!event.getOriginalMessage().startsWith("/") && !event.getOriginalMessage().startsWith(".") && !event.getOriginalMessage().startsWith("#")) {
             event.setCanceled(true);
-            TTC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + (chatSuffixHelper == 0 && ChatSuffix.getInstance().enabled ? " ›TTC‹" : ""));
-            chatSuffixHelper++;
-            if (chatSuffixHelper == 6)
-                chatSuffixHelper = 0;
+            TTC.player.sendChatMessage(ChatColor.getInstance().get() + event.getMessage() + ChatSuffix.getInstance().get(ChatSuffix.getInstance().chance));
             
             ChatUtils.history(event.getOriginalMessage());
         }
@@ -181,7 +175,11 @@ public class FMLEventHandler {
                     );
                 }
                 try {
-                    Thread.sleep(60 * 1000);
+                    for (int i = 0; i < 60; i++) {
+                        Thread.sleep(1000);
+                        if(TTC.mc.world == null)
+                            break;
+                    }
                 }
                 catch (InterruptedException e) {
                     e.printStackTrace();
@@ -209,7 +207,22 @@ public class FMLEventHandler {
     
     // Fired every tick
     @SubscribeEvent
-    public void onTick(TickEvent event) {
+    public void onSubTick(TickEvent event) {
+        for (int i = 0; i < TTC.modules.length; i++) {
+            if (TTC.modules[i].enabled)
+                try {
+                    TTC.modules[i].onSubTick();
+                }
+                catch (Exception e) {
+                    e.printStackTrace(ChatUtils.chatPrinterDebug());
+                }
+            TTC.modules[i].onEverySubTick();
+        }
+    }
+    
+    // Fired every tick
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
         EntityPlayerSP player = TTC.player;
         if (player == null)
             return;

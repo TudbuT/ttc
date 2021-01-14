@@ -34,7 +34,7 @@ public class ChatColor extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     
     }
     

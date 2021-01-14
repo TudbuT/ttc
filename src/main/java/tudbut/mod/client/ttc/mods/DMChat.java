@@ -18,7 +18,7 @@ public class DMChat extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     }
     
     @Override

@@ -18,11 +18,11 @@ public class DMAll extends Module {
     }
     
     @Override
-    public void onTick() {
+    public void onSubTick() {
     }
     
     @Override
-    public void onEveryTick() {
+    public void onEverySubTick() {
         enabled = true;
     }
     
