@@ -56,6 +56,9 @@ public class AltControl extends Module {
             subButtons.add(new GuiTTC.Button("Stop alts", text -> {
                 onChat("stop", "stop".split(" "));
             }));
+            subButtons.add(new GuiTTC.Button("Follow me", text -> {
+                onChat("follow", "follow".split(" "));
+            }));
         }
     }
     
@@ -165,6 +168,10 @@ public class AltControl extends Module {
                 aura.enabled = true;
                 aura.onEnable();
                 aura.targets.add(packet.content());
+                break;
+            case FOLLOW:
+                ChatUtils.print("Following main");
+                ChatUtils.simulateSend("#follow player " + main.name, false);
                 break;
             case STOP:
                 if(packet.content().equals("")) {
@@ -326,7 +333,7 @@ public class AltControl extends Module {
             if (s.equals("stop")) {
                 KillAura aura = KillAura.getInstance();
                 sendPacketSC(PacketsSC.STOP, "");
-                ChatUtils.print("Stopping killing all players");
+                ChatUtils.print("Stopping killing/following all players");
                 aura.enabled = false;
                 aura.onDisable();
                 aura.targets.clear();
@@ -336,6 +343,10 @@ public class AltControl extends Module {
             if (s.equals("tpa")) {
                 sendList();
                 sendPacketDelayedSC(PacketsSC.TPA, "");
+            }
+    
+            if (s.equals("follow")) {
+                sendPacketDelayedSC(PacketsSC.FOLLOW, "");
             }
             
             if (s.equals("end")) {

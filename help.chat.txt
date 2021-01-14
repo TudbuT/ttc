@@ -1,10 +1,7 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC connection
 §k||||||||||||||||||||||||||||||||
-§avB1.7.0a
-BETA
-§71.7.0
-§8a
+§avB1.7.1a
 §a§lHelp
 
 §aCurrent prefix: %p
@@ -44,6 +41,10 @@ BETA
 §d%pbind <module> [key]
 §bBind a module to a key
 §7where <module> is any module and [key] is either nothing or a key name.
+
+§d%pchatsuffix <suffix...>
+§bSet the chatsuffix
+§7where <suffix...> is anything.
 
 §a AltControl:
 

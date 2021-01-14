@@ -208,6 +208,9 @@ public class FMLEventHandler {
     // Fired every tick
     @SubscribeEvent
     public void onSubTick(TickEvent event) {
+        if(TTC.mc.world == null || TTC.mc.player == null)
+            return;
+        
         for (int i = 0; i < TTC.modules.length; i++) {
             if (TTC.modules[i].enabled)
                 try {
@@ -223,6 +226,10 @@ public class FMLEventHandler {
     // Fired every tick
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent event) {
+        if(TTC.mc.world == null || TTC.mc.player == null)
+            return;
+        
+        
         EntityPlayerSP player = TTC.player;
         if (player == null)
             return;
