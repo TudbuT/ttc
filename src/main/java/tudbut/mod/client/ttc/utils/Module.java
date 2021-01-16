@@ -58,11 +58,11 @@ public abstract class Module {
     }
     
     // Event listeners
-    public abstract void onSubTick();
+    public void onSubTick() { }
     
     public void onEverySubTick() { }
     
-    public void onTick() { };
+    public void onTick() { }
     
     public void onEveryTick() { }
     

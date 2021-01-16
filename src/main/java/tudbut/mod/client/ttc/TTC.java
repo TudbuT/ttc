@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.7.1a";
+    public static final String VERSION = "vB1.8.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -43,6 +43,14 @@ public class TTC {
     
     // Logger, provided by Forge
     public static Logger logger;
+    
+    private static TTC instance;
+    
+    public static TTC getInstance() {
+        return instance;
+    }
+    
+    {instance = this;}
     
     // Runs a slight moment after the game is started, not all mods are initialized yet
     @EventHandler
@@ -113,8 +121,56 @@ public class TTC {
         
         System.out.println("Loading config...");
         sa = new Date().getTime();
-        
+    
         // Loading config from config/ttc.cfg
+        loadConfig();
+        
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
+        
+        System.out.println("Starting threads...");
+        sa = new Date().getTime();
+        
+        // Starting thread to regularly save config
+        ThreadManager.run(() -> {
+            while (true) {
+                try {
+                    try {
+                        // Only save if on main
+                        if(AltControl.getInstance().mode != 1)
+                            saveConfig();
+                    }
+                    catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
+    }
+    
+    public void saveConfig() throws IOException {
+        setConfig();
+        
+        // Saving file
+        file.setContent(Utils.mapToString(cfg));
+    }
+    
+    public void setConfig() {
+        // Saving config for modules
+        for (int i = 0; i < modules.length; i++) {
+            cfg.put(modules[i].getClass().getSimpleName(), modules[i].saveConfig());
+        }
+        // Saving global config
+        cfg.put("prefix", prefix);
+    }
+    
+    public void loadConfig() {
         // Loading config for modules
         for (int i = 0; i < modules.length; i++) {
             try {
@@ -131,39 +187,5 @@ public class TTC {
         }
         // Loading global config
         prefix = cfg.getOrDefault("prefix", ",");
-        
-        sa = new Date().getTime() - sa;
-        System.out.println("Done in " + sa + "ms");
-        
-        System.out.println("Starting threads...");
-        sa = new Date().getTime();
-        
-        // Starting thread to regularly save config
-        ThreadManager.run(() -> {
-            while (true) {
-                try {
-                    try {
-                        // Saving config for modules
-                        for (int i = 0; i < modules.length; i++) {
-                            cfg.put(modules[i].getClass().getSimpleName(), modules[i].saveConfig());
-                        }
-                        // Saving global config
-                        cfg.put("prefix", prefix);
-                        
-                        // Saving file
-                        file.setContent(Utils.mapToString(cfg));
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Thread.sleep(1000);
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        sa = new Date().getTime() - sa;
-        System.out.println("Done in " + sa + "ms");
     }
 }

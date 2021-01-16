@@ -1,11 +1,13 @@
 package tudbut.mod.client.ttc.mods;
 
-import com.mojang.authlib.GameProfile;
+import de.tudbut.timer.AsyncTask;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.Vec3d;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
+import tudbut.obj.Atomic;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,9 +28,25 @@ public class AltControl extends Module {
     }
     
     private int confirmationInstance = 0;
-    private int mode = -1;
+    public int mode = -1;
+    private boolean botMain = true;
+    private boolean useElytra = false;
+    private final Atomic<Vec3d> commonTarget = new Atomic<>();
+    private EntityPlayer commonTargetPlayer = null;
+    private FlightBot flightBot = null;
     
     {updateButtons();}
+    
+    @Override
+    public void loadConfig() {
+        botMain = Boolean.parseBoolean(cfg.get("botMain"));
+        updateButtons();
+    }
+    
+    @Override
+    public void updateConfig() {
+        cfg.put("botMain", botMain + "");
+    }
     
     private void updateButtons() {
         subButtons.clear();
@@ -49,21 +67,31 @@ public class AltControl extends Module {
                 confirmationInstance = 1;
             }));
         }
+        else {
+            subButtons.add(new GuiTTC.Button("End connection", text ->
+                    onChat("end", "end".split(" "))));
+            subButtons.add(new GuiTTC.Button("List", text ->
+                    onChat("list", "list".split(" "))));
+        }
         if(mode == 0) {
-            subButtons.add(new GuiTTC.Button("TPA alts here", text -> {
-                onChat("tpa", "tpa".split(" "));
+            subButtons.add(new GuiTTC.Button("TPA alts here", text ->
+                    onChat("tpa", "tpa".split(" "))));
+            subButtons.add(new GuiTTC.Button("Stop alts", text ->
+                    onChat("stop", "stop".split(" "))));
+            subButtons.add(new GuiTTC.Button("Follow me", text ->
+                    onChat("follow", "follow".split(" "))));
+            subButtons.add(new GuiTTC.Button("Send client config", text ->
+                    onChat("send", "send".split(" "))));
+            subButtons.add(new GuiTTC.Button("Use elytra: " + useElytra, text -> {
+                onChat("telytra", "telytra".split(" "));
+                text.set("Use elytra: " + useElytra);
             }));
-            subButtons.add(new GuiTTC.Button("Stop alts", text -> {
-                onChat("stop", "stop".split(" "));
-            }));
-            subButtons.add(new GuiTTC.Button("Follow me", text -> {
-                onChat("follow", "follow".split(" "));
+            subButtons.add(new GuiTTC.Button("Bot main: " + botMain, text -> {
+                botMain = !botMain;
+                text.set("Bot main: " + botMain);
             }));
         }
     }
-    
-    
-    
     
     public boolean isAlt(EntityPlayer player) {
         try {
@@ -106,25 +134,30 @@ public class AltControl extends Module {
     
     @Override
     public void onEnable() {
-        alts = new ArrayList<>();
-        Alt alt;
-        alts.add(alt = new Alt());
-        alt.name = TTC.mc.getSession().getProfile().getName();
-        alt.uuid = TTC.mc.getSession().getProfile().getId();
-        alt.profile = TTC.mc.getSession().getProfile();
     }
     
     @Override
-    public void onSubTick() {
-    
+    public void onTick() {
+        if(useElytra) {
+            if (commonTargetPlayer != null && TTC.world.getPlayerEntityByName(commonTargetPlayer.getName()) != null)
+                follow();
+            else {
+                FlightBot.deactivate(flightBot);
+                commonTargetPlayer = null;
+                commonTarget.set(null);
+                flightBot = null;
+                if(!main.uuid.equals(TTC.player.getUniqueID()))
+                    follow(main.name);
+            }
+        }
     }
     
     // When the client receives a packet
-    public void onPacketSC(PacketSC packet, PBIC.Connection connection) throws IOException {
+    public void onPacketSC(PacketSC packet) throws IOException {
+        ChatUtils.chatPrinterDebug().println("Received packet[" + packet.type() + "]{" + packet.content() + "}");
         if(client == null)
             throw new RuntimeException();
-        
-        KillAura aura = KillAura.getInstance();
+    
         switch (packet.type()) {
             case INIT:
                 main = new Alt();
@@ -164,38 +197,34 @@ public class AltControl extends Module {
                 break;
             case KILL:
                 ChatUtils.print("Killing player " + packet.content());
-                ChatUtils.simulateSend("#follow player " + packet.content(), false);
-                aura.enabled = true;
-                aura.onEnable();
-                aura.targets.add(packet.content());
+                kill(packet.content());
                 break;
             case FOLLOW:
-                ChatUtils.print("Following main");
-                ChatUtils.simulateSend("#follow player " + main.name, false);
+                ChatUtils.print("Following " + packet.content());
+                follow(packet.content());
                 break;
             case STOP:
-                if(packet.content().equals("")) {
-                    ChatUtils.print("Stopping killing all players");
-                    aura.enabled = false;
-                    aura.onDisable();
-                    aura.targets.clear();
-                    ChatUtils.simulateSend("#stop", false);
-                }
-                else {
-                    ChatUtils.print("Stopping killing player " + packet.content());
-                    ChatUtils.simulateSend("#stop", false);
-                    aura.targets.removeIf(s -> s.equals(packet.content()));
-                    if(!aura.targets.isEmpty()) {
-                        ChatUtils.print("Killing player " + aura.targets.get(0));
-                        ChatUtils.simulateSend("#follow player " + aura.targets.get(0), false);
-                    }
-                }
+                stop(packet.content());
+                break;
+            case CONFIG:
+                TTC.cfg = Utils.stringToMap(packet.content());
+                TTC.getInstance().saveConfig();
+                TTC.getInstance().loadConfig();
+                break;
+            case WALK:
+                useElytra = false;
+                FlightBot.deactivate(flightBot);
+                flightBot = null;
+                break;
+            case ELYTRA:
+                useElytra = true;
                 break;
         }
     }
     
     // When the server receives a packet
     public void onPacketCS(PacketCS packet, PBIC.Connection connection) throws IOException {
+        ChatUtils.chatPrinterDebug().println("Received packet[" + packet.type() + "]{" + packet.content() + "}");
         switch (packet.type()) {
             case NAME:
                 altsMap.get(connection).name = packet.content();
@@ -213,18 +242,35 @@ public class AltControl extends Module {
         }
     }
     
-    public void sendPacketSC(PacketsSC type, String content) throws IOException {
-        ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
-        PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
-        for (int i = 0; i < connections.length; i++) {
-            try {
-                connections[i].writePacket(getPacketSC(type, content));
-            } catch (Exception ignore) { }
-        }
+    public void sendPacketSC(PacketsSC type, String content) {
+        if(server.connections.size() == 0)
+            return;
+        
+        AsyncTask<Object> task = new AsyncTask<>(() -> {
+            ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
+            PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
+            for (int i = 0; i < connections.length; i++) {
+                try {
+                    connections[i].writePacket(getPacketSC(type, content));
+                }
+                catch (Exception ignore) { }
+            }
+            return new Object();
+        });
+        task.setTimeout(server.connections.size() * 500L);
+        task.then((r) -> {
+            if(r == null) {
+                ChatUtils.print("§c§lError during communication, ending server!");
+                onChat("end", "end".split(" "));
+            }
+        });
     }
     
     public void sendPacketDelayedSC(PacketsSC type, String content) {
-        ThreadManager.run(() -> {
+        if(server.connections.size() == 0)
+            return;
+        
+        AsyncTask<Object> task = new AsyncTask<>(() -> {
             ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
             PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
             for (int i = 0; i < connections.length; i++) {
@@ -238,6 +284,14 @@ public class AltControl extends Module {
                 catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            }
+            return new Object();
+        });
+        task.setTimeout(server.connections.size() * 1000L);
+        task.then((r) -> {
+            if(r == null) {
+                ChatUtils.print("§c§lError during communication, ending server!");
+                onChat("end", "end".split(" "));
             }
         });
     }
@@ -253,6 +307,10 @@ public class AltControl extends Module {
     public void onChat(String s, String[] args) {
         try {
             if (s.equals("server") && server == null) {
+                main = new Alt();
+                main.name = TTC.mc.getSession().getProfile().getName();
+                main.uuid = TTC.mc.getSession().getProfile().getId();
+                
                 server = new PBIC.Server(50278);
                 server.start();
                 server.onJoin.add(() -> {
@@ -291,7 +349,7 @@ public class AltControl extends Module {
                         try {
                             PBIC.Packet packet = client.connection.readPacket();
                             string = packet.getContent();
-                            onPacketSC(getPacketSC(packet), client.connection);
+                            onPacketSC(getPacketSC(packet));
                         }
                         catch (Exception e) {
                             e.printStackTrace();
@@ -303,7 +361,6 @@ public class AltControl extends Module {
             }
             
             if(args.length >= 2) {
-                KillAura aura = KillAura.getInstance();
                 if(args[0].equals("send") && s.contains(" ")) {
                     String st = s.substring(s.indexOf(" ") + 1);
                     sendPacketSC(PacketsSC.EXECUTE, st);
@@ -311,33 +368,38 @@ public class AltControl extends Module {
                 if(args[0].equals("kill") && s.contains(" ")) {
                     sendList();
                     String st = s.substring(s.indexOf(" ") + 1);
+                    if(useElytra) {
+                        sendPacketSC(PacketsSC.ELYTRA, "");
+                    } else {
+                        sendPacketSC(PacketsSC.WALK, "");
+                    }
                     sendPacketSC(PacketsSC.KILL, st);
-                    ChatUtils.simulateSend("#follow player " + st, false);
-                    aura.enabled = true;
-                    aura.onEnable();
-                    aura.targets.add(st);
+                    if(botMain) {
+                        kill(st);
+                    }
                 }
                 if(args[0].equals("stop") && s.contains(" ")) {
                     String st = s.substring(s.indexOf(" ") + 1);
                     sendPacketSC(PacketsSC.STOP, st);
                     ChatUtils.print("Stopping killing player " + st);
-                    ChatUtils.simulateSend("#stop", false);
-                    aura.targets.remove(st);
-                    if(!aura.targets.isEmpty()) {
-                        ChatUtils.print("Killing player " + st);
-                        ChatUtils.simulateSend("#follow player " + aura.targets.get(0), false);
+                    if(botMain) {
+                        stop(st);
                     }
                 }
             }
             
             if (s.equals("stop")) {
-                KillAura aura = KillAura.getInstance();
                 sendPacketSC(PacketsSC.STOP, "");
                 ChatUtils.print("Stopping killing/following all players");
-                aura.enabled = false;
-                aura.onDisable();
-                aura.targets.clear();
-                ChatUtils.simulateSend("#stop", false);
+                if(botMain) {
+                    stop(null);
+                }
+            }
+    
+            if (s.equals("send")) {
+                TTC.getInstance().setConfig();
+                sendPacketSC(PacketsSC.CONFIG, Utils.mapToString(TTC.cfg));
+                ChatUtils.print("Sending config to all alts");
             }
             
             if (s.equals("tpa")) {
@@ -346,25 +408,50 @@ public class AltControl extends Module {
             }
     
             if (s.equals("follow")) {
-                sendPacketDelayedSC(PacketsSC.FOLLOW, "");
+                if(useElytra) {
+                    sendPacketSC(PacketsSC.ELYTRA, "");
+                } else {
+                    sendPacketSC(PacketsSC.WALK, "");
+                }
+                sendPacketSC(PacketsSC.FOLLOW, main.name);
+            }
+            
+            if(s.equals("telytra")) {
+                useElytra = !useElytra;
             }
             
             if (s.equals("end")) {
                 if(client != null)
-                    client.connection.getBus().close();
+                    client.close();
                 client = null;
                 if(server != null) {
-                    server.busses.forEach(bus -> {
-                        try {
-                            bus.close();
-                        }
-                        catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                    server.busses.clear();
-                    server.connections.clear();
+                    server.close();
                 }
+                server = null;
+                mode = -1;
+                
+                alts = new ArrayList<>();
+                altsMap = new HashMap<>();
+            }
+            
+            if(s.equals("list")) {
+                StringBuilder string = new StringBuilder("List:");
+                if(server != null) {
+                    for (int i = 0; i < server.connections.size(); i++) {
+                        PBIC.Connection connection = server.connections.get(i);
+                        Alt alt = altsMap.get(connection);
+                        string.append(" ").append(alt.name).append(",");
+                    }
+                }
+                if(client != null) {
+                    for (int i = 0; i < alts.size(); i++) {
+                        Alt alt = alts.get(i);
+                        string.append(" ").append(alt.name).append(",");
+                    }
+                }
+                if(string.toString().contains(","))
+                    string = new StringBuilder(string.substring(0, string.length() - 2));
+                ChatUtils.print(string.toString());
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -373,7 +460,10 @@ public class AltControl extends Module {
         updateButtons();
     }
     
-    private void sendList() throws IOException {
+    private void sendList() {
+        if(server.connections.size() == 0)
+            return;
+        
         Map<String, String> map0 = new HashMap<>();
         PBIC.Connection[] keys = altsMap.keySet().toArray(new PBIC.Connection[0]);
         alts.clear();
@@ -390,6 +480,61 @@ public class AltControl extends Module {
         sendPacketSC(PacketsSC.LIST, Utils.mapToString(map0));
     }
     
+    public void follow(String name) {
+        commonTargetPlayer = TTC.world.getPlayerEntityByName(name);
+        follow();
+    }
+    
+    public void kill(String name) {
+        follow(name);
+        KillAura aura = KillAura.getInstance();
+        aura.enabled = true;
+        aura.onEnable();
+        aura.targets.add(name);
+    }
+    
+    public void stop(String name) {
+        KillAura aura = KillAura.getInstance();
+        commonTargetPlayer = null;
+        commonTarget.set(null);
+        if(useElytra) {
+            FlightBot.deactivate(flightBot);
+            flightBot = null;
+            useElytra = false;
+        } else {
+            ChatUtils.simulateSend("#stop", false);
+        }
+        if(name == null || name.equals("")) {
+            aura.targets.clear();
+            aura.enabled = false;
+            aura.onDisable();
+        }
+        else {
+            aura.targets.remove(name);
+            aura.targets.trimToSize();
+            if (aura.targets.size() != 0) {
+                ChatUtils.print("Killing player " + name);
+                follow(aura.targets.get(0));
+            }
+        }
+    }
+    
+    public void follow() {
+        if(commonTargetPlayer == null)
+            return;
+        
+        try {
+            if (useElytra) {
+                FlightBot.deactivate(flightBot);
+                flightBot = FlightBot.activate(commonTarget);
+                commonTarget.set(commonTargetPlayer.getPositionVector().addVector(0, 2, 0));
+            } else
+                ChatUtils.simulateSend("#follow player " + commonTargetPlayer.getName(), false);
+        } catch (Exception e) {
+            e.printStackTrace(ChatUtils.chatPrinter());
+        }
+    }
+    
     @Override
     public boolean onServerChat(String s, String formatted) {
         if (
@@ -404,6 +549,5 @@ public class AltControl extends Module {
     public static class Alt {
         public String name;
         public UUID uuid;
-        public GameProfile profile;
     }
 }

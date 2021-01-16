@@ -1,7 +1,7 @@
 §k||||||||||||||||||||||||||||||||
 §c§lTTC connection
 §k||||||||||||||||||||||||||||||||
-§avB1.7.1a
+§avB1.8.0a
 §a§lHelp
 
 §aCurrent prefix: %p
@@ -45,6 +45,10 @@
 §d%pchatsuffix <suffix...>
 §bSet the chatsuffix
 §7where <suffix...> is anything.
+
+§d%pelytraflight <x> <z>
+§bFly AFK
+§7where x and z are coordinates.
 
 §a AltControl:
 

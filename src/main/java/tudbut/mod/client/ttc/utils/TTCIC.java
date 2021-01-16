@@ -14,6 +14,9 @@ public class TTCIC {
         KILL,
         FOLLOW,
         STOP,
+        CONFIG,
+        WALK,
+        ELYTRA,
         
         ;
     }

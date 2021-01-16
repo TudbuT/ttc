@@ -71,10 +71,17 @@ public class FMLEventHandler {
                 // Module-specific commands
                 for (int i = 0; i < TTC.modules.length; i++) {
                     if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
-                        String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
-                        if (TTC.modules[i].enabled)
-                            TTC.modules[i].onChat(args, args.split(" "));
-                        TTC.modules[i].onEveryChat(args, args.split(" "));
+                        try {
+                            String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
+                            if (TTC.modules[i].enabled)
+                                TTC.modules[i].onChat(args, args.split(" "));
+                            TTC.modules[i].onEveryChat(args, args.split(" "));
+                        } catch (StringIndexOutOfBoundsException e) {
+                            String args = "";
+                            if (TTC.modules[i].enabled)
+                                TTC.modules[i].onChat(args, args.split(" "));
+                            TTC.modules[i].onEveryChat(args, args.split(" "));
+                        }
                     }
                 }
             }
@@ -225,7 +232,7 @@ public class FMLEventHandler {
     
     // Fired every tick
     @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event) {
+    public void onTick(TickEvent.PlayerTickEvent event) {
         if(TTC.mc.world == null || TTC.mc.player == null)
             return;
         
