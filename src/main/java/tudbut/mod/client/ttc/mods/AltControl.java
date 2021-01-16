@@ -248,19 +248,36 @@ public class AltControl extends Module {
         
         AsyncTask<Object> task = new AsyncTask<>(() -> {
             ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
-            PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
-            for (int i = 0; i < connections.length; i++) {
-                try {
-                    connections[i].writePacket(getPacketSC(type, content));
+            try {
+                PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
+                for (int i = 0; i < connections.length; i++) {
+                    try {
+                        connections[i].writePacket(getPacketSC(type, content));
+                    }
+                    catch (Exception ignore) { }
                 }
-                catch (Exception ignore) { }
+            } catch (Throwable e) {
+                return e;
             }
             return new Object();
         });
         task.setTimeout(server.connections.size() * 500L);
         task.then((r) -> {
-            if(r == null) {
+            if(r instanceof Throwable || r == null) {
                 ChatUtils.print("§c§lError during communication, ending server!");
+                String etype;
+                if(r == null) {
+                    etype = "ETimeout";
+                }
+                else if(r instanceof Exception) {
+                    etype = "EExceptionSend {" + ((Exception) r).getMessage() + "}";
+                    ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
+                }
+                else {
+                    etype = "EErrorSend {" + ((Throwable) r).getMessage() + "}";
+                    ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
+                }
+                ChatUtils.print(etype);
                 onChat("end", "end".split(" "));
             }
         });
@@ -354,6 +371,17 @@ public class AltControl extends Module {
                         catch (Exception e) {
                             e.printStackTrace();
                             System.err.println("Packet: " + string);
+                            try {
+                                client.close();
+                                mode = -1;
+                                client = null;
+                                alts = new ArrayList<>();
+                                altsMap = new HashMap<>();
+                                break;
+                            }
+                            catch (IOException ioException) {
+                                ioException.printStackTrace();
+                            }
                         }
                     }
                 });

@@ -68,6 +68,7 @@ public class FlightBot {
         if(player.onGround) {
             if(isInTakeoff)
                 return;
+            tookOff = 0;
             isInTakeoff = true;
             player.jump();
         }
@@ -86,7 +87,7 @@ public class FlightBot {
             return;
         }
         
-        if(new Date().getTime() - tookOff < 500) {
+        if(new Date().getTime() - tookOff < 500 && tookOff != 0) {
             return;
         }
         
