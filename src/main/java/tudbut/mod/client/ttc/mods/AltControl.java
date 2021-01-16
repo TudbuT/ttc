@@ -221,9 +221,7 @@ public class AltControl extends Module {
                     useElytra = true;
                     break;
             }
-        } catch (Exception e) {
-            return;
-        }
+        } catch (Exception ignored) { }
     }
     
     // When the server receives a packet
@@ -265,10 +263,37 @@ public class AltControl extends Module {
             }
             return new Object();
         });
-        task.setTimeout(server.connections.size() * 500L);
+        task.setTimeout(server.connections.size() * 1500L);
+        pce(task);
+    }
+    
+    public void sendPacketDelayedSC(PacketsSC type, String content) {
+        if(server.connections.size() == 0)
+            return;
+        AsyncTask<Object> task = new AsyncTask<>(() -> {
+            ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
+            try {
+                PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
+                for (int i = 0; i < connections.length; i++) {
+                    try {
+                        connections[i].writePacket(getPacketSC(type, content));
+                        Thread.sleep(500);
+                    }
+                    catch (Exception ignore) { }
+                }
+            } catch (Throwable e) {
+                return e;
+            }
+            return new Object();
+        });
+        task.setTimeout(server.connections.size() * 2000L);
+        pce(task);
+    }
+    
+    private void pce(AsyncTask<Object> task) {
         task.then((r) -> {
             if(r instanceof Throwable || r == null) {
-                ChatUtils.print("§c§lError during communication, ending server!");
+                ChatUtils.chatPrinterDebug().println("§c§lError during communication!");
                 String etype;
                 if(r == null) {
                     etype = "ETimeout";
@@ -281,38 +306,7 @@ public class AltControl extends Module {
                     etype = "EErrorSend {" + ((Throwable) r).getMessage() + "}";
                     ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
                 }
-                ChatUtils.print(etype);
-                onChat("end", "end".split(" "));
-            }
-        });
-    }
-    
-    public void sendPacketDelayedSC(PacketsSC type, String content) {
-        if(server.connections.size() == 0)
-            return;
-        
-        AsyncTask<Object> task = new AsyncTask<>(() -> {
-            ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
-            PBIC.Connection[] connections = server.connections.toArray(new PBIC.Connection[0]);
-            for (int i = 0; i < connections.length; i++) {
-                try {
-                    connections[i].writePacket(getPacketSC(type, content));
-                }
-                catch (IOException ignore) { }
-                try {
-                    Thread.sleep(500);
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            return new Object();
-        });
-        task.setTimeout(server.connections.size() * 1000L);
-        task.then((r) -> {
-            if(r == null) {
-                ChatUtils.print("§c§lError during communication, ending server!");
-                onChat("end", "end".split(" "));
+                ChatUtils.chatPrinterDebug().println(etype);
             }
         });
     }
@@ -532,10 +526,8 @@ public class AltControl extends Module {
         if(useElytra) {
             FlightBot.deactivate(flightBot);
             flightBot = null;
-            useElytra = false;
-        } else {
-            ChatUtils.simulateSend("#stop", false);
         }
+        ChatUtils.simulateSend("#stop", false);
         if(name == null || name.equals("")) {
             aura.targets.clear();
             aura.enabled = false;
