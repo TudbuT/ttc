@@ -153,72 +153,76 @@ public class AltControl extends Module {
     }
     
     // When the client receives a packet
-    public void onPacketSC(PacketSC packet) throws IOException {
-        ChatUtils.chatPrinterDebug().println("Received packet[" + packet.type() + "]{" + packet.content() + "}");
-        if(client == null)
+    public void onPacketSC(PacketSC packet) {
+        if (client == null)
             throw new RuntimeException();
+        try {
+            ChatUtils.chatPrinterDebug().println("Received packet[" + packet.type() + "]{" + packet.content() + "}");
     
-        switch (packet.type()) {
-            case INIT:
-                main = new Alt();
-                sendPacket(PacketsCS.NAME, TTC.mc.getSession().getProfile().getName());
-                break;
-            case NAME:
-                main.name = packet.content();
-                ChatUtils.print("Connection to main " + main.name + " established!");
-                sendPacket(PacketsCS.UUID, TTC.mc.getSession().getProfile().getId().toString());
-                break;
-            case UUID:
-                main.uuid = UUID.fromString(packet.content());
-                ChatUtils.print("Got UUID from main " + main.name + ": " + packet.content());
-                break;
-            case TPA:
-                ChatUtils.print("TPA'ing main account...");
-                TTC.player.sendChatMessage("/tpa " + main.name);
-                break;
-            case EXECUTE:
-                ChatUtils.print("Sending message received from main account...");
-                ChatUtils.simulateSend(packet.content(), false);
-                break;
-            case LIST:
-                TTC.logger.info("Received alt list from main.");
-                Map<String, String> map0 = Utils.stringToMap(packet.content());
+            switch (packet.type()) {
+                case INIT:
+                    main = new Alt();
+                    sendPacket(PacketsCS.NAME, TTC.mc.getSession().getProfile().getName());
+                    break;
+                case NAME:
+                    main.name = packet.content();
+                    ChatUtils.print("Connection to main " + main.name + " established!");
+                    sendPacket(PacketsCS.UUID, TTC.mc.getSession().getProfile().getId().toString());
+                    break;
+                case UUID:
+                    main.uuid = UUID.fromString(packet.content());
+                    ChatUtils.print("Got UUID from main " + main.name + ": " + packet.content());
+                    break;
+                case TPA:
+                    ChatUtils.print("TPA'ing main account...");
+                    TTC.player.sendChatMessage("/tpa " + main.name);
+                    break;
+                case EXECUTE:
+                    ChatUtils.print("Sending message received from main account...");
+                    ChatUtils.simulateSend(packet.content(), false);
+                    break;
+                case LIST:
+                    TTC.logger.info("Received alt list from main.");
+                    Map<String, String> map0 = Utils.stringToMap(packet.content());
+            
+                    alts.clear();
+                    int len = map0.keySet().size();
+                    for (int i = 0; i < len; i++) {
+                        Alt alt;
+                        alts.add(alt = new Alt());
                 
-                alts.clear();
-                int len = map0.keySet().size();
-                for (int i = 0; i < len; i++) {
-                    Alt alt;
-                    alts.add(alt = new Alt());
-                    
-                    Map<String, String> map1 = Utils.stringToMap(map0.get(String.valueOf(i)));
-                    alt.name = map1.get("name");
-                    alt.uuid = UUID.fromString(map1.get("uuid"));
-                }
-                break;
-            case KILL:
-                ChatUtils.print("Killing player " + packet.content());
-                kill(packet.content());
-                break;
-            case FOLLOW:
-                ChatUtils.print("Following " + packet.content());
-                follow(packet.content());
-                break;
-            case STOP:
-                stop(packet.content());
-                break;
-            case CONFIG:
-                TTC.cfg = Utils.stringToMap(packet.content());
-                TTC.getInstance().saveConfig();
-                TTC.getInstance().loadConfig();
-                break;
-            case WALK:
-                useElytra = false;
-                FlightBot.deactivate(flightBot);
-                flightBot = null;
-                break;
-            case ELYTRA:
-                useElytra = true;
-                break;
+                        Map<String, String> map1 = Utils.stringToMap(map0.get(String.valueOf(i)));
+                        alt.name = map1.get("name");
+                        alt.uuid = UUID.fromString(map1.get("uuid"));
+                    }
+                    break;
+                case KILL:
+                    ChatUtils.print("Killing player " + packet.content());
+                    kill(packet.content());
+                    break;
+                case FOLLOW:
+                    ChatUtils.print("Following " + packet.content());
+                    follow(packet.content());
+                    break;
+                case STOP:
+                    stop(packet.content());
+                    break;
+                case CONFIG:
+                    TTC.cfg = Utils.stringToMap(packet.content());
+                    TTC.getInstance().saveConfig();
+                    TTC.getInstance().loadConfig();
+                    break;
+                case WALK:
+                    useElytra = false;
+                    FlightBot.deactivate(flightBot);
+                    flightBot = null;
+                    break;
+                case ELYTRA:
+                    useElytra = true;
+                    break;
+            }
+        } catch (Exception e) {
+            return;
         }
     }
     
