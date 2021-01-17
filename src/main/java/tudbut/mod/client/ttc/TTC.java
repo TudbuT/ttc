@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.8.2b";
+    public static final String VERSION = "vB1.9.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -110,6 +110,7 @@ public class TTC {
                 new KillAura(),
                 new CreativeFlight(),
                 new ElytraFlight(),
+                new ElytraBot(),
                 new ClickGUI(),
                 new Bind(),
                 };

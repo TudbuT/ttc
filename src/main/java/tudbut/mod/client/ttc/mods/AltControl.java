@@ -31,9 +31,9 @@ public class AltControl extends Module {
     public int mode = -1;
     private boolean botMain = true;
     private boolean useElytra = false;
+    private boolean stopped = false;
     private final Atomic<Vec3d> commonTarget = new Atomic<>();
     private EntityPlayer commonTargetPlayer = null;
-    private FlightBot flightBot = null;
     
     {updateButtons();}
     
@@ -138,14 +138,13 @@ public class AltControl extends Module {
     
     @Override
     public void onTick() {
-        if(useElytra) {
+        if(useElytra && !stopped) {
             if (commonTargetPlayer != null && TTC.world.getPlayerEntityByName(commonTargetPlayer.getName()) != null)
                 follow();
             else {
-                FlightBot.deactivate(flightBot);
+                FlightBot.deactivate();
                 commonTargetPlayer = null;
                 commonTarget.set(null);
-                flightBot = null;
                 if(!main.uuid.equals(TTC.player.getUniqueID()))
                     follow(main.name);
             }
@@ -158,7 +157,7 @@ public class AltControl extends Module {
             throw new RuntimeException();
         try {
             ChatUtils.chatPrinterDebug().println("Received packet[" + packet.type() + "]{" + packet.content() + "}");
-    
+            
             switch (packet.type()) {
                 case INIT:
                     main = new Alt();
@@ -172,6 +171,7 @@ public class AltControl extends Module {
                 case UUID:
                     main.uuid = UUID.fromString(packet.content());
                     ChatUtils.print("Got UUID from main " + main.name + ": " + packet.content());
+                    sendPacket(PacketsCS.KEEPALIVE, "");
                     break;
                 case TPA:
                     ChatUtils.print("TPA'ing main account...");
@@ -210,18 +210,20 @@ public class AltControl extends Module {
                 case CONFIG:
                     TTC.cfg = Utils.stringToMap(packet.content());
                     TTC.getInstance().saveConfig();
-                    TTC.getInstance().loadConfig();
                     break;
                 case WALK:
                     useElytra = false;
-                    FlightBot.deactivate(flightBot);
-                    flightBot = null;
+                    FlightBot.deactivate();
                     break;
                 case ELYTRA:
                     useElytra = true;
                     break;
+                case KEEPALIVE:
+                    sendPacket(PacketsCS.KEEPALIVE, "");
             }
-        } catch (Exception ignored) { }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     // When the server receives a packet
@@ -241,6 +243,16 @@ public class AltControl extends Module {
                 sendList();
                 
                 break;
+            case KEEPALIVE:
+                ThreadManager.run(() -> {
+                    try {
+                        Thread.sleep(10000);
+                        connection.writePacket(getPacketSC(PacketsSC.KEEPALIVE, ""));
+                    }
+                    catch (IOException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
         }
     }
     
@@ -264,7 +276,7 @@ public class AltControl extends Module {
             return new Object();
         });
         task.setTimeout(server.connections.size() * 1500L);
-        pce(task);
+        pce(task.waitForFinish());
     }
     
     public void sendPacketDelayedSC(PacketsSC type, String content) {
@@ -287,28 +299,26 @@ public class AltControl extends Module {
             return new Object();
         });
         task.setTimeout(server.connections.size() * 2000L);
-        pce(task);
+        task.then(this::pce);
     }
     
-    private void pce(AsyncTask<Object> task) {
-        task.then((r) -> {
-            if(r instanceof Throwable || r == null) {
-                ChatUtils.chatPrinterDebug().println("§c§lError during communication!");
-                String etype;
-                if(r == null) {
-                    etype = "ETimeout";
-                }
-                else if(r instanceof Exception) {
-                    etype = "EExceptionSend {" + ((Exception) r).getMessage() + "}";
-                    ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
-                }
-                else {
-                    etype = "EErrorSend {" + ((Throwable) r).getMessage() + "}";
-                    ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
-                }
-                ChatUtils.chatPrinterDebug().println(etype);
+    private void pce(Object r) {
+        if(r instanceof Throwable || r == null) {
+            ChatUtils.chatPrinterDebug().println("§c§lError during communication!");
+            String etype;
+            if(r == null) {
+                etype = "ETimeout";
             }
-        });
+            else if(r instanceof Exception) {
+                etype = "EExceptionSend {" + ((Exception) r).getMessage() + "}";
+                ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
+            }
+            else {
+                etype = "EErrorSend {" + ((Throwable) r).getMessage() + "}";
+                ((Throwable) r).printStackTrace(ChatUtils.chatPrinterDebug());
+            }
+            ChatUtils.chatPrinterDebug().println(etype);
+        }
     }
     
     public void sendPacket(PacketsCS type, String content) throws IOException {
@@ -356,8 +366,11 @@ public class AltControl extends Module {
                 
                 ChatUtils.print("§aServer started");
             }
-            if (s.equals("client") && client == null) {
-                client = new PBIC.Client("127.0.0.1", 50278);
+            if (args[0].equals("client") && client == null) {
+                if(args.length == 2)
+                    client = new PBIC.Client(args[1], 50278);
+                else
+                    client = new PBIC.Client("127.0.0.1", 50278);
                 ThreadManager.run("TTCIC client receive thread", () -> {
                     while (true) {
                         String string = "UNKNOWN";
@@ -390,6 +403,7 @@ public class AltControl extends Module {
                 if(args[0].equals("send") && s.contains(" ")) {
                     String st = s.substring(s.indexOf(" ") + 1);
                     sendPacketSC(PacketsSC.EXECUTE, st);
+                    ChatUtils.simulateSend(st, false);
                 }
                 if(args[0].equals("kill") && s.contains(" ")) {
                     sendList();
@@ -415,6 +429,11 @@ public class AltControl extends Module {
             }
             
             if (s.equals("stop")) {
+                if(useElytra) {
+                    sendPacketSC(PacketsSC.ELYTRA, "");
+                } else {
+                    sendPacketSC(PacketsSC.WALK, "");
+                }
                 sendPacketSC(PacketsSC.STOP, "");
                 ChatUtils.print("Stopping killing/following all players");
                 if(botMain) {
@@ -523,10 +542,8 @@ public class AltControl extends Module {
         KillAura aura = KillAura.getInstance();
         commonTargetPlayer = null;
         commonTarget.set(null);
-        if(useElytra) {
-            FlightBot.deactivate(flightBot);
-            flightBot = null;
-        }
+        stopped = true;
+        FlightBot.deactivate();
         ChatUtils.simulateSend("#stop", false);
         if(name == null || name.equals("")) {
             aura.targets.clear();
@@ -547,10 +564,12 @@ public class AltControl extends Module {
         if(commonTargetPlayer == null)
             return;
         
+        stopped = false;
+        
         try {
             if (useElytra) {
-                FlightBot.deactivate(flightBot);
-                flightBot = FlightBot.activate(commonTarget);
+                FlightBot.deactivate();
+                FlightBot.activate(commonTarget);
                 commonTarget.set(commonTargetPlayer.getPositionVector().addVector(0, 2, 0));
             } else
                 ChatUtils.simulateSend("#follow player " + commonTargetPlayer.getName(), false);

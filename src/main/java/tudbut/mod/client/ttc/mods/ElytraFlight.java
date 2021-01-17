@@ -9,11 +9,9 @@ import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.FlightBot;
 import tudbut.mod.client.ttc.utils.Module;
-import tudbut.obj.Atomic;
 
 public class ElytraFlight extends Module {
     boolean init;
-    Vec3d dest;
     
     @Override
     public void onTick() {
@@ -22,18 +20,8 @@ public class ElytraFlight extends Module {
             return;
         }
         EntityPlayerSP player = TTC.player;
-        
-        if(player.posY >= 270) {
-            if(bot != null)
-                FlightBot.updateDestination(bot, new Atomic<>(dest));
-        }
-        
-        if(dest != null)
-            if(player.getDistance(dest.x, dest.y, dest.z) < 1) {
-                FlightBot.deactivate(bot);
-            }
     
-        boolean blockMovement = FlightBot.tickBots();
+        boolean blockMovement = FlightBot.tickBot();
         
         if(init) {
             if(!blockMovement) {
@@ -92,21 +80,7 @@ public class ElytraFlight extends Module {
     public void onDisable() {
     }
     
-    FlightBot bot;
-    
     @Override
     public void onChat(String s, String[] args) {
-        if(TTC.mc.world == null) {
-            return;
-        }
-        EntityPlayerSP player = TTC.player;
-        
-        FlightBot.deactivate(bot);
-        if(args.length == 2) {
-            dest = new Vec3d(Double.parseDouble(args[0]), 270, Double.parseDouble(args[1]));
-            Vec3d v = new Vec3d(player.posX, 270, player.posZ);
-            bot = FlightBot.activate(new Atomic<>(v));
-            System.out.println("Flying...");
-        }
     }
 }

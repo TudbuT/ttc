@@ -6,93 +6,72 @@ import net.minecraft.util.math.Vec3d;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.obj.Atomic;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 public class FlightBot {
     
-    private static final ArrayList<FlightBot> bots = new ArrayList<>();
+    private static Atomic<Vec3d> destination;
+    private static EntityPlayerSP player = TTC.player;
+    private static volatile boolean lock = false;
+    private static boolean flying = false;
+    private static boolean active = false;
+    private static long tookOff = 0;
     
-    {
-        bots.add(this);
+    public static boolean isActive() {
+        return active;
     }
     
-    private Atomic<Vec3d> destination;
-    private EntityPlayerSP player = TTC.player;
-    private boolean lock = false;
-    private boolean isInTakeoff = false;
-    private long tookOff = 0;
-    
-    public boolean isActive() {
-        return bots.contains(this);
+    public static boolean isFlying() {
+        return flying && player.getPositionVector().distanceTo(destination.get()) > 1;
     }
     
     private FlightBot() { }
     
-    public static FlightBot activate(Atomic<Vec3d> destination) {
-        FlightBot bot = new FlightBot();
-        bot.destination = destination;
-        return bot;
+    public static void activate(Atomic<Vec3d> destination) {
+        while (lock);
+        active = true;
+        FlightBot.destination = destination;
     }
     
-    public static void activate(FlightBot bot) {
-        if(bot == null || bot.isActive())
-            return;
-        
-        bots.add(bot);
+    public static void deactivate() {
+        active = false;
     }
     
-    public static void deactivate(FlightBot bot) {
-        if(bot == null || !bot.isActive())
-            return;
-        
-        bot.destination.set(bot.player.getPositionVector());
-        bots.remove(bot);
+    public static void updateDestination(Atomic<Vec3d> destination) {
+        while (lock);
+        FlightBot.destination = destination;
     }
     
-    public static void updateDestination(FlightBot bot, Atomic<Vec3d> destination) {
-        while (bot.lock);
-        bot.destination = destination;
-    }
-    
-    public static boolean tickBots() {
-        for (int i = 0; i < bots.size(); i++) {
-            bots.get(i).tickBot();
-        }
-        return bots.size() > 0;
-    }
-    
-    private void takeOff() {
+    private static void takeOff() {
         player = TTC.player;
         
         if(player.onGround) {
-            if(isInTakeoff)
-                return;
             tookOff = 0;
-            isInTakeoff = true;
             player.jump();
         }
         else if(player.fallDistance > 0.1) {
             player.connection.sendPacket(new CPacketEntityAction(player, CPacketEntityAction.Action.START_FALL_FLYING));
-            isInTakeoff = false;
             tookOff = new Date().getTime();
         }
     }
     
-    private synchronized void tickBot() {
+    public static synchronized boolean tickBot() {
+        if(!active)
+            return false;
+        
         player = TTC.player;
         
         if(!player.isElytraFlying()) {
             takeOff();
-            return;
+            return false;
         }
         
         if(new Date().getTime() - tookOff < 500 && tookOff != 0) {
-            return;
+            return true;
         }
         
         if(destination.get() == null) {
-            return;
+            return false;
         }
         
         lock = true;
@@ -105,8 +84,11 @@ public class FlightBot {
         
         if(d < 1) {
             d = 1;
+            flying = false;
         }
-        
+        else
+            flying = true;
+    
         x = dx / d;
         y = dy / d;
         z = dz / d;
@@ -115,5 +97,7 @@ public class FlightBot {
         player.motionY = y;
         player.motionZ = z;
         lock = false;
+        
+        return true;
     }
 }

@@ -17,6 +17,7 @@ public class TTCIC {
         CONFIG,
         WALK,
         ELYTRA,
+        KEEPALIVE,
         
         ;
     }
@@ -24,6 +25,7 @@ public class TTCIC {
     public enum PacketsCS {
         NAME,
         UUID,
+        KEEPALIVE,
         
         ;
     }
