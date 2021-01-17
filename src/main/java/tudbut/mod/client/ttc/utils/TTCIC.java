@@ -39,15 +39,15 @@ public class TTCIC {
         String content();
     }
     
-    public static PBIC.Packet getPacketSC(PacketsSC packetType, String content) {
+    public static synchronized PBIC.Packet getPacketSC(PacketsSC packetType, String content) {
         return () -> packetType.name() + " " + content;
     }
     
-    public static PBIC.Packet getPacketCS(PacketsCS packetType, String content) {
+    public static synchronized PBIC.Packet getPacketCS(PacketsCS packetType, String content) {
         return () -> packetType.name() + " " + content;
     }
     
-    public static PacketSC getPacketSC(PBIC.Packet packet) {
+    public static synchronized PacketSC getPacketSC(PBIC.Packet packet) {
         String content = packet.getContent();
         PacketsSC type;
         type = PacketsSC.valueOf(content.split(" ")[0]);
@@ -67,7 +67,7 @@ public class TTCIC {
         };
     }
     
-    public static PacketCS getPacketCS(PBIC.Packet packet) {
+    public static synchronized PacketCS getPacketCS(PBIC.Packet packet) {
         String content = packet.getContent();
         PacketsCS type;
         type = PacketsCS.valueOf(content.split(" ")[0]);

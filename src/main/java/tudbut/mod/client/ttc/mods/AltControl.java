@@ -9,7 +9,6 @@ import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
 import tudbut.obj.Atomic;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -227,7 +226,7 @@ public class AltControl extends Module {
     }
     
     // When the server receives a packet
-    public void onPacketCS(PacketCS packet, PBIC.Connection connection) throws IOException {
+    public void onPacketCS(PacketCS packet, PBIC.Connection connection) throws PBIC.PBICException.PBICWriteException {
         ChatUtils.chatPrinterDebug().println("Received packet[" + packet.type() + "]{" + packet.content() + "}");
         switch (packet.type()) {
             case NAME:
@@ -249,7 +248,7 @@ public class AltControl extends Module {
                         Thread.sleep(10000);
                         connection.writePacket(getPacketSC(PacketsSC.KEEPALIVE, ""));
                     }
-                    catch (IOException | InterruptedException e) {
+                    catch (PBIC.PBICException | InterruptedException e) {
                         e.printStackTrace();
                     }
                 });
@@ -321,7 +320,7 @@ public class AltControl extends Module {
         }
     }
     
-    public void sendPacket(PacketsCS type, String content) throws IOException {
+    public void sendPacket(PacketsCS type, String content) throws PBIC.PBICException.PBICWriteException {
         ChatUtils.chatPrinterDebug().println("Sending packet[" + type.name() + "]{" + content + "}");
         if(client == null)
             throw new RuntimeException();
@@ -336,31 +335,40 @@ public class AltControl extends Module {
                 main.name = TTC.mc.getSession().getProfile().getName();
                 main.uuid = TTC.mc.getSession().getProfile().getId();
                 
+                altsMap = new HashMap<>();
+                
                 server = new PBIC.Server(50278);
-                server.start();
                 server.onJoin.add(() -> {
                     PBIC.Connection theConnection = server.lastConnection;
-                    try {
-                        theConnection.writePacket(getPacketSC(PacketsSC.INIT, ""));
-                        altsMap.put(theConnection, new Alt());
-                        
-                        while (true) {
-                            String string = "UNKNOWN";
-                            try {
-                                PBIC.Packet packet = theConnection.readPacket();
-                                string = packet.getContent();
-                                onPacketCS(getPacketCS(packet), theConnection);
-                            }
-                            catch (Exception e) {
-                                e.printStackTrace();
-                                System.err.println("Packet: " + string);
-                            }
+                    AsyncTask<Object> task = new AsyncTask<>(() -> {
+                        ChatUtils.chatPrinterDebug().println("Sending packet[INIT]{}");
+                        try {
+                            theConnection.writePacket(getPacketSC(PacketsSC.INIT, ""));
+                        } catch (Throwable e) {
+                            return e;
+                        }
+                        ChatUtils.chatPrinterDebug().println("Done");
+                        return new Object();
+                    });
+                    task.setTimeout(1500L);
+                    pce(task.waitForFinish());
+    
+                    altsMap.put(theConnection, new Alt());
+    
+                    while (true) {
+                        String string = "UNKNOWN";
+                        try {
+                            PBIC.Packet packet = theConnection.readPacket();
+                            string = packet.getContent();
+                            onPacketCS(getPacketCS(packet), theConnection);
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                            System.err.println("Packet: " + string);
                         }
                     }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 });
+                server.start();
                 
                 mode = 0;
                 
@@ -371,6 +379,7 @@ public class AltControl extends Module {
                     client = new PBIC.Client(args[1], 50278);
                 else
                     client = new PBIC.Client("127.0.0.1", 50278);
+                ChatUtils.print("Client started");
                 ThreadManager.run("TTCIC client receive thread", () -> {
                     while (true) {
                         String string = "UNKNOWN";
@@ -382,17 +391,6 @@ public class AltControl extends Module {
                         catch (Exception e) {
                             e.printStackTrace();
                             System.err.println("Packet: " + string);
-                            try {
-                                client.close();
-                                mode = -1;
-                                client = null;
-                                alts = new ArrayList<>();
-                                altsMap = new HashMap<>();
-                                break;
-                            }
-                            catch (IOException ioException) {
-                                ioException.printStackTrace();
-                            }
                         }
                     }
                 });
@@ -466,12 +464,21 @@ public class AltControl extends Module {
             }
             
             if (s.equals("end")) {
+    
+                alts.clear();
+                altsMap.clear();
+                stopped = false;
+                useElytra = false;
+                commonTargetPlayer = null;
+                commonTarget.set(null);
+                stopped = false;
+                main = null;
+                
                 if(client != null)
                     client.close();
                 client = null;
-                if(server != null) {
+                if(server != null)
                     server.close();
-                }
                 server = null;
                 mode = -1;
                 
@@ -485,13 +492,19 @@ public class AltControl extends Module {
                     for (int i = 0; i < server.connections.size(); i++) {
                         PBIC.Connection connection = server.connections.get(i);
                         Alt alt = altsMap.get(connection);
-                        string.append(" ").append(alt.name).append(",");
+                        if(alt == null || alt.name == null)
+                            onChat("end", "end".split(" "));
+                        else
+                            string.append(" ").append(alt.name).append(",");
                     }
                 }
                 if(client != null) {
                     for (int i = 0; i < alts.size(); i++) {
                         Alt alt = alts.get(i);
-                        string.append(" ").append(alt.name).append(",");
+                        if(alt == null || alt.name == null)
+                            onChat("end", "end".split(" "));
+                        else
+                            string.append(" ").append(alt.name).append(",");
                     }
                 }
                 if(string.toString().contains(","))
