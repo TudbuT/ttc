@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.9.1a";
+    public static final String VERSION = "vB1.10.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -111,14 +111,21 @@ public class TTC {
                 new CreativeFlight(),
                 new ElytraFlight(),
                 new ElytraBot(),
+                new HUD(),
+                new SeedOverlay(),
+                new Freecam(), // Unused, yet
                 new ClickGUI(),
                 new Bind(),
+                new Takeoff(),
                 };
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
         
         // Registering event handlers
         MinecraftForge.EVENT_BUS.register(new FMLEventHandler());
+        for (int i = 0; i < modules.length; i++) {
+            MinecraftForge.EVENT_BUS.register(modules[i]);
+        }
         
         System.out.println("Loading config...");
         sa = new Date().getTime();
@@ -188,5 +195,9 @@ public class TTC {
         }
         // Loading global config
         prefix = cfg.getOrDefault("prefix", ",");
+    }
+    
+    public static boolean isIngame() {
+        return mc.world != null && mc.player != null ;
     }
 }

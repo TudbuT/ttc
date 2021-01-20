@@ -2,6 +2,7 @@ package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.network.play.client.CPacketEntityAction;
+import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.util.math.Vec3d;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.obj.Atomic;
@@ -16,6 +17,7 @@ public class FlightBot {
     private static boolean flying = false;
     private static boolean active = false;
     private static long tookOff = 0;
+    private static double speed = 1;
     
     public static boolean isActive() {
         return active;
@@ -27,14 +29,21 @@ public class FlightBot {
     
     private FlightBot() { }
     
-    public static void activate(Atomic<Vec3d> destination) {
+    public static void activate(Atomic<Vec3d> destination, double speed) {
         while (lock);
+        flying = true;
         active = true;
+        FlightBot.speed = speed;
         FlightBot.destination = destination;
+    }
+    
+    public static void activate(Atomic<Vec3d> destination) {
+        activate(destination, 1);
     }
     
     public static void deactivate() {
         active = false;
+        speed = 1;
     }
     
     public static void updateDestination(Atomic<Vec3d> destination) {
@@ -42,14 +51,21 @@ public class FlightBot {
         FlightBot.destination = destination;
     }
     
+    public static void setSpeed(double speed) {
+        FlightBot.speed = speed;
+    }
+    
     private static void takeOff() {
         player = TTC.player;
-        
-        if(player.onGround) {
-            tookOff = 0;
-            player.jump();
-        }
-        else if(player.fallDistance > 0.1) {
+    
+        if (player.onGround) {
+            if (!player.isElytraFlying()) {
+                tookOff = 0;
+                player.jump();
+            }
+        } else if (player.fallDistance > 0.2) {
+            player.rotationPitch = -20;
+            player.connection.sendPacket(new CPacketPlayer.Rotation(TTC.player.rotationYaw, -20, false));
             player.connection.sendPacket(new CPacketEntityAction(player, CPacketEntityAction.Action.START_FALL_FLYING));
             tookOff = new Date().getTime();
         }
@@ -66,7 +82,7 @@ public class FlightBot {
             return false;
         }
         
-        if(new Date().getTime() - tookOff < 500 && tookOff != 0) {
+        if(new Date().getTime() - tookOff < 1000 && tookOff != 0) {
             return true;
         }
         

@@ -54,4 +54,9 @@ public class ChatColor extends Module {
         
         updateButtons();
     }
+    
+    @Override
+    public int danger() {
+        return 1;
+    }
 }

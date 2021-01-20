@@ -6,10 +6,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
+import net.minecraftforge.fml.relauncher.Side;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.*;
@@ -212,6 +215,12 @@ public class FMLEventHandler {
         ChatUtils.print("§c§l§k|||§c§l You died at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
     }
     
+    @SubscribeEvent
+    public void onHUDRender(RenderGameOverlayEvent.Post event) {
+        if(event.getType() == RenderGameOverlayEvent.ElementType.ALL)
+            HUD.getInstance().renderHUD();
+    }
+    
     // Fired every tick
     @SubscribeEvent
     public void onSubTick(TickEvent event) {
@@ -236,6 +245,11 @@ public class FMLEventHandler {
         if(TTC.mc.world == null || TTC.mc.player == null)
             return;
         
+        if(event.phase != TickEvent.Phase.END)
+            return;
+    
+        if(event.type != TickEvent.Type.PLAYER)
+            return;
         
         EntityPlayerSP player = TTC.player;
         if (player == null)

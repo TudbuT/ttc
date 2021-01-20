@@ -75,35 +75,37 @@ public class AutoTotem extends Module {
     // Run checks and AI
     @Override
     public void onSubTick() {
-        EntityPlayerSP player = TTC.player;
+        if(TTC.isIngame()) {
+            EntityPlayerSP player = TTC.player;
+    
+            if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {
+                // Don't switch yet
+                return;
+            }
+    
+            // Run AI
+            updateTotCount();
+            updateButtons();
+            if (autoStack)
+                autoStack();
+    
+            ItemStack stack = player.getHeldItemOffhand();
+            if (stack.getCount() <= min_count) {
+                // Switch!
         
-        if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {
-            // Don't switch yet
-            return;
-        }
+                Integer slot = InventoryUtils.getSlotWithItem(
+                        player.inventoryContainer,
+                        Items.TOTEM_OF_UNDYING,
+                        new int[]{InventoryUtils.OFFHAND_SLOT},
+                        min_count + 1,
+                        64
+                );
+                if (slot == null)
+                    return; // Oh no!! No totems left!
         
-        // Run AI
-        updateTotCount();
-        updateButtons();
-        if(autoStack)
-            autoStack();
-        
-        ItemStack stack = player.getHeldItemOffhand();
-        if (stack.getCount() <= min_count) {
-            // Switch!
-            
-            Integer slot = InventoryUtils.getSlotWithItem(
-                    player.inventoryContainer,
-                    Items.TOTEM_OF_UNDYING,
-                    new int[]{InventoryUtils.OFFHAND_SLOT},
-                    min_count + 1,
-                    64
-            );
-            if (slot == null)
-                return; // Oh no!! No totems left!
-            
-            // Switch a new totem stack to the offhand
-            InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT);
+                // Switch a new totem stack to the offhand
+                InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT);
+            }
         }
     }
     

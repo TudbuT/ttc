@@ -53,6 +53,10 @@ public abstract class Module {
         return false;
     }
     
+    public boolean doStoreEnabled() {
+        return true;
+    }
+    
     public boolean displayOnClickGUI() {
         return true;
     }
@@ -83,7 +87,8 @@ public abstract class Module {
     // Loads the config from a file, use loadConfig without arguments when overriding
     public void loadConfig(Map<String, String> map) {
         cfg = map;
-        enabled = Boolean.parseBoolean(cfg.get("enabled"));
+        if(doStoreEnabled())
+            enabled = Boolean.parseBoolean(cfg.get("enabled"));
         clickGuiX = null;
         clickGuiY = null;
         if (cfg.containsKey("cgx") && cfg.containsKey("cgy")) {
@@ -102,13 +107,18 @@ public abstract class Module {
             onDisable();
     }
     
+    public int danger() {
+        return 0;
+    }
+    
     // Saves the settings to the cfg map and returns it as string,
     // used in the TTC class for saving the config as file, not intended for overriding,
     // but can give advantages to do so
     public String saveConfig() {
         updateConfig();
         
-        cfg.put("enabled", String.valueOf(enabled));
+        if(doStoreEnabled())
+            cfg.put("enabled", String.valueOf(enabled));
         if (clickGuiX != null && clickGuiY != null) {
             cfg.put("cgx", clickGuiX + "");
             cfg.put("cgy", clickGuiY + "");

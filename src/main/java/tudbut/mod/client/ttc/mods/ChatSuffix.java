@@ -98,11 +98,6 @@ public class ChatSuffix extends Module {
     }
     
     @Override
-    public boolean defaultEnabled() {
-        return true;
-    }
-    
-    @Override
     public void onSubTick() {
     
     }
@@ -116,5 +111,8 @@ public class ChatSuffix extends Module {
         updateButtons();
     }
     
-    
+    @Override
+    public int danger() {
+        return 2;
+    }
 }

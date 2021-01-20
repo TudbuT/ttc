@@ -46,7 +46,7 @@ public class ElytraFlight extends Module {
             negateElytraFallMomentum(player);
         } else if(player.isElytraFlying()) {
             player.motionX = 0;
-            player.motionY = 0.25;
+            player.motionY = 0;
             player.motionZ = 0;
             init = true;
     
@@ -82,5 +82,10 @@ public class ElytraFlight extends Module {
     
     @Override
     public void onChat(String s, String[] args) {
+    }
+    
+    @Override
+    public int danger() {
+        return 2;
     }
 }

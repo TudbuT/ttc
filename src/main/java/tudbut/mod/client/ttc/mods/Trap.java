@@ -97,4 +97,9 @@ public class Trap extends Module {
             }
         }
     }
+    
+    @Override
+    public int danger() {
+        return 1;
+    }
 }

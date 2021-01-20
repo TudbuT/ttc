@@ -33,4 +33,9 @@ public class TPAParty extends Module {
         }
         return false;
     }
+    
+    @Override
+    public int danger() {
+        return 4;
+    }
 }

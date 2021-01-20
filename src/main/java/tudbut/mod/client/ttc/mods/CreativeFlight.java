@@ -42,4 +42,9 @@ public class CreativeFlight extends Module {
     public void onChat(String s, String[] args) {
     
     }
+    
+    @Override
+    public int danger() {
+        return 2;
+    }
 }

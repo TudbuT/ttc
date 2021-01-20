@@ -139,4 +139,9 @@ public class ElytraBot extends Module {
         }
         updateButtons();
     }
+    
+    @Override
+    public int danger() {
+        return 2;
+    }
 }

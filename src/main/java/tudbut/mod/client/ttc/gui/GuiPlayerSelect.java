@@ -2,8 +2,10 @@ package tudbut.mod.client.ttc.gui;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
 import org.lwjgl.input.Mouse;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.mods.AltControl;
 import tudbut.mod.client.ttc.mods.ClickGUI;
 import tudbut.mod.client.ttc.utils.Module;
 
@@ -11,18 +13,20 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class GuiTTC extends GuiScreen {
+public class GuiPlayerSelect extends GuiScreen {
     
-    // The buttons to be rendered (sub buttons are in the button object)
-    // One button per module
-    private Button[] buttons;
+    private GuiPlayerSelect.Button[] buttons;
+    private EntityPlayer[] players;
+    ButtonClickEvent event;
     
     // The mouse X and Y
     private int cx;
     private int cy;
     
-    public GuiTTC() {
+    public GuiPlayerSelect(EntityPlayer[] players, ButtonClickEvent onClick) {
         this.mc = TTC.mc;
+        event = onClick;
+        this.players = players;
     }
     
     // Minecraft wants this
@@ -39,7 +43,7 @@ public class GuiTTC extends GuiScreen {
             mc.mouseHelper.ungrabMouseCursor();
         
         // Creates buttons
-        buttons = new Button[256];
+        buttons = new GuiPlayerSelect.Button[256];
         resetButtons();
         
         // Minecraft wants this
@@ -52,9 +56,6 @@ public class GuiTTC extends GuiScreen {
     @Override
     public void onGuiClosed() {
         super.onGuiClosed();
-        ClickGUI.getInstance().enabled = false;
-        // Minecraft wants this
-        mc.mouseHelper.grabMouseCursor();
     }
     
     // Called every tick, idk why its called update tho
@@ -71,35 +72,23 @@ public class GuiTTC extends GuiScreen {
             if (buttons == null)
                 resetButtons();
         }
-        // Call onTick on every button
-        for (int i = 0; i < buttons.length; i++) {
-            if (buttons[i] != null)
-                buttons[i].onTick(this);
-        }
     }
     
     // Reset the buttons array
     private void resetButtons() {
         System.out.println("Resetting buttons on ClickGUI");
-        for (int i = 0, j = 0; i < TTC.modules.length; i++) {
-            int x = j / 6;
-            int y = j - x * 6;
-            
-            // Don't add the button if it isn't requested
-            if (!TTC.modules[i].displayOnClickGUI())
-                continue;
+        for (int i = 0, j = 0; i < players.length; i++) {
+            int x = j / 8;
+            int y = j - x * 8;
             
             // Create the button
             int r = i;
-            Button b = new Button(
-                    10 + (160 * x), 10 + (y * 30), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
+            GuiPlayerSelect.Button b = new GuiPlayerSelect.Button(
+                    10 + (160 * x), 10 + (y * 30), players[r].getName(),
                     (text) -> {
-                        if (TTC.modules[r].enabled = !TTC.modules[r].enabled)
-                            TTC.modules[r].onEnable();
-                        else
-                            TTC.modules[r].onDisable();
-                        
-                    }, TTC.modules[i]
+                        EntityPlayer player = players[r];
+                        event.run(player);
+                    }
             );
             buttons[i] = b;
             
@@ -134,7 +123,7 @@ public class GuiTTC extends GuiScreen {
         cy = mouseY;
         
         // Notify buttons
-        for (Button button : buttons) {
+        for (GuiPlayerSelect.Button button : buttons) {
             if (button != null)
                 if (button.mouseClicked(mouseX, mouseY, mouseButton))
                     return;
@@ -157,12 +146,6 @@ public class GuiTTC extends GuiScreen {
         // Update cx and cy
         cx = mouseX;
         cy = mouseY;
-        
-        // Notify buttons
-        for (Button button : buttons) {
-            if (button != null)
-                button.mouseReleased();
-        }
     }
     
     // Render the screen
@@ -197,46 +180,21 @@ public class GuiTTC extends GuiScreen {
         // The associated module, can be null if it is a sub button
         public Module module;
         // Called when the button is clicked
-        ButtonClickEvent event;
-        // If any mouse button is pressed
-        private boolean mouseDown = false;
-        // The mouse button that is pressed
-        private int mouseDownButton = 0;
-        // The sub buttons of the button, null if no module is associated to provide them
-        private Button[] subButtons;
-        
-        private boolean display = true;
-        
-        // Constructor used for sub buttons
-        public Button(String text, ButtonClickEvent event) {
-            this(0, 0, text, event, null);
-        }
+        GuiTTC.ButtonClickEvent event;
         
         // Constructor used by GuiTTC to construct a button with an associated module
         // and main constructor
-        public Button(int x, int y, String text, ButtonClickEvent event, Module module) {
-            if (module != null) {
-                if (module.clickGuiX != null && module.clickGuiY != null) {
-                    x = module.clickGuiX;
-                    y = module.clickGuiY;
-                }
-                subButtons = module.subButtons.toArray(new Button[0]);
-                display = module.displayOnClickGUI();
-            }
+        public Button(int x, int y, String text, GuiTTC.ButtonClickEvent event) {
             this.x = x;
             this.y = y;
             this.text = new AtomicReference<>(text);
             this.event = event;
-            this.module = module;
         }
         
         // Render the button
-        public void draw(GuiTTC gui) {
-            if (!display)
-                return;
-            
+        public void draw(GuiPlayerSelect gui) {
             int color = this.color;
-    
+            
             if (gui.cx >= x && gui.cy >= y && gui.cx <= x + 150 && gui.cy <= y + 20) {
                 Color c = new Color(color, true);
                 int r, g, b, a;
@@ -253,51 +211,16 @@ public class GuiTTC extends GuiScreen {
             
             drawRect(x, y, x + 150, y + 20, color);
             gui.drawString(gui.fontRenderer, text.get(), x + 6, y + 6, 0xffffffff);
-            
-            // Draw sub buttons
-            if (module != null && module.enabled) {
-                subButtons = module.getSubButtons();
-                
-                for (int i = 0; i < subButtons.length; i++) {
-                    Button b = subButtons[i];
-                    b.x = x;
-                    b.y = y + ((i + 1) * 20);
-                    b.color = 0x4000ff00;
-                    b.draw(gui);
-                }
-            }
         }
         
         public boolean mouseClicked(int clickX, int clickY, int button) {
             if (clickX >= x && clickY >= y) {
                 if (clickX <= x + 150 && clickY <= y + 20) {
-                    mouseDown = true;
-                    mouseDownButton = button;
                     click(button);
                     return true;
                 }
             }
-            if (module != null && module.enabled) {
-                subButtons = module.getSubButtons();
-                
-                for (int i = 0; i < subButtons.length; i++) {
-                    if (subButtons[i].mouseClicked(clickX, clickY, button))
-                        return true;
-                }
-            }
             return false;
-        }
-        
-        public void mouseReleased() {
-            mouseDown = false;
-            if (module != null && module.enabled) {
-                subButtons = module.subButtons.toArray(new Button[0]);
-                
-                for (int i = 0; i < subButtons.length; i++) {
-                    subButtons[i].mouseReleased();
-                }
-            }
-            
         }
         
         // More simple onCLick, only called when the mouse is clicked while on the button
@@ -306,22 +229,9 @@ public class GuiTTC extends GuiScreen {
                 event.run(text);
         }
         
-        protected void onTick(GuiTTC gui) {
-            if (module != null) {
-                if (mouseDown && mouseDownButton == 1) {
-                    x = gui.cx - 150 / 2;
-                    y = gui.cy - 10;
-                    x = (x / 5) * 5;
-                    y = (y / 5) * 5;
-                }
-                module.clickGuiX = x;
-                module.clickGuiY = y;
-            }
-        }
-        
     }
     
     public interface ButtonClickEvent {
-        void run(AtomicReference<String> text);
+        void run(EntityPlayer player);
     }
 }

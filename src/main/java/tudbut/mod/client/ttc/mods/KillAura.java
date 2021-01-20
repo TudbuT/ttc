@@ -126,4 +126,9 @@ public class KillAura extends Module {
         attackEntities = Boolean.parseBoolean(cfg.get("attackEntities"));
         updateButtons();
     }
+    
+    @Override
+    public int danger() {
+        return 3;
+    }
 }

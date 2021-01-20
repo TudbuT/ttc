@@ -18,6 +18,7 @@ public class TTCIC {
         WALK,
         ELYTRA,
         KEEPALIVE,
+        POSITION,
         
         ;
     }
@@ -26,6 +27,7 @@ public class TTCIC {
         NAME,
         UUID,
         KEEPALIVE,
+        LOST,
         
         ;
     }

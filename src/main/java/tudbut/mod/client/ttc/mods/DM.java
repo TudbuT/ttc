@@ -76,4 +76,9 @@ public class DM extends Module {
             s.deleteCharAt(s.length() - 1);
         cfg.put("users", s.toString());
     }
+    
+    @Override
+    public int danger() {
+        return 1;
+    }
 }

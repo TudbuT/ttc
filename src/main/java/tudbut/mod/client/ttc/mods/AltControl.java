@@ -1,6 +1,9 @@
 package tudbut.mod.client.ttc.mods;
 
 import de.tudbut.timer.AsyncTask;
+import de.tudbut.type.Vector3d;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
 import tudbut.mod.client.ttc.TTC;
@@ -9,10 +12,7 @@ import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
 import tudbut.obj.Atomic;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 import static tudbut.mod.client.ttc.utils.TTCIC.*;
 
@@ -30,9 +30,10 @@ public class AltControl extends Module {
     public int mode = -1;
     private boolean botMain = true;
     private boolean useElytra = false;
-    private boolean stopped = false;
+    private boolean stopped = true;
     private final Atomic<Vec3d> commonTarget = new Atomic<>();
     private EntityPlayer commonTargetPlayer = null;
+    private long lostTimer = 0;
     
     {updateButtons();}
     
@@ -138,14 +139,49 @@ public class AltControl extends Module {
     @Override
     public void onTick() {
         if(useElytra && !stopped) {
-            if (commonTargetPlayer != null && TTC.world.getPlayerEntityByName(commonTargetPlayer.getName()) != null)
-                follow();
-            else {
-                FlightBot.deactivate();
-                commonTargetPlayer = null;
-                commonTarget.set(null);
-                if(!main.uuid.equals(TTC.player.getUniqueID()))
-                    follow(main.name);
+            if(TTC.isIngame()) {
+                NetworkPlayerInfo[] players = Objects.requireNonNull(TTC.mc.getConnection()).getPlayerInfoMap().toArray(new NetworkPlayerInfo[0]);
+                
+                if (main.uuid.equals(TTC.player.getUniqueID())) {
+                    if (new Date().getTime() - lostTimer > 10000) {
+                        FlightBot.setSpeed(0.75);
+                    } else if (new Date().getTime() - lostTimer > 5000) {
+                        FlightBot.setSpeed(0.75);
+                    }
+                }
+    
+                // Target is in rd
+                if (commonTargetPlayer != null && TTC.world.getPlayerEntityByName(commonTargetPlayer.getName()) != null)
+                    follow();
+                // Target is not in rd, but isnt stopped
+                else if (new Date().getTime() - lostTimer > 5000) {
+                    FlightBot.deactivate();
+                    commonTargetPlayer = null;
+                    commonTarget.set(null);
+                    // Isnt main
+                    if (!main.uuid.equals(TTC.player.getUniqueID())) {
+                        // Follow main
+                        
+                        // Is main on same world & last lost query is 5 secs in past
+                        if (
+                                TTC.world.getPlayerEntityByName(main.name) == null &&
+                                new Date().getTime() - lostTimer > 5000 &&
+                                Arrays.stream(players).anyMatch(
+                                        player -> player.getGameProfile().getId().equals(main.uuid)
+                                )
+                        ) {
+                            try {
+                                // Send lost query
+                                sendPacket(PacketsCS.LOST, "");
+                            }
+                            catch (PBIC.PBICException.PBICWriteException e) {
+                                e.printStackTrace();
+                            }
+                            lostTimer = new Date().getTime();
+                        } else
+                            follow(main.name);
+                    }
+                }
             }
         }
     }
@@ -219,6 +255,15 @@ public class AltControl extends Module {
                     break;
                 case KEEPALIVE:
                     sendPacket(PacketsCS.KEEPALIVE, "");
+                    break;
+                case POSITION:
+                    if(commonTargetPlayer == null && !stopped) {
+                        Vector3d vec = Vector3d.fromMap(Utils.stringToMap(packet.content()));
+                        FlightBot.deactivate();
+                        commonTarget.set(new Vec3d(vec.getX(), vec.getY() + 2, vec.getZ()));
+                        FlightBot.activate(commonTarget);
+                    }
+                    break;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -252,6 +297,15 @@ public class AltControl extends Module {
                         e.printStackTrace();
                     }
                 });
+                break;
+            case LOST:
+                EntityPlayerSP player = TTC.player;
+                if(player != null && TTC.world != null) {
+                    connection.writePacket(getPacketSC(PacketsSC.POSITION, new Vector3d(player.posX, player.posY, player.posZ).toString()));
+                }
+                FlightBot.setSpeed(0.5);
+                lostTimer = new Date().getTime();
+                break;
         }
     }
     
@@ -391,6 +445,7 @@ public class AltControl extends Module {
                         catch (Exception e) {
                             e.printStackTrace();
                             System.err.println("Packet: " + string);
+                            onChat("end", "end".split(" "));
                         }
                     }
                 });
