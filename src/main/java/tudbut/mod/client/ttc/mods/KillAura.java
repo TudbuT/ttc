@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.EnumHand;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiPlayerSelect;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.Utils;
@@ -17,9 +18,28 @@ import java.util.Date;
 public class KillAura extends Module {
     int delay = 200;
     long last = 0;
-    boolean attackEntities = true;
+    int attack = 0;
     Queue<Entity> toAttack = new Queue<>();
     ArrayList<String> targets = new ArrayList<>();
+    
+    {
+        customKeyBinds.put("select", new KeyBind(null, () -> {
+            targets.clear();
+            TTC.mc.displayGuiScreen(
+                    new GuiPlayerSelect(
+                            TTC.world.playerEntities.stream().filter(
+                                    player -> !player.getName().equals(TTC.player.getName())
+                            ).toArray(EntityPlayer[]::new),
+                            player -> {
+                                targets.remove(player.getName());
+                                targets.add(player.getName());
+                                
+                                return false;
+                            }
+                    )
+            );
+        }));
+    }
     
     static KillAura instance;
     {
@@ -43,15 +63,18 @@ public class KillAura extends Module {
             
             text.set("Delay: " + delay);
         }));
-        subButtons.add(new GuiTTC.Button("Attack " + (attackEntities ? "all" : "players"), text -> {
-            attackEntities = !attackEntities;
-            text.set("Attack " + (attackEntities ? "all" : "players"));
+        subButtons.add(new GuiTTC.Button("Attack " + (attack == 0 ? "all" : (attack == 1 ? "players" : "targets")), text -> {
+            attack++;
+            if(attack > 2)
+                attack = 0;
+            
+            text.set("Attack " + (attack == 0 ? "all" : (attack == 1 ? "players" : "targets")));
         }));
     }
     
     public void updateButtons() {
         subButtons.get(0).text.set("Delay: " + delay);
-        subButtons.get(1).text.set("Attack " + (attackEntities ? "all" : "players"));
+        subButtons.get(1).text.set("Attack " + (attack == 0 ? "all" : (attack == 1 ? "players" : "targets")));
     }
     
     @Override
@@ -75,16 +98,17 @@ public class KillAura extends Module {
                                 !AltControl.getInstance().isAlt(players[i])
                         ) {
                             if (!targets.isEmpty()) {
-                                if (targets.contains(players[i].getGameProfile().getName())) {
-                                    toAttack.add(players[i]);
-                                }
+                                if(attack == 2)
+                                    if (targets.contains(players[i].getGameProfile().getName())) {
+                                        toAttack.add(players[i]);
+                                    }
                             }
-                            else
+                            else if(attack == 1)
                                 toAttack.add(players[i]);
                         }
                     }
                 }
-                if(!toAttack.hasNext() && attackEntities) {
+                if(!toAttack.hasNext() && attack == 0) {
                     Entity[] entities = Utils.getEntities(EntityLivingBase.class, EntityLivingBase::isEntityAlive);
                     for (int i = 0; i < entities.length; i++) {
                         if(
@@ -117,13 +141,13 @@ public class KillAura extends Module {
     @Override
     public void updateConfig() {
         cfg.put("delay", String.valueOf(delay));
-        cfg.put("attackEntities", String.valueOf(attackEntities));
+        cfg.put("attack", String.valueOf(attack));
     }
     
     @Override
     public void loadConfig() {
         delay = Integer.parseInt(cfg.get("delay"));
-        attackEntities = Boolean.parseBoolean(cfg.get("attackEntities"));
+        attack = Integer.parseInt(cfg.get("attack"));
         updateButtons();
     }
     

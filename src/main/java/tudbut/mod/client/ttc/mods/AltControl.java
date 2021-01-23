@@ -7,6 +7,7 @@ import net.minecraft.client.network.NetworkPlayerInfo;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.Vec3d;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.gui.GuiPlayerSelect;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
@@ -29,23 +30,64 @@ public class AltControl extends Module {
     private int confirmationInstance = 0;
     public int mode = -1;
     private boolean botMain = true;
-    private boolean useElytra = false;
+    private boolean useElytra = true;
     private boolean stopped = true;
     private final Atomic<Vec3d> commonTarget = new Atomic<>();
     private EntityPlayer commonTargetPlayer = null;
     private long lostTimer = 0;
     
+    PBIC.Server server;
+    PBIC.Client client;
+    
+    Alt main = new Alt();
+    ArrayList<Alt> alts = new ArrayList<>();
+    Map<PBIC.Connection, Alt> altsMap = new HashMap<>();
+    
     {updateButtons();}
+    
+    {
+        customKeyBinds.put("kill", new KeyBind(null, () -> {
+            TTC.mc.displayGuiScreen(
+                    new GuiPlayerSelect(
+                            TTC.world.playerEntities.stream().filter(
+                                    player -> !player.getName().equals(TTC.player.getName())
+                            ).toArray(EntityPlayer[]::new),
+                            player -> {
+                                if (server != null)
+                                    onChat("kill " + player.getName(), ("kill " + player.getName()).split(" "));
+                                return true;
+                            }
+                    )
+            );
+        }));
+        customKeyBinds.put("follow", new KeyBind(null, () -> {
+            TTC.mc.displayGuiScreen(
+                    new GuiPlayerSelect(
+                            TTC.world.playerEntities.toArray(new EntityPlayer[0]),
+                            player -> {
+                                if (server != null)
+                                    onChat("follow " + player.getName(), ("follow " + player.getName()).split(" "));
+                                return true;
+                            }
+                    )
+            );
+        }));
+        customKeyBinds.put("stop", new KeyBind(null, () -> {
+            onChat("stop", "stop".split(" "));
+        }));
+    }
     
     @Override
     public void loadConfig() {
         botMain = Boolean.parseBoolean(cfg.get("botMain"));
+        useElytra = Boolean.parseBoolean(cfg.get("useElytra"));
         updateButtons();
     }
     
     @Override
     public void updateConfig() {
         cfg.put("botMain", botMain + "");
+        cfg.put("useElytra", useElytra + "");
     }
     
     private void updateButtons() {
@@ -111,13 +153,6 @@ public class AltControl extends Module {
         }
     }
     
-    PBIC.Server server;
-    PBIC.Client client;
-    
-    Alt main = new Alt();
-    ArrayList<Alt> alts = new ArrayList<>();
-    Map<PBIC.Connection, Alt> altsMap = new HashMap<>();
-    
     @Override
     public void onConfirm(boolean result) {
         if(result) {
@@ -144,7 +179,7 @@ public class AltControl extends Module {
                 
                 if (main.uuid.equals(TTC.player.getUniqueID())) {
                     if (new Date().getTime() - lostTimer > 10000) {
-                        FlightBot.setSpeed(0.75);
+                        FlightBot.setSpeed(1.00);
                     } else if (new Date().getTime() - lostTimer > 5000) {
                         FlightBot.setSpeed(0.75);
                     }
@@ -251,6 +286,8 @@ public class AltControl extends Module {
                     FlightBot.deactivate();
                     break;
                 case ELYTRA:
+                    if(!useElytra && !stopped)
+                        ChatUtils.simulateSend("#stop", false);
                     useElytra = true;
                     break;
                 case KEEPALIVE:
@@ -479,6 +516,16 @@ public class AltControl extends Module {
                         stop(st);
                     }
                 }
+    
+                if (args[0].equals("follow")) {
+                    if(useElytra) {
+                        sendPacketSC(PacketsSC.ELYTRA, "");
+                    } else {
+                        sendPacketSC(PacketsSC.WALK, "");
+                    }
+                    sendPacketSC(PacketsSC.FOLLOW, args[1]);
+                    follow(args[1]);
+                }
             }
             
             if (s.equals("stop")) {
@@ -594,6 +641,8 @@ public class AltControl extends Module {
     }
     
     public void follow(String name) {
+        if(TTC.player.getName().equals(name))
+            return;
         commonTargetPlayer = TTC.world.getPlayerEntityByName(name);
         follow();
     }
@@ -612,7 +661,8 @@ public class AltControl extends Module {
         commonTarget.set(null);
         stopped = true;
         FlightBot.deactivate();
-        ChatUtils.simulateSend("#stop", false);
+        if(!useElytra)
+            ChatUtils.simulateSend("#stop", false);
         if(name == null || name.equals("")) {
             aura.targets.clear();
             aura.enabled = false;
@@ -629,8 +679,10 @@ public class AltControl extends Module {
     }
     
     public void follow() {
-        if(commonTargetPlayer == null)
+        if(commonTargetPlayer == null) {
+            FlightBot.deactivate();
             return;
+        }
         
         stopped = false;
         

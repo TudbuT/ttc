@@ -24,7 +24,7 @@ public class FlightBot {
     }
     
     public static boolean isFlying() {
-        return flying && player.getPositionVector().distanceTo(destination.get()) > 1;
+        return destination != null && destination.get() != null && flying && player.getPositionVector().distanceTo(destination.get()) > 1;
     }
     
     private FlightBot() { }
@@ -57,13 +57,13 @@ public class FlightBot {
     
     private static void takeOff() {
         player = TTC.player;
-    
+        
         if (player.onGround) {
             if (!player.isElytraFlying()) {
                 tookOff = 0;
                 player.jump();
             }
-        } else if (player.fallDistance > 0.2) {
+        } else if (player.fallDistance > 0.1) {
             player.rotationPitch = -20;
             player.connection.sendPacket(new CPacketPlayer.Rotation(TTC.player.rotationYaw, -20, false));
             player.connection.sendPacket(new CPacketEntityAction(player, CPacketEntityAction.Action.START_FALL_FLYING));
@@ -76,13 +76,15 @@ public class FlightBot {
             return false;
         
         player = TTC.player;
-        
-        if(!player.isElytraFlying()) {
-            takeOff();
+    
+        if (!player.isElytraFlying()) {
+            if (new Date().getTime() - tookOff > 100) {
+                takeOff();
+            }
             return false;
         }
         
-        if(new Date().getTime() - tookOff < 1000 && tookOff != 0) {
+        if(new Date().getTime() - tookOff < 300 && tookOff != 0) {
             return true;
         }
         
@@ -104,6 +106,8 @@ public class FlightBot {
         }
         else
             flying = true;
+        
+        d = d / speed;
     
         x = dx / d;
         y = dy / d;

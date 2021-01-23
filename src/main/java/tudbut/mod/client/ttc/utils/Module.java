@@ -1,5 +1,7 @@
 package tudbut.mod.client.ttc.utils;
 
+import org.lwjgl.input.Keyboard;
+import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 
 import java.util.ArrayList;
@@ -18,9 +20,15 @@ public abstract class Module {
     public boolean enabled = defaultEnabled();
     public Integer clickGuiX;
     public Integer clickGuiY;
-    public Integer key;
-    public boolean keyDown;
+    public KeyBind key = new KeyBind(null, () -> {
+        enabled = !enabled;
+        if(enabled)
+            onEnable();
+        else
+            onDisable();
+    });
     public ArrayList<GuiTTC.Button> subButtons = new ArrayList<>();
+    public Map<String, KeyBind> customKeyBinds = new HashMap<>();
     private GuiTTC.Button[] confirmationButtons = new GuiTTC.Button[3];
     
     {
@@ -87,16 +95,28 @@ public abstract class Module {
     // Loads the config from a file, use loadConfig without arguments when overriding
     public void loadConfig(Map<String, String> map) {
         cfg = map;
+        
         if(doStoreEnabled())
             enabled = Boolean.parseBoolean(cfg.get("enabled"));
+        
         clickGuiX = null;
         clickGuiY = null;
         if (cfg.containsKey("cgx") && cfg.containsKey("cgy")) {
             clickGuiX = Integer.parseInt(cfg.get("cgx"));
             clickGuiY = Integer.parseInt(cfg.get("cgy"));
         }
+        
         if(cfg.containsKey("key")) {
-            key = Integer.parseInt(cfg.get("key"));
+            key.key = Integer.parseInt(cfg.get("key"));
+        }
+    
+        if (cfg.containsKey("ckb")) {
+            Map<String, String> ckb = Utils.stringToMap(map.get("ckb"));
+            
+            for (String kb : ckb.keySet()) {
+                if(customKeyBinds.containsKey(kb))
+                    customKeyBinds.get(kb).key = Integer.parseInt(ckb.get(kb));
+            }
         }
         
         loadConfig();
@@ -123,10 +143,18 @@ public abstract class Module {
             cfg.put("cgx", clickGuiX + "");
             cfg.put("cgy", clickGuiY + "");
         }
-        if(key != null)
-            cfg.put("key", key + "");
+        
+        if(key.key != null)
+            cfg.put("key", key.key + "");
         else
             cfg.remove("key");
+        
+        Map<String, String> ckb = new HashMap<>();
+        for (String kb : customKeyBinds.keySet()) {
+            if(customKeyBinds.get(kb).key != null)
+                ckb.put(kb, String.valueOf(customKeyBinds.get(kb).key));
+        }
+        cfg.put("ckb", Utils.mapToString(ckb));
         
         return Utils.mapToString(cfg);
     }
@@ -140,5 +168,32 @@ public abstract class Module {
     @Override
     public String toString() {
         return getClass().getSimpleName();
+    }
+    
+    public static class KeyBind {
+        public Integer key;
+        public boolean down = false;
+        public Runnable onPress;
+        
+        public KeyBind(Integer key, Runnable onPress) {
+            this.key = key;
+            this.onPress = onPress;
+        }
+        
+        public void onTick() {
+            if(key != null && TTC.mc.currentScreen == null) {
+                if (Keyboard.isKeyDown(key)) {
+                    if(!down) {
+                        down = true;
+                        if(onPress != null)
+                            onPress.run();
+                    }
+                }
+                else
+                    down = false;
+            }
+            else
+                down = false;
+        }
     }
 }

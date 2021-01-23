@@ -265,29 +265,19 @@ public class FMLEventHandler {
         }
         ParticleLoop.run();
         for (int i = 0; i < TTC.modules.length; i++) {
-            if(TTC.modules[i].key != null) {
-                if (Keyboard.isKeyDown(TTC.modules[i].key) && TTC.mc.currentScreen == null) {
-                    if (!TTC.modules[i].keyDown) {
-                        TTC.modules[i].keyDown = true;
-                        ChatUtils.print("§a" + TTC.modules[i].getClass().getSimpleName() + " now " + !TTC.modules[i].enabled);
-                       
-                        if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
-                            TTC.modules[i].onEnable();
-                        else
-                            TTC.modules[i].onDisable();
-                    }
-                }
-                else
-                    TTC.modules[i].keyDown = false;
-            }
+            TTC.modules[i].key.onTick();
             
-            if (TTC.modules[i].enabled)
+            if (TTC.modules[i].enabled) {
                 try {
+                    for (String key : TTC.modules[i].customKeyBinds.keySet()) {
+                        TTC.modules[i].customKeyBinds.get(key).onTick();
+                    }
                     TTC.modules[i].onTick();
                 }
                 catch (Exception e) {
                     e.printStackTrace(ChatUtils.chatPrinterDebug());
                 }
+            }
             TTC.modules[i].onEveryTick();
         }
     }

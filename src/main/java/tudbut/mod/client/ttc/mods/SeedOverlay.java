@@ -46,6 +46,7 @@ public class SeedOverlay extends Module {
     long seed = Long.MAX_VALUE;
     boolean isUpdating = false;
     boolean lock = false;
+    int renderType = 0;
     
     static final ArrayList<Block> disableCheck = new ArrayList<>();
     
@@ -74,7 +75,10 @@ public class SeedOverlay extends Module {
         disableCheck.add(Blocks.DEADBUSH);
     }
     
-    {
+    { updateButtons(); }
+    
+    public void updateButtons() {
+        subButtons.clear();
         subButtons.add(new GuiTTC.Button("Update world data", text -> ThreadManager.run(() -> {
             world = TTC.world;
             worldOptions = TTC.world.getWorldInfo().getGeneratorOptions();
@@ -100,6 +104,22 @@ public class SeedOverlay extends Module {
             generator.stopServer();
             generator = null;
         })));
+        subButtons.add(new GuiTTC.Button("Render type: " + (renderType == 0 ? "Box" : (renderType == 1 ? "Marker" : "Plane")), text -> {
+            renderType++;
+            if(renderType > 2)
+                renderType = 0;
+            text.set("Render type: " + (renderType == 0 ? "Box" : (renderType == 1 ? "Marker" : "Plane")));
+        }));
+    }
+    
+    @Override
+    public void updateConfig() {
+        cfg.put("renderType", renderType + "");
+    }
+    
+    @Override
+    public void loadConfig() {
+        renderType = Integer.parseInt(cfg.get("renderType"));
     }
     
     private void update() {
@@ -127,7 +147,8 @@ public class SeedOverlay extends Module {
                                         !(BlockFalling.class.isAssignableFrom(a.getBlock().getClass())) && !(BlockFalling.class.isAssignableFrom(b.getBlock().getClass())) &&
                                         !disableCheck.contains(a.getBlock()) && !disableCheck.contains(b.getBlock())
                                 ) {
-                                    b.getBlock().updateTick(world, bp, b, world.rand);
+                                    if(renderType == 2)
+                                        bp = new BlockPos(bp.getX(), 42, bp.getZ());
                                     
                                     if(a.getMaterial() == Material.AIR)
                                         toRender.put(bp, -1);
@@ -224,15 +245,18 @@ public class SeedOverlay extends Module {
                     
                     switch (color) {
                         case 1:
-                            color = 0x2000ff00;
+                            color = 0x4000ff00;
                             break;
                         case 0:
-                            color = 0x20808000;
+                            color = 0x40808000;
                             break;
                         case -1:
-                            color = 0x20ff0000;
+                            color = 0x40ff0000;
                             break;
                     }
+                    
+                    if(renderType == 2)
+                        color += 0x20000000;
                     
                     drawAroundBlock(
                             new Vector3d(
@@ -262,45 +286,47 @@ public class SeedOverlay extends Module {
             put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
             put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
             
-            //next();
+            if(renderType == 0) {
+                next();
     
-            // top
-            put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
-            put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
-            put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
-            put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
+                // top
+                put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
+                put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
+                put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
+                put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
     
-            //next();
-            
-            // z -
-            put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
-            put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
-            put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
-            put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
+                next();
     
-            //next();
-            
-            // z +
-            put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
-            put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
-            put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
-            put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
+                // z -
+                put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
+                put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
+                put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
+                put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
     
-            //next();
+                next();
     
-            // x -
-            put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
-            put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
-            put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
-            put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
+                // z +
+                put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
+                put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
+                put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
+                put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
     
-            //next();
+                next();
     
-            // y +
-            put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
-            put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
-            put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
-            put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
+                // x -
+                put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
+                put(pos.getX() - 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
+                put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
+                put(pos.getX() - 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
+    
+                next();
+    
+                // y +
+                put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() - 0.5);
+                put(pos.getX() + 0.5, pos.getY() + 1.01, pos.getZ() + 0.5);
+                put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() + 0.5);
+                put(pos.getX() + 0.5, pos.getY() - 0.01, pos.getZ() - 0.5);
+            }
             
             end();
         } catch (Exception e) {

@@ -76,7 +76,7 @@ public class GuiPlayerSelect extends GuiScreen {
     
     // Reset the buttons array
     private void resetButtons() {
-        System.out.println("Resetting buttons on ClickGUI");
+        System.out.println("Resetting buttons on PlayerSelectGUI");
         for (int i = 0, j = 0; i < players.length; i++) {
             int x = j / 8;
             int y = j - x * 8;
@@ -87,7 +87,9 @@ public class GuiPlayerSelect extends GuiScreen {
                     10 + (160 * x), 10 + (y * 30), players[r].getName(),
                     (text) -> {
                         EntityPlayer player = players[r];
-                        event.run(player);
+                        if(event.run(player)) {
+                            close();
+                        }
                     }
             );
             buttons[i] = b;
@@ -108,9 +110,9 @@ public class GuiPlayerSelect extends GuiScreen {
             if (buttons == null)
                 resetButtons();
         }
-        for (int i = 0; i < TTC.modules.length; i++) {
+        for (int i = 0; i < buttons.length; i++) {
             if (buttons[i] != null)
-                buttons[i].text.set(TTC.modules[i].getClass().getSimpleName() + ": " + TTC.modules[i].enabled);
+                buttons[i].text.set(players[i].getName());
         }
     }
     
@@ -125,9 +127,15 @@ public class GuiPlayerSelect extends GuiScreen {
         // Notify buttons
         for (GuiPlayerSelect.Button button : buttons) {
             if (button != null)
-                if (button.mouseClicked(mouseX, mouseY, mouseButton))
+                if (button.mouseClicked(mouseX, mouseY, mouseButton)) {
                     return;
+                }
         }
+    }
+    
+    public void close() {
+        onGuiClosed();
+        TTC.mc.displayGuiScreen(null);
     }
     
     
@@ -177,8 +185,6 @@ public class GuiPlayerSelect extends GuiScreen {
         public AtomicReference<String> text;
         // Color for rendering
         public int color = 0x8000ff00;
-        // The associated module, can be null if it is a sub button
-        public Module module;
         // Called when the button is clicked
         GuiTTC.ButtonClickEvent event;
         
@@ -232,6 +238,6 @@ public class GuiPlayerSelect extends GuiScreen {
     }
     
     public interface ButtonClickEvent {
-        void run(EntityPlayer player);
+        boolean run(EntityPlayer player);
     }
 }
