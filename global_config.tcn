@@ -1,0 +1,7 @@
+messages {
+    update: true
+}
+
+startup {
+    show_credit: true
+}
