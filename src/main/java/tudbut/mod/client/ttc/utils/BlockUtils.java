@@ -78,6 +78,11 @@ public class BlockUtils {
         }
     }
     
+    public static void lookAt(BlockPos pos, EnumFacing side) {
+        Vec3d hitVec = new Vec3d(pos).addVector(0.5, 0.5, 0.5).add(new Vec3d(side.getOpposite().getDirectionVec()).scale(0.5));
+        faceVectorPacketInstant(hitVec);
+    }
+    
     // Gets a block next to a block position
     private static EnumFacing getPlaceableSide(BlockPos pos) {
         for (EnumFacing side : EnumFacing.values()) {

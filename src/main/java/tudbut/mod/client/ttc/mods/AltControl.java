@@ -1,6 +1,7 @@
 package tudbut.mod.client.ttc.mods;
 
 import de.tudbut.timer.AsyncTask;
+import de.tudbut.timer.SyncQueue;
 import de.tudbut.type.Vector3d;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.network.NetworkPlayerInfo;
@@ -12,6 +13,7 @@ import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
 import tudbut.net.ic.PBIC;
 import tudbut.obj.Atomic;
+import tudbut.tools.Queue;
 
 import java.util.*;
 
@@ -35,6 +37,7 @@ public class AltControl extends Module {
     private final Atomic<Vec3d> commonTarget = new Atomic<>();
     private EntityPlayer commonTargetPlayer = null;
     private long lostTimer = 0;
+    public final Queue<PBIC.Packet> toSend = new Queue<>();
     
     PBIC.Server server;
     PBIC.Client client;
@@ -46,35 +49,29 @@ public class AltControl extends Module {
     {updateButtons();}
     
     {
-        customKeyBinds.put("kill", new KeyBind(null, () -> {
-            TTC.mc.displayGuiScreen(
-                    new GuiPlayerSelect(
-                            TTC.world.playerEntities.stream().filter(
-                                    player -> !player.getName().equals(TTC.player.getName())
-                            ).toArray(EntityPlayer[]::new),
-                            player -> {
-                                if (server != null)
-                                    onChat("kill " + player.getName(), ("kill " + player.getName()).split(" "));
-                                return true;
-                            }
-                    )
-            );
-        }));
-        customKeyBinds.put("follow", new KeyBind(null, () -> {
-            TTC.mc.displayGuiScreen(
-                    new GuiPlayerSelect(
-                            TTC.world.playerEntities.toArray(new EntityPlayer[0]),
-                            player -> {
-                                if (server != null)
-                                    onChat("follow " + player.getName(), ("follow " + player.getName()).split(" "));
-                                return true;
-                            }
-                    )
-            );
-        }));
-        customKeyBinds.put("stop", new KeyBind(null, () -> {
-            onChat("stop", "stop".split(" "));
-        }));
+        customKeyBinds.put("kill", new KeyBind(null, () -> TTC.mc.displayGuiScreen(
+                new GuiPlayerSelect(
+                        TTC.world.playerEntities.stream().filter(
+                                player -> !player.getName().equals(TTC.player.getName())
+                        ).toArray(EntityPlayer[]::new),
+                        player -> {
+                            if (server != null)
+                                onChat("kill " + player.getName(), ("kill " + player.getName()).split(" "));
+                            return true;
+                        }
+                )
+        )));
+        customKeyBinds.put("follow", new KeyBind(null, () -> TTC.mc.displayGuiScreen(
+                new GuiPlayerSelect(
+                        TTC.world.playerEntities.toArray(new EntityPlayer[0]),
+                        player -> {
+                            if (server != null)
+                                onChat("follow " + player.getName(), ("follow " + player.getName()).split(" "));
+                            return true;
+                        }
+                )
+        )));
+        customKeyBinds.put("stop", new KeyBind(null, () -> onChat("stop", "stop".split(" "))));
     }
     
     @Override
@@ -468,6 +465,8 @@ public class AltControl extends Module {
             if (args[0].equals("client") && client == null) {
                 if(args.length == 2)
                     client = new PBIC.Client(args[1], 50278);
+                else if(args.length == 3)
+                    client = new PBIC.Client(args[1], Integer.parseInt(args[2]));
                 else
                     client = new PBIC.Client("127.0.0.1", 50278);
                 ChatUtils.print("Client started");
@@ -568,13 +567,14 @@ public class AltControl extends Module {
             if (s.equals("end")) {
     
                 alts.clear();
+                while (toSend.hasNext()) toSend.next();
                 altsMap.clear();
                 stopped = false;
                 useElytra = false;
                 commonTargetPlayer = null;
                 commonTarget.set(null);
                 stopped = false;
-                main = null;
+                main = new Alt();
                 
                 if(client != null)
                     client.close();

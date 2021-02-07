@@ -2,22 +2,46 @@ package tudbut.mod.client.ttc.mods;
 
 import de.tudbut.type.Vector2d;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.FlightBot;
 import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.obj.Atomic;
 import tudbut.rendering.Maths2D;
 
+import static tudbut.mod.client.ttc.utils.Tesselator.*;
+import static tudbut.mod.client.ttc.utils.Tesselator.put;
+
 public class ElytraBot extends Module {
+    
+    static ElytraBot bot;
+    
+    {
+        bot = this;
+    }
+    
+    public static ElytraBot getInstance() {
+        return bot;
+    }
+    
+    
+    
+    
+    
     Atomic<Vec3d> dest = new Atomic<>();
     double orbitRotation = 0.1;
     private static final double PI_TIMES_TWO = Math.PI * 2;
     private static final Vector2d zeroZero = new Vector2d(0,0);
     private Vector2d original = zeroZero.clone();
-    private int i = 0;
     
     int task = -1;
     
@@ -25,8 +49,9 @@ public class ElytraBot extends Module {
     
     public void updateButtons() {
         subButtons.clear();
-        if(task == -1)
+        if(task == -1 && !FlightBot.isActive()) {
             subButtons.add(new GuiTTC.Button("Mode", text -> displayModeMenu()));
+        }
         else
             subButtons.add(new GuiTTC.Button("Stop", text -> {
                 FlightBot.deactivate();
@@ -38,6 +63,9 @@ public class ElytraBot extends Module {
     
     public void displayModeMenu() {
         subButtons.clear();
+        subButtons.add(new GuiTTC.Button("Back", text -> {
+            updateButtons();
+        }));
         subButtons.add(new GuiTTC.Button("Orbit spawn", text -> {
             original = zeroZero.clone();
             startOrbitSpawn();
@@ -56,7 +84,6 @@ public class ElytraBot extends Module {
         FlightBot.activate(dest);
         ChatUtils.chatPrinterDebug().println("Now flying to " + original);
         task = 0;
-        i = 0;
     }
     
     public void tickOrbitSpawn() {
@@ -70,8 +97,10 @@ public class ElytraBot extends Module {
         }
     }
     
+    Atomic<Vec3d> theDest = new Atomic<>();
+    
     @Override
-    public void onTick() {
+    public void onEveryTick() {
         if(TTC.mc.world == null) {
             return;
         }
@@ -95,12 +124,21 @@ public class ElytraBot extends Module {
                     break;
             }
         }
-        if(task != -1 && FlightBot.isActive()) {
+        if (task != -1 && FlightBot.isActive()) {
             rise(260);
         }
     }
     
     boolean isRising = false;
+    
+    public void flyTo(BlockPos pos) {
+        task = 1;
+        FlightBot.deactivate();
+        FlightBot.deactivate();
+        dest.set(new Vec3d(pos.getX(), 260, pos.getZ()));
+        FlightBot.activate(dest);
+        updateButtons();
+    }
     
     public void rise(double pos) {
         EntityPlayerSP player = TTC.player;
@@ -125,16 +163,13 @@ public class ElytraBot extends Module {
             return;
         }
         
-        if(task != -1) {
+        if(task != -1 || FlightBot.isActive()) {
             ChatUtils.print("You have to stop your current task first.");
             return;
         }
     
         if(args.length == 2) {
-            task = 1;
-            dest.set(new Vec3d(Double.parseDouble(args[0]), 260, Double.parseDouble(args[1])));
-            FlightBot.deactivate();
-            FlightBot.activate(dest);
+            flyTo(new BlockPos(Integer.parseInt(args[0]), 260, Integer.parseInt(args[1])));
             ChatUtils.print("Flying...");
         }
         updateButtons();
@@ -143,5 +178,13 @@ public class ElytraBot extends Module {
     @Override
     public int danger() {
         return 2;
+    }
+    
+    @Override
+    public void updateConfig() {
+    }
+    
+    @Override
+    public void loadConfig() {
     }
 }

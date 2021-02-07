@@ -36,7 +36,8 @@ public class Bind extends Module {
                 if(TTC.modules[i].key.key != null)
                     ChatUtils.print("State: " + Keyboard.getKeyName(TTC.modules[i].key.key));
                 for (String kb : TTC.modules[i].customKeyBinds.keySet()) {
-                    ChatUtils.print("Function " + kb + ": " + Keyboard.getKeyName(TTC.modules[i].customKeyBinds.get(kb).key));
+                    if(TTC.modules[i].customKeyBinds.get(kb).key != null)
+                        ChatUtils.print("Function " + kb + ": " + Keyboard.getKeyName(TTC.modules[i].customKeyBinds.get(kb).key));
                 }
             }
             

@@ -14,7 +14,6 @@ public class Tesselator {
 
     public static void ready() {
         glPushMatrix();
-        glDisable(GL_CULL_FACE);
     }
     public static void translate(double x, double y, double z) {
         glTranslated(x,y,z);
@@ -27,6 +26,7 @@ public class Tesselator {
         glDisable(GL_TEXTURE_2D);
         glDisable(GL_LIGHTING);
         glEnable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         byte[] bytes = PBIC.putInt(argb);
         glColor4ub(bytes[1], bytes[2], bytes[3], bytes[0]);
@@ -43,6 +43,10 @@ public class Tesselator {
         glVertex3d(x,y,z);
     }
     public static void end() {
+        translated = null;
+        color = 0;
+        depth = false;
+        mode = 0;
         glEnd();
         glEnable(GL_TEXTURE_2D);
         glDisable(GL_BLEND);
@@ -50,7 +54,14 @@ public class Tesselator {
         glPopMatrix();
     }
     public static void next() {
-        end();
+        // end current
+        glEnd();
+        glEnable(GL_TEXTURE_2D);
+        glDisable(GL_BLEND);
+        glEnable(GL_CULL_FACE);
+        glPopMatrix();
+        
+        // start new
         glPushMatrix();
         glTranslated(translated.getX(), translated.getY(), translated.getZ());
         color(color);

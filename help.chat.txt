@@ -1,7 +1,7 @@
 §k||||||||||||||||||||||||||||||||
-§c§lTTC connection
+§c§lTTC Client
 §k||||||||||||||||||||||||||||||||
-§avB1.10.1a
+§avC1.0.0a
 §a§lHelp
 
 §aCurrent prefix: %p

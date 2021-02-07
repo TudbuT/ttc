@@ -1,15 +1,19 @@
 package tudbut.mod.client.ttc.mods;
 
+import de.tudbut.type.Vector2d;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiPlayerSelect;
 import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.utils.BlockUtils;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.Utils;
+import tudbut.obj.Vector2i;
 import tudbut.tools.Queue;
 
 import java.util.ArrayList;
@@ -78,7 +82,7 @@ public class KillAura extends Module {
     }
     
     @Override
-    public void onSubTick() {
+    public void onTick() {
         if (new Date().getTime() >= last + delay) {
             last = new Date().getTime();
             a :
@@ -129,8 +133,12 @@ public class KillAura extends Module {
     public void attackNext() {
         Entity entity = toAttack.next();
     
+        Vector2d rot = new Vector2d(TTC.player.rotationYaw, TTC.player.rotationPitch);
+        BlockUtils.lookAt(entity.getPosition(), EnumFacing.UP);
         TTC.mc.playerController.attackEntity(TTC.player, entity);
         TTC.player.swingArm(EnumHand.MAIN_HAND);
+        TTC.player.rotationYaw = (float) rot.getX();
+        TTC.player.rotationPitch = (float) rot.getY();
     }
     
     @Override

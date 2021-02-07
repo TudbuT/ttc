@@ -24,26 +24,33 @@ public class ElytraFlight extends Module {
         boolean blockMovement = FlightBot.tickBot();
         
         if(init) {
-            if(!blockMovement) {
-                Vec2f movementVec = player.movementInput.getMoveVector();
+            if (TTC.player == TTC.mc.getRenderViewEntity()) {
+                if (!blockMovement) {
+                    Vec2f movementVec = player.movementInput.getMoveVector();
     
-                float f1 = MathHelper.sin(player.rotationYaw * 0.017453292F);
-                float f2 = MathHelper.cos(player.rotationYaw * 0.017453292F);
-                double x = movementVec.x * f2 - movementVec.y * f1;
-                double y = (player.movementInput.jump ? 1 : 0) + (player.movementInput.sneak ? -1 : 0);
-                double z = movementVec.y * f2 + movementVec.x * f1;
-                float d = (float) Math.sqrt(x * x + y * y + z * z);
+                    float f1 = MathHelper.sin(player.rotationYaw * 0.017453292F);
+                    float f2 = MathHelper.cos(player.rotationYaw * 0.017453292F);
+                    double x = movementVec.x * f2 - movementVec.y * f1;
+                    double y = (player.movementInput.jump ? 1 : 0) + (player.movementInput.sneak ? -1 : 0);
+                    double z = movementVec.y * f2 + movementVec.x * f1;
+                    float d = (float) Math.sqrt(x * x + y * y + z * z);
     
-                if(d < 1) {
-                    d = 1;
+                    if (d < 1) {
+                        d = 1;
+                    }
+    
+                    player.motionX = x / d;
+                    player.motionY = y / d;
+                    player.motionZ = z / d;
                 }
-                
-                player.motionX = x / d;
-                player.motionY = y / d;
-                player.motionZ = z / d;
             }
-            
+            else {
+                player.motionX = 0;
+                player.motionY = 0;
+                player.motionZ = 0;
+            }
             negateElytraFallMomentum(player);
+            
         } else if(player.isElytraFlying()) {
             player.motionX = 0;
             player.motionY = 0;

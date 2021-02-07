@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vB1.10.1a";
+    public static final String VERSION = "vC1.0.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -69,6 +69,8 @@ public class TTC {
     @EventHandler
     public void init(FMLInitializationEvent event) {
         logger.info("TTC by TudbuT");
+        
+        mc.gameSettings.autoJump = false; // Fuck AutoJump, disable it on startup
         
         long sa; // For time measurements
         
@@ -113,7 +115,10 @@ public class TTC {
                 new ElytraBot(),
                 new HUD(),
                 new SeedOverlay(),
-                new Freecam(), // Unused, yet
+                new Velocity(),
+                new Bright(),
+                new Freecam(),
+                new LSD(),
                 new ClickGUI(),
                 new Bind(),
                 new Takeoff(),
@@ -199,5 +204,14 @@ public class TTC {
     
     public static boolean isIngame() {
         return mc.world != null && mc.player != null ;
+    }
+
+    public static <T extends Module> T getModule(Class<? extends T> module) {
+        for (int i = 0; i < modules.length; i++) {
+            if(modules[i].getClass() == module) {
+                return (T) modules[i];
+            }
+        }
+        return null;
     }
 }

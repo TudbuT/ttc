@@ -9,12 +9,54 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class Utils { // A bunch of utils that don't deserve their own class, self-explanatory
+    
+    public static Object getPrivateField(Class<?> clazz, Object instance, String field) {
+        try {
+            Object t;
+            Field f = clazz.getDeclaredField(field);
+            boolean b = f.isAccessible();
+            f.setAccessible(true);
+            t = f.get(instance);
+            f.setAccessible(b);
+            return t;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    public static boolean setPrivateField(Class<?> clazz, Object instance, String field, Object content) {
+        try {
+            Field f = clazz.getDeclaredField(field);
+            boolean b = f.isAccessible();
+            f.setAccessible(true);
+            f.set(instance, content);
+            f.setAccessible(b);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public static String[] getFieldsForType(Class<?> clazz, Class<?> type) {
+        try {
+            Field[] all = clazz.getDeclaredFields();
+            ArrayList<String> names = new ArrayList<>();
+            for (int i = 0; i < all.length; i++) {
+                if(all[i].getType() == type) {
+                    names.add(all[i].getName());
+                }
+            }
+            return names.toArray(new String[0]);
+        } catch (Exception e) {
+            return null;
+        }
+    }
     
     public static <T> Entity[] getEntities(Class<? extends T> entityType, Predicate<? super T> filter) {
         List<T> list = Lists.<T>newArrayList();
