@@ -134,7 +134,7 @@ public class KillAura extends Module {
         Entity entity = toAttack.next();
     
         Vector2d rot = new Vector2d(TTC.player.rotationYaw, TTC.player.rotationPitch);
-        BlockUtils.lookAt(entity.getPosition(), EnumFacing.UP);
+        BlockUtils.lookAt(entity.getPositionVector().addVector(0, (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2, 0));
         TTC.mc.playerController.attackEntity(TTC.player, entity);
         TTC.player.swingArm(EnumHand.MAIN_HAND);
         TTC.player.rotationYaw = (float) rot.getX();

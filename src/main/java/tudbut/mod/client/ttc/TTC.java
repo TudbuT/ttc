@@ -15,18 +15,20 @@ import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
+import tudbut.parsing.TCN;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 
 @Mod(modid = TTC.MODID, name = TTC.NAME, version = TTC.VERSION)
 public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.1.0a";
+    public static final String VERSION = "vC1.2.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -37,6 +39,7 @@ public class TTC {
     public static Minecraft mc = Minecraft.getMinecraft();
     // Config
     public static FileRW file;
+    public static TCN globalConfig;
     public static Map<String, String> cfg;
     // Prefix for chat-commands
     public static String prefix = ",";
@@ -74,10 +77,6 @@ public class TTC {
         
         long sa; // For time measurements
         
-        // Show the "TTC by TudbuT" message
-        ThreadManager.run(() -> {
-            JOptionPane.showMessageDialog(null, "TTC by TudbuT");
-        });
         System.out.println("Init...");
         sa = new Date().getTime();
         try {
@@ -85,6 +84,29 @@ public class TTC {
         }
         catch (Exception e) {
             e.printStackTrace();
+        }
+        try {
+            globalConfig = TCN.read(Objects.requireNonNull(Utils.getRemote("global_config.tcn", true)));
+        }
+        catch (Exception e) {
+            try {
+                globalConfig = TCN.read("" +
+                                        "\n" +
+                                        "messages {\n" +
+                                        "    update: true\n" +
+                                        "}\n" +
+                                        "\n" +
+                                        "startup {\n" +
+                                        "    show_credit: true\n" +
+                                        "}");
+            }
+            catch (TCN.TCNException ignored) { }
+        }
+        if(globalConfig.getBoolean("startup#show_credit")) {
+            // Show the "TTC by TudbuT" message
+            ThreadManager.run(() -> {
+                JOptionPane.showMessageDialog(null, "TTC by TudbuT");
+            });
         }
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");

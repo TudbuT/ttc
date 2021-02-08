@@ -78,9 +78,8 @@ public class BlockUtils {
         }
     }
     
-    public static void lookAt(BlockPos pos, EnumFacing side) {
-        Vec3d hitVec = new Vec3d(pos).addVector(0.5, 0.5, 0.5).add(new Vec3d(side.getOpposite().getDirectionVec()).scale(0.5));
-        faceVectorPacketInstant(hitVec);
+    public static void lookAt(Vec3d pos) {
+        faceVectorPacketInstant(pos);
     }
     
     // Gets a block next to a block position
@@ -111,7 +110,7 @@ public class BlockUtils {
         double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
         double yaw = Math.toDegrees(Math.atan2(diffZ, diffX)) - 90f;
         double pitch = (-Math.toDegrees(Math.atan2(diffY, diffXZ)));
-        return new float[]{(float) (mc.player.rotationYaw + MathHelper.wrapDegrees(yaw - mc.player.rotationYaw)), (float) (mc.player.rotationPitch + MathHelper.wrapDegrees(pitch - mc.player.rotationPitch))};
+        return new float[]{(float) (MathHelper.wrapDegrees(yaw)), (float) (MathHelper.wrapDegrees(pitch))};
     }
     
     // Makes it more legit-looking

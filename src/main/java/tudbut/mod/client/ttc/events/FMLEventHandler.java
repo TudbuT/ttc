@@ -170,30 +170,33 @@ public class FMLEventHandler {
                 e.printStackTrace(ChatUtils.chatPrinterDebug());
             }
             while (TTC.mc.world != null) {
-                String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
-                if (s == null) {
-                    ChatUtils.print("Unable to check for a new version! Check your connection!");
-                } else if (!s.equals(TTC.VERSION)) {
-                    ChatUtils.print(
-                            "§a§lA new TTC version was found! Current: " +
-                            TTC.VERSION +
-                            ", New: " +
-                            s +
-                            "! Please consider updating at " +
-                            "https://github.com/TudbuT/ttc/releases/tag/" +
-                            s
-                    );
-                }
-                try {
-                    for (int i = 0; i < 60; i++) {
-                        Thread.sleep(1000);
-                        if(TTC.mc.world == null)
-                            break;
+                if(TTC.globalConfig.getBoolean("messages#update")) {
+                    String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
+                    if (s == null) {
+                        ChatUtils.print("Unable to check for a new version! Check your connection!");
                     }
-                }
-                catch (InterruptedException e) {
-                    e.printStackTrace();
-                    e.printStackTrace(ChatUtils.chatPrinterDebug());
+                    else if (!s.equals(TTC.VERSION)) {
+                        ChatUtils.print(
+                                "§a§lA new TTC version was found! Current: " +
+                                TTC.VERSION +
+                                ", New: " +
+                                s +
+                                "! Please consider updating at " +
+                                "https://github.com/TudbuT/ttc/releases/tag/" +
+                                s
+                        );
+                    }
+                    try {
+                        for (int i = 0; i < 60; i++) {
+                            Thread.sleep(1000);
+                            if (TTC.mc.world == null)
+                                break;
+                        }
+                    }
+                    catch (InterruptedException e) {
+                        e.printStackTrace();
+                        e.printStackTrace(ChatUtils.chatPrinterDebug());
+                    }
                 }
             }
         });
