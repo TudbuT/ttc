@@ -120,10 +120,11 @@ public class SeedOverlay extends Module {
     @Override
     public void loadConfig() {
         renderType = Integer.parseInt(cfg.get("renderType"));
+        updateButtons();
     }
     
     private void update() {
-        Map<BlockPos, Integer> toRender = new HashMap();
+        Map<BlockPos, Integer> toRender = new HashMap<>();
         EntityPlayer player = TTC.player;
         
         if(world != null) {
@@ -142,21 +143,21 @@ public class SeedOverlay extends Module {
                             IBlockState a = TTC.world.getBlockState(bp);
                             IBlockState b = world.getBlockState(bp);
                             if (!a.getMaterial().equals(b.getMaterial())) {
-                                if(
+                                if (
                                         !a.getMaterial().isLiquid() && !b.getMaterial().isLiquid() &&
                                         !(BlockFalling.class.isAssignableFrom(a.getBlock().getClass())) && !(BlockFalling.class.isAssignableFrom(b.getBlock().getClass())) &&
                                         !disableCheck.contains(a.getBlock()) && !disableCheck.contains(b.getBlock())
                                 ) {
-                                    if(renderType == 2)
+                                    if (renderType == 2)
                                         bp = new BlockPos(bp.getX(), 42, bp.getZ());
                                     
-                                    if(a.getMaterial() == Material.AIR)
+                                    if (a.getMaterial() == Material.AIR)
                                         toRender.put(bp, -1);
-                                    else if(b.getMaterial() == Material.AIR)
+                                    else if (b.getMaterial() == Material.AIR)
                                         toRender.put(bp, 1);
                                     else
                                         toRender.put(bp, 0);
-                                        
+
                                 }
                             }
                         }

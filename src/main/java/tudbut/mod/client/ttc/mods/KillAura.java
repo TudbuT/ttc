@@ -101,13 +101,12 @@ public class KillAura extends Module {
                                 !players[i].getGameProfile().getName().equals(TTC.mc.getSession().getProfile().getName()) &&
                                 !AltControl.getInstance().isAlt(players[i])
                         ) {
-                            if (!targets.isEmpty()) {
-                                if(attack == 2)
-                                    if (targets.contains(players[i].getGameProfile().getName())) {
-                                        toAttack.add(players[i]);
-                                    }
+                            if (!targets.isEmpty() || attack == 2) {
+                                if (targets.contains(players[i].getGameProfile().getName())) {
+                                    toAttack.add(players[i]);
+                                }
                             }
-                            else if(attack == 1)
+                            else
                                 toAttack.add(players[i]);
                         }
                     }
@@ -137,8 +136,6 @@ public class KillAura extends Module {
         BlockUtils.lookAt(entity.getPositionVector().addVector(0, (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2, 0));
         TTC.mc.playerController.attackEntity(TTC.player, entity);
         TTC.player.swingArm(EnumHand.MAIN_HAND);
-        TTC.player.rotationYaw = (float) rot.getX();
-        TTC.player.rotationPitch = (float) rot.getY();
     }
     
     @Override

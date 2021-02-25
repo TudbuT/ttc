@@ -48,18 +48,8 @@ public class ClickGUI extends Module {
     
     @Override
     public void onEnable() {
-        // Show the GUI
-        ThreadManager.run(() -> {
-            try {
-                // Override other GUIs
-                Thread.sleep(10);
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            ChatUtils.print("Showing ClickGUI");
-            TTC.mc.displayGuiScreen(new GuiTTC());
-        });
+        ChatUtils.print("Showing ClickGUI");
+        TTC.mc.displayGuiScreen(new GuiTTC());
     }
     
     @Override

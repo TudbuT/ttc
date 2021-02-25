@@ -14,6 +14,26 @@ public class ChatUtils { // Everything here is kinda self-explanatory
         Minecraft.getMinecraft().ingameGUI.getChatGUI().printChatMessage(new TextComponentString(s));
     }
     
+    public static void printChatAndHotbar(String s) {
+        print(s);
+        printHotbar(s);
+    }
+    
+    public static void printChatAndTitle(String s, int ms) {
+        print(s);
+        printTitle(s, "", ms);
+    }
+    
+    @SuppressWarnings("ConstantConditions")
+    public static void printTitle(String title, String subTitle, int ms) {
+        Minecraft.getMinecraft().ingameGUI.displayTitle("§c" + title, null, 2, ms / (1000 / 20), 2);
+        Minecraft.getMinecraft().ingameGUI.displayTitle(null, "§b" + subTitle, 2, ms / (1000 / 20), 2);
+    }
+    
+    public static void printHotbar(String s) {
+        Minecraft.getMinecraft().ingameGUI.setOverlayMessage(new TextComponentString(s), true);
+    }
+    
     public static void history(String s) {
         Minecraft.getMinecraft().ingameGUI.getChatGUI().addToSentMessages(s);
     }
