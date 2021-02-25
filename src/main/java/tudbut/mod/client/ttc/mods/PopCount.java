@@ -23,15 +23,23 @@ public class PopCount extends Module {
     @Override
     public void onTick() {
         Map<EntityPlayer, Counter> counters = this.counters;
-        EntityPlayer[] players = counters.keySet().toArray(new EntityPlayer[0]);
         EntityPlayer[] visiblePlayers = TTC.world.playerEntities.toArray(new EntityPlayer[0]);
     
+        EntityPlayer[] players = counters.keySet().toArray(new EntityPlayer[0]);
         for (int i = 0; i < visiblePlayers.length; i++) {
-            if(!counters.containsKey(visiblePlayers[i])) {
+            boolean b = false;
+            for (int j = 0; j < players.length; j++) {
+                if(counters.get(players[j]).name.equals(visiblePlayers[i].getGameProfile().getName())) {
+                    counters.get(players[j]).player = visiblePlayers[i];
+                    b = true;
+                }
+            }
+            if(!b) {
                 counters.put(visiblePlayers[i], new Counter(visiblePlayers[i]));
             }
         }
-        
+    
+        players = counters.keySet().toArray(new EntityPlayer[0]);
         for (int i = 0; i < players.length; i++) {
             Counter counter = counters.get(players[i]);
             counter.reload();
@@ -43,15 +51,17 @@ public class PopCount extends Module {
     
     }
     
-    public class Counter {
+    public static class Counter {
     
-        private final EntityPlayer player;
+        private EntityPlayer player;
+        private final String name;
         private int totCountLast = -1;
         private int switches = 0;
         private int pops = 0;
     
         public Counter(EntityPlayer player) {
             this.player = player;
+            this.name = player.getGameProfile().getName();
         }
         
         public void reload() {
