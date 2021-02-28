@@ -72,6 +72,11 @@ public class GuiPlayerSelect extends GuiScreen {
             if (buttons == null)
                 resetButtons();
         }
+    
+        for (int i = 0; i < buttons.length; i++) {
+            if(buttons[i] != null)
+                buttons[i].onTick();
+        }
     }
     
     // Reset the buttons array
@@ -195,6 +200,7 @@ public class GuiPlayerSelect extends GuiScreen {
             this.y = y;
             this.text = new AtomicReference<>(text);
             this.event = event;
+            this.color = ClickGUI.getInstance().getTheme().buttonColor;
         }
         
         // Render the button
@@ -216,7 +222,7 @@ public class GuiPlayerSelect extends GuiScreen {
             }
             
             drawRect(x, y, x + 150, y + 20, color);
-            gui.drawString(gui.fontRenderer, text.get(), x + 6, y + 6, 0xffffffff);
+            gui.fontRenderer.drawString(text.get(), x + 6, y + 6, ClickGUI.getInstance().getTheme().textColor, ClickGUI.getInstance().getTheme().shadow);
         }
         
         public boolean mouseClicked(int clickX, int clickY, int button) {
@@ -234,7 +240,10 @@ public class GuiPlayerSelect extends GuiScreen {
             if (button == 0)
                 event.run(text);
         }
-        
+    
+        public void onTick() {
+            this.color = ClickGUI.getInstance().getTheme().buttonColor;
+        }
     }
     
     public interface ButtonClickEvent {

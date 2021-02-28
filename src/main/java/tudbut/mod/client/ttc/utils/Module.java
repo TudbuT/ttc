@@ -18,6 +18,7 @@ public abstract class Module {
     public int index;
     
     public boolean enabled = defaultEnabled();
+    public boolean clickGuiShow = false;
     public Integer clickGuiX;
     public Integer clickGuiY;
     public KeyBind key = new KeyBind(null, () -> {
@@ -99,6 +100,9 @@ public abstract class Module {
         if(doStoreEnabled())
             enabled = Boolean.parseBoolean(cfg.get("enabled"));
         
+        if(cfg.containsKey("clickGuiShow"))
+            clickGuiShow = Boolean.parseBoolean(cfg.get("clickGuiShow"));
+        
         clickGuiX = null;
         clickGuiY = null;
         if (cfg.containsKey("cgx") && cfg.containsKey("cgy")) {
@@ -139,6 +143,7 @@ public abstract class Module {
         
         if(doStoreEnabled())
             cfg.put("enabled", String.valueOf(enabled));
+        cfg.put("clickGuiShow", String.valueOf(clickGuiShow));
         if (clickGuiX != null && clickGuiY != null) {
             cfg.put("cgx", clickGuiX + "");
             cfg.put("cgy", clickGuiY + "");

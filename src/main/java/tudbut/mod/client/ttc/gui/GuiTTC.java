@@ -1,7 +1,9 @@
 package tudbut.mod.client.ttc.gui;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.MouseHelper;
 import org.lwjgl.input.Mouse;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.ClickGUI;
@@ -17,9 +19,51 @@ public class GuiTTC extends GuiScreen {
     // One button per module
     private Button[] buttons;
     
+    // Theme
+    public enum Theme {
+        TTC(0x8000ff00, 0x4000ff00),
+        BARTENDER(0xff2d1537, 0xff0d0a0a),
+        ETERNAL_BLUE(0xff0000ff, 0xff000080),
+        DARK(0xff202020, 0xff000000),
+        LIGHT(0xffcccccc, 0xff999999, 0xff000000, false),
+        HACKER(0xff202020, 0xff000000, 0xff00ff00),
+        BLOOD(0xffaa0000, 0xff880000, 0xff00ffff, false),
+        SKY(0xff00cccc, 0xff009999, 0x000000, false),
+        KAMI_BLUE(0xbb353642, 0xbb353642, 0xffbbbbbb, false),
+        SCHLONGHAX(0xbb553662, 0xbb553662, 0xffbbbbbb, false),
+        ORANGE(0xffcc8000, 0xff996000, 0xff404040, false),
+        
+        ;
+        
+        public final int buttonColor;
+        public final int subButtonColor;
+        public final int textColor;
+        public final boolean shadow;
+        
+        Theme(int buttonColor, int subButtonColor) {
+            this.buttonColor = buttonColor;
+            this.subButtonColor = subButtonColor;
+            this.textColor = 0xffffffff;
+            this.shadow = true;
+        }
+        Theme(int buttonColor, int subButtonColor, int textColor) {
+            this.buttonColor = buttonColor;
+            this.subButtonColor = subButtonColor;
+            this.textColor = textColor;
+            this.shadow = true;
+        }
+        Theme(int buttonColor, int subButtonColor, int textColor, boolean shadow) {
+            this.buttonColor = buttonColor;
+            this.subButtonColor = subButtonColor;
+            this.textColor = textColor;
+            this.shadow = shadow;
+        }
+    }
+    
     // The mouse X and Y
     private int cx;
     private int cy;
+    private int lastScrollPos = Mouse.getEventDWheel();
     
     public GuiTTC() {
         this.mc = TTC.mc;
@@ -46,6 +90,7 @@ public class GuiTTC extends GuiScreen {
         super.buttonList.clear();
         super.buttonList.add(new GuiButton(0, -500, -500, ""));
         super.initGui();
+        lastScrollPos = Mouse.getEventDWheel();
     }
     
     // When ESC is pressed
@@ -53,8 +98,6 @@ public class GuiTTC extends GuiScreen {
     public void onGuiClosed() {
         super.onGuiClosed();
         ClickGUI.getInstance().enabled = false;
-        // Minecraft wants this
-        mc.mouseHelper.grabMouseCursor();
     }
     
     // Called every tick, idk why its called update tho
@@ -82,8 +125,8 @@ public class GuiTTC extends GuiScreen {
     private void resetButtons() {
         System.out.println("Resetting buttons on ClickGUI");
         for (int i = 0, j = 0; i < TTC.modules.length; i++) {
-            int x = j / 6;
-            int y = j - x * 6;
+            int x = j / 10;
+            int y = j - x * 10;
             
             // Don't add the button if it isn't requested
             if (!TTC.modules[i].displayOnClickGUI())
@@ -92,7 +135,7 @@ public class GuiTTC extends GuiScreen {
             // Create the button
             int r = i;
             Button b = new Button(
-                    10 + (160 * x), 10 + (y * 30), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
+                    10 + (155 * x), 10 + (y * 25), TTC.modules[r].getClass().getSimpleName() + ": " + TTC.modules[r].enabled,
                     (text) -> {
                         if (TTC.modules[r].enabled = !TTC.modules[r].enabled)
                             TTC.modules[r].onEnable();
@@ -184,6 +227,14 @@ public class GuiTTC extends GuiScreen {
         if (ClickGUI.getInstance().mouseFix) {
             drawRect(mouseX - 2, mouseY - 2, mouseX + 2, mouseY + 2, 0xffffffff);
         }
+        int m = -Mouse.getDWheel();
+        if(m != 0) {
+            for (int i = 0; i < buttons.length; i++) {
+                if(buttons[i] != null) {
+                    buttons[i].x += (lastScrollPos - m) / 3;
+                }
+            }
+        }
         
         super.drawScreen(mouseX, mouseY, partialTicks);
     }
@@ -228,6 +279,8 @@ public class GuiTTC extends GuiScreen {
             this.text = new AtomicReference<>(text);
             this.event = event;
             this.module = module;
+            if(ClickGUI.getInstance() != null)
+                this.color = ClickGUI.getInstance().getTheme().buttonColor;
         }
         
         // Render the button
@@ -236,7 +289,7 @@ public class GuiTTC extends GuiScreen {
                 return;
             
             int color = this.color;
-    
+            
             if (gui.cx >= x && gui.cy >= y && gui.cx <= x + 150 && gui.cy <= y + 20) {
                 Color c = new Color(color, true);
                 int r, g, b, a;
@@ -252,17 +305,17 @@ public class GuiTTC extends GuiScreen {
             }
             
             drawRect(x, y, x + 150, y + 20, color);
-            gui.drawString(gui.fontRenderer, text.get(), x + 6, y + 6, 0xffffffff);
+            gui.fontRenderer.drawString(text.get(), x + 6, y + 6, ClickGUI.getInstance().getTheme().textColor, ClickGUI.getInstance().getTheme().shadow);
             
             // Draw sub buttons
-            if (module != null && module.enabled) {
+            if (module != null && (module.enabled ^ module.clickGuiShow)) {
                 subButtons = module.getSubButtons();
                 
                 for (int i = 0; i < subButtons.length; i++) {
                     Button b = subButtons[i];
                     b.x = x;
                     b.y = y + ((i + 1) * 20);
-                    b.color = 0x4000ff00;
+                    b.color = ClickGUI.getInstance().getTheme().subButtonColor;
                     b.draw(gui);
                 }
             }
@@ -272,12 +325,15 @@ public class GuiTTC extends GuiScreen {
             if (clickX >= x && clickY >= y) {
                 if (clickX <= x + 150 && clickY <= y + 20) {
                     mouseDown = true;
+                    if(ClickGUI.getInstance().flipButtons) {
+                        button = (button == 0 ? 1 : (button == 1 ? 0 : button));
+                    }
                     mouseDownButton = button;
                     click(button);
                     return true;
                 }
             }
-            if (module != null && module.enabled) {
+            if (module != null && (module.enabled ^ module.clickGuiShow)) {
                 subButtons = module.getSubButtons();
                 
                 for (int i = 0; i < subButtons.length; i++) {
@@ -290,7 +346,7 @@ public class GuiTTC extends GuiScreen {
         
         public void mouseReleased() {
             mouseDown = false;
-            if (module != null && module.enabled) {
+            if (module != null && (module.enabled ^ module.clickGuiShow)) {
                 subButtons = module.subButtons.toArray(new Button[0]);
                 
                 for (int i = 0; i < subButtons.length; i++) {
@@ -304,9 +360,12 @@ public class GuiTTC extends GuiScreen {
         protected void click(int button) {
             if (button == 0)
                 event.run(text);
+            if (button == 2 && module != null)
+                module.clickGuiShow = !module.clickGuiShow;
         }
         
         protected void onTick(GuiTTC gui) {
+            this.color = ClickGUI.getInstance().getTheme().buttonColor;
             if (module != null) {
                 if (mouseDown && mouseDownButton == 1) {
                     x = gui.cx - 150 / 2;

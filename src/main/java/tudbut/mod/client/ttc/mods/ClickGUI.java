@@ -6,7 +6,6 @@ import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
-import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
 
 import java.io.IOException;
@@ -17,9 +16,47 @@ public class ClickGUI extends Module {
     // TMP fix for mouse not showing
     public boolean mouseFix = false;
     
+    public boolean flipButtons = false;
+    
+    public int themeID = 0;
+    
+    public GuiTTC.Theme getTheme() {
+        return GuiTTC.Theme.values()[themeID];
+    }
+    
     private int confirmInstance = 0;
     
     {
+        updateButtons();
+    }
+    
+    public ClickGUI() {
+        instance = this;
+    }
+    
+    public static ClickGUI getInstance() {
+        return instance;
+    }
+    
+    private void updateButtons() {
+        subButtons.clear();
+        subButtons.add(new GuiTTC.Button("Flip buttons: " + flipButtons, text -> {
+            flipButtons = !flipButtons;
+            text.set("Flip buttons: " + flipButtons);
+        }));
+        subButtons.add(new GuiTTC.Button("Theme: " + getTheme(), text -> {
+            if(Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+                themeID--;
+            else
+                themeID++;
+        
+            if(themeID < 0)
+                themeID = GuiTTC.Theme.values().length - 1;
+            if(themeID > GuiTTC.Theme.values().length - 1)
+                themeID = 0;
+        
+            text.set("Theme: " + getTheme());
+        }));
         subButtons.add(new GuiTTC.Button("Reset layout", text -> {
             displayConfirmation = true;
             confirmInstance = 0;
@@ -32,18 +69,6 @@ public class ClickGUI extends Module {
             displayConfirmation = true;
             confirmInstance = 1;
         }));
-    }
-    
-    public ClickGUI() {
-        instance = this;
-    }
-    
-    public static ClickGUI getInstance() {
-        return instance;
-    }
-    
-    private void updateButtons() {
-        subButtons.get(1).text.set("Mouse fix: " + mouseFix);
     }
     
     @Override
@@ -130,7 +155,9 @@ public class ClickGUI extends Module {
     
     @Override
     public void loadConfig() {
-        mouseFix = Boolean.getBoolean(cfg.get("mouseFix"));
+        mouseFix = Boolean.parseBoolean(cfg.get("mouseFix"));
+        flipButtons = Boolean.parseBoolean(cfg.get("flipButtons"));
+        themeID = Integer.parseInt(cfg.get("theme"));
         
         updateButtons();
     }
@@ -138,6 +165,8 @@ public class ClickGUI extends Module {
     @Override
     public void updateConfig() {
         cfg.put("mouseFix", String.valueOf(mouseFix));
+        cfg.put("flipButtons", flipButtons + "");
+        cfg.put("theme", themeID + "");
     }
     
     @Override

@@ -13,10 +13,16 @@ import java.util.Map;
 public class PopCount extends Module {
     Map<EntityPlayer, Counter> counters = new HashMap<>();
     
+    private boolean countOwn;
+    
     public void updateBinds() {
         subButtons.clear();
         subButtons.add(new GuiTTC.Button("Reset", text -> {
             counters = new HashMap<>();
+        }));
+        subButtons.add(new GuiTTC.Button("CountOwn: " + countOwn, text -> {
+            countOwn = !countOwn;
+            text.set("CountOwn: " + countOwn);
         }));
     }
     
@@ -27,15 +33,17 @@ public class PopCount extends Module {
     
         EntityPlayer[] players = counters.keySet().toArray(new EntityPlayer[0]);
         for (int i = 0; i < visiblePlayers.length; i++) {
-            boolean b = false;
-            for (int j = 0; j < players.length; j++) {
-                if(counters.get(players[j]).name.equals(visiblePlayers[i].getGameProfile().getName())) {
-                    counters.get(players[j]).player = visiblePlayers[i];
-                    b = true;
+            if(countOwn || visiblePlayers[i].getEntityId() != TTC.player.getEntityId()) {
+                boolean b = false;
+                for (int j = 0; j < players.length; j++) {
+                    if (counters.get(players[j]).name.equals(visiblePlayers[i].getGameProfile().getName())) {
+                        counters.get(players[j]).player = visiblePlayers[i];
+                        b = true;
+                    }
                 }
-            }
-            if(!b) {
-                counters.put(visiblePlayers[i], new Counter(visiblePlayers[i]));
+                if (!b) {
+                    counters.put(visiblePlayers[i], new Counter(visiblePlayers[i]));
+                }
             }
         }
     

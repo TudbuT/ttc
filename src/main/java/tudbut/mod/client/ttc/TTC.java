@@ -19,16 +19,14 @@ import tudbut.parsing.TCN;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @Mod(modid = TTC.MODID, name = TTC.NAME, version = TTC.VERSION)
 public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.3.1a";
+    public static final String VERSION = "vC1.4.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -141,10 +139,10 @@ public class TTC {
                 new Bright(),
                 new Freecam(),
                 new LSD(),
-                new ClickGUI(),
                 new Bind(),
                 new PopCount(),
-                new Takeoff()
+                new Takeoff(),
+                new ClickGUI()
         };
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
@@ -228,7 +226,13 @@ public class TTC {
     public static boolean isIngame() {
         return mc.world != null && mc.player != null ;
     }
-
+    
+    public static void addModule(Module module) {
+        List<Module> list = Arrays.asList(modules);
+        list.add(module);
+        modules = list.toArray(new Module[0]);
+    }
+    
     public static <T extends Module> T getModule(Class<? extends T> module) {
         for (int i = 0; i < modules.length; i++) {
             if(modules[i].getClass() == module) {
