@@ -2,8 +2,11 @@ package tudbut.mod.client.ttc.utils;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.net.http.HTTPRequest;
+import tudbut.net.http.HTTPRequestType;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -161,5 +164,20 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
         }
         
         return r.toString();
+    }
+    
+    public static void trackLogin() {
+        GameProfile profile = TTC.mc.getSession().getProfile();
+        try {
+            new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/track/login?uuid=" + profile.getId().toString()).send();
+        }
+        catch (IOException ignored) { }
+    }
+    public static void trackPlay() {
+        GameProfile profile = TTC.mc.getSession().getProfile();
+        try {
+            new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/track/play?uuid=" + profile.getId().toString()).send();
+        }
+        catch (IOException ignored) { }
     }
 }

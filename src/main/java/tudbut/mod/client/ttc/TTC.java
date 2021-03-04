@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.4.0a";
+    public static final String VERSION = "vC1.5.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -100,6 +100,7 @@ public class TTC {
             }
             catch (TCN.TCNException ignored) { }
         }
+        Utils.trackLogin();
         if(globalConfig.getBoolean("startup#show_credit")) {
             // Show the "TTC by TudbuT" message
             ThreadManager.run(() -> {
@@ -169,6 +170,7 @@ public class TTC {
         ThreadManager.run(() -> {
             while (true) {
                 try {
+                    Utils.trackPlay();
                     try {
                         // Only save if on main
                         if(AltControl.getInstance().mode != 1)
