@@ -10,3 +10,6 @@ ClickGUI opens with COMMA
 commands:
 
 `,help` 
+
+
+The first client to have a SeedOverlay ( / Seed Overlay ) module. For free.
