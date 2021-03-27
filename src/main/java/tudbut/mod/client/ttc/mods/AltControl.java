@@ -75,6 +75,17 @@ public class AltControl extends Module {
     }
     
     @Override
+    public void init() {
+        PlayerSelector.types.add(new PlayerSelector.Type(player -> {
+            onChat("kill " + player.getGameProfile().getName(), ("kill " + player.getGameProfile().getName()).split(" "));
+        }, "Set AltControl.Kill target"));
+        
+        PlayerSelector.types.add(new PlayerSelector.Type(player -> {
+            onChat("follow " + player.getGameProfile().getName(), ("follow " + player.getGameProfile().getName()).split(" "));
+        }, "Set AltControl.Follow target"));
+    }
+    
+    @Override
     public void loadConfig() {
         botMain = Boolean.parseBoolean(cfg.get("botMain"));
         useElytra = Boolean.parseBoolean(cfg.get("useElytra"));
@@ -232,24 +243,24 @@ public class AltControl extends Module {
                     break;
                 case NAME:
                     main.name = packet.content();
-                    ChatUtils.print("Connection to main " + main.name + " established!");
+                    ChatUtils.print("§a[TTC] §rConnection to main " + main.name + " established!");
                     sendPacket(PacketsCS.UUID, TTC.mc.getSession().getProfile().getId().toString());
                     break;
                 case UUID:
                     main.uuid = UUID.fromString(packet.content());
-                    ChatUtils.print("Got UUID from main " + main.name + ": " + packet.content());
+                    ChatUtils.print("§a[TTC] §rGot UUID from main " + main.name + ": " + packet.content());
                     sendPacket(PacketsCS.KEEPALIVE, "");
                     break;
                 case TPA:
-                    ChatUtils.print("TPA'ing main account...");
+                    ChatUtils.print("§a[TTC] §rTPA'ing main account...");
                     TTC.player.sendChatMessage("/tpa " + main.name);
                     break;
                 case EXECUTE:
-                    ChatUtils.print("Sending message received from main account...");
+                    ChatUtils.print("§a[TTC] §rSending message received from main account...");
                     ChatUtils.simulateSend(packet.content(), false);
                     break;
                 case LIST:
-                    TTC.logger.info("Received alt list from main.");
+                    TTC.logger.info("§a[TTC] §rReceived alt list from main.");
                     Map<String, String> map0 = Utils.stringToMap(packet.content());
             
                     alts.clear();
@@ -264,11 +275,11 @@ public class AltControl extends Module {
                     }
                     break;
                 case KILL:
-                    ChatUtils.print("Killing player " + packet.content());
+                    ChatUtils.print("§a[TTC] §rKilling player " + packet.content());
                     kill(packet.content());
                     break;
                 case FOLLOW:
-                    ChatUtils.print("Following " + packet.content());
+                    ChatUtils.print("§a[TTC] §rFollowing " + packet.content());
                     follow(packet.content());
                     break;
                 case STOP:
@@ -310,12 +321,12 @@ public class AltControl extends Module {
         switch (packet.type()) {
             case NAME:
                 altsMap.get(connection).name = packet.content();
-                ChatUtils.print("Connection to alt " + packet.content() + " established!");
+                ChatUtils.print("§a[TTC] §rConnection to alt " + packet.content() + " established!");
                 connection.writePacket(getPacketSC(PacketsSC.NAME, TTC.mc.getSession().getProfile().getName()));
                 break;
             case UUID:
                 altsMap.get(connection).uuid = UUID.fromString(packet.content());
-                ChatUtils.print("Got UUID from alt " + altsMap.get(connection).name + ": " + packet.content());
+                ChatUtils.print("§a[TTC] §rGot UUID from alt " + altsMap.get(connection).name + ": " + packet.content());
                 connection.writePacket(getPacketSC(PacketsSC.UUID, TTC.mc.getSession().getProfile().getId().toString()));
                 
                 sendList();
@@ -363,7 +374,7 @@ public class AltControl extends Module {
             return new Object();
         });
         task.setTimeout(server.connections.size() * 1500L);
-        pce(task.waitForFinish());
+        pce(task.waitForFinish(0));
     }
     
     public void sendPacketDelayedSC(PacketsSC type, String content) {
@@ -439,7 +450,7 @@ public class AltControl extends Module {
                         return new Object();
                     });
                     task.setTimeout(1500L);
-                    pce(task.waitForFinish());
+                    pce(task.waitForFinish(0));
     
                     altsMap.put(theConnection, new Alt());
     
@@ -460,7 +471,7 @@ public class AltControl extends Module {
                 
                 mode = 0;
                 
-                ChatUtils.print("§aServer started");
+                ChatUtils.print("§a[TTC] §aServer started");
             }
             if (args[0].equals("client") && client == null) {
                 if(args.length == 2)
@@ -469,7 +480,7 @@ public class AltControl extends Module {
                     client = new PBIC.Client(args[1], Integer.parseInt(args[2]));
                 else
                     client = new PBIC.Client("127.0.0.1", 50278);
-                ChatUtils.print("Client started");
+                ChatUtils.print("§a[TTC] §aClient started");
                 ThreadManager.run("TTCIC client receive thread", () -> {
                     while (true) {
                         String string = "UNKNOWN";
@@ -510,7 +521,7 @@ public class AltControl extends Module {
                 if(args[0].equals("stop") && s.contains(" ")) {
                     String st = s.substring(s.indexOf(" ") + 1);
                     sendPacketSC(PacketsSC.STOP, st);
-                    ChatUtils.print("Stopping killing player " + st);
+                    ChatUtils.print("§a[TTC] §rStopping killing player " + st);
                     if(botMain) {
                         stop(st);
                     }
@@ -534,7 +545,7 @@ public class AltControl extends Module {
                     sendPacketSC(PacketsSC.WALK, "");
                 }
                 sendPacketSC(PacketsSC.STOP, "");
-                ChatUtils.print("Stopping killing/following all players");
+                ChatUtils.print("§a[TTC] §rStopping killing/following all players");
                 if(botMain) {
                     stop(null);
                 }
@@ -543,7 +554,7 @@ public class AltControl extends Module {
             if (s.equals("send")) {
                 TTC.getInstance().setConfig();
                 sendPacketSC(PacketsSC.CONFIG, Utils.mapToString(TTC.cfg));
-                ChatUtils.print("Sending config to all alts");
+                ChatUtils.print("§a[TTC] §rSending config to all alts");
             }
             
             if (s.equals("tpa")) {
@@ -672,7 +683,7 @@ public class AltControl extends Module {
             aura.targets.remove(name);
             aura.targets.trimToSize();
             if (aura.targets.size() != 0) {
-                ChatUtils.print("Killing player " + name);
+                ChatUtils.print("§a[TTC] §rKilling player " + name);
                 follow(aura.targets.get(0));
             }
         }

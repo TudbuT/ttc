@@ -56,6 +56,25 @@ public class TPATools extends Module {
         }));
     }
     
+    PlayerSelector.Type tpaType = new PlayerSelector.Type(player -> {
+        ChatUtils.simulateSend("/tpa " + player.getGameProfile().getName(), false);
+    }, "/TPA");
+    PlayerSelector.Type tpaHereType = new PlayerSelector.Type(player -> {
+        ChatUtils.simulateSend("/tpahere " + player.getGameProfile().getName(), false);
+    }, "/TPAHERE");
+    
+    @Override
+    public void onDisable() {
+        PlayerSelector.types.remove(tpaType);
+        PlayerSelector.types.remove(tpaHereType);
+    }
+    
+    @Override
+    public void onEnable() {
+        PlayerSelector.types.add(tpaType);
+        PlayerSelector.types.add(tpaHereType);
+    }
+    
     public TPATools() {
         instance = this;
     }

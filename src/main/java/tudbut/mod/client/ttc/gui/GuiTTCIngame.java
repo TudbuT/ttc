@@ -7,6 +7,8 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.mods.Notifications;
+import tudbut.mod.client.ttc.mods.PlayerSelector;
 import tudbut.mod.client.ttc.utils.FontRenderer;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.obj.Vector2i;
@@ -69,6 +71,23 @@ public class GuiTTCIngame extends Gui {
                 y-=10;
             }
         }
+    
+        Notifications notifications = TTC.getModule(Notifications.class);
+        if(notifications.enabled) {
+            x = sr.getScaledWidth() / 2 - (300 / 2);
+            y = sr.getScaledHeight() / 4;
+        
+            Notifications.Notification[] notifs = Notifications.getNotifications().toArray(new Notifications.Notification[0]);
+            for (int i = 0; i < notifs.length; i++) {
+                drawRect(x, y, x + 300, y + 30, 0x80202040);
+                drawStringL(notifs[i].text, x + 10, y + (15 - (9 / 2)), 0xffffffff);
+                y -= 35;
+            }
+        }
+    
+        if(TTC.getModule(PlayerSelector.class).enabled) {
+            PlayerSelector.render();
+        }
     }
     
     private void drawString(String s, int x, int y, int color) {
@@ -76,6 +95,16 @@ public class GuiTTCIngame extends Gui {
                 TTC.mc.fontRenderer,
                 s,
                 x - TTC.mc.fontRenderer.getStringWidth(s),
+                y,
+                color
+        );
+    }
+    
+    private void drawStringL(String s, int x, int y, int color) {
+        drawString(
+                TTC.mc.fontRenderer,
+                s,
+                x,
                 y,
                 color
         );

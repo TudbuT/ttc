@@ -73,7 +73,7 @@ public class ClickGUI extends Module {
     
     @Override
     public void onEnable() {
-        ChatUtils.print("Showing ClickGUI");
+        ChatUtils.print("§a[TTC] §rShowing ClickGUI");
         TTC.mc.displayGuiScreen(new GuiTTC());
     }
     
@@ -134,21 +134,6 @@ public class ClickGUI extends Module {
     }
     
     @Override
-    public void onSubTick() {
-    }
-    
-    @Override
-    public void onEverySubTick() {
-        // Keybind to show GUI
-        if (Keyboard.isKeyDown(Keyboard.KEY_COMMA) && TTC.mc.currentScreen == null) {
-            if (!enabled) {
-                enabled = true;
-                onEnable();
-            }
-        }
-    }
-    
-    @Override
     public void onChat(String s, String[] args) {
     
     }
@@ -158,6 +143,9 @@ public class ClickGUI extends Module {
         mouseFix = Boolean.parseBoolean(cfg.get("mouseFix"));
         flipButtons = Boolean.parseBoolean(cfg.get("flipButtons"));
         themeID = Integer.parseInt(cfg.get("theme"));
+        
+        if(key.key == null)
+            key.key = Keyboard.KEY_COMMA;
         
         updateButtons();
     }

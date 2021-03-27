@@ -32,7 +32,7 @@ public class FMLEventHandler {
             
             // Don't send
             event.setCanceled(true);
-            ChatUtils.print("Blocked message");
+            ChatUtils.print("§a[TTC] §rThis message was not sent to the server");
             // When canceled, the event blocks adding the message to the chat history,
             // so it'll cause confusion if this line doesn't exist
             ChatUtils.history(event.getOriginalMessage());
@@ -64,7 +64,7 @@ public class FMLEventHandler {
                 if (s.equals("help")) {
                     String help = Utils.getRemote("help.chat.txt", false);
                     if (help == null) {
-                        ChatUtils.print("Unable retrieve help message! Check your connection!");
+                        ChatUtils.print("§a[TTC] §cUnable retrieve help message! Check your connection!");
                     } else {
                         help = help.replaceAll("%p", TTC.prefix);
                         ChatUtils.print(help);
@@ -173,7 +173,7 @@ public class FMLEventHandler {
                 if(TTC.globalConfig.getBoolean("messages#update")) {
                     String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
                     if (s == null) {
-                        ChatUtils.print("Unable to check for a new version! Check your connection!");
+                        ChatUtils.print("§a[TTC] §cUnable to check for a new version! Check your connection!");
                     }
                     else if (!s.equals(TTC.VERSION)) {
                         ChatUtils.print(

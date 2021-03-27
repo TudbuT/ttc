@@ -13,6 +13,7 @@ import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
+import tudbut.obj.Save;
 
 import java.util.ArrayList;
 
@@ -22,40 +23,26 @@ public class AutoTotem extends Module {
     // Actual count, set by AI
     public int min_count = 0;
     // Count, set by user
+    @Save
     public int orig_min_count = 0;
     // If the user seems to be restocking after respawning, if this is the case,
     // don't switch until any inventories are closed
     public boolean isRestockingAfterRespawn = false;
     // If totems should be stacked automatically
+    @Save
     public boolean autoStack = false;
     // If the AutoStack should always run, regardless of the count
     private boolean autoStackIgnoreCount = false;
+    // Panic mode, switch to totems instantly!
+    public boolean panic = false;
     
+    private boolean noTotems = true;
     
-    {
-        subButtons.add(new GuiTTC.Button("Count: " + orig_min_count, text -> {
-            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
-                orig_min_count = min_count = orig_min_count - 1;
-            else
-                orig_min_count = min_count = orig_min_count + 1;
-            if (orig_min_count > 12)
-                orig_min_count = min_count = 0;
-            if (orig_min_count < 0)
-                orig_min_count = min_count = 12;
-            text.set("Count: " + orig_min_count);
-        }));
-        subButtons.add(new GuiTTC.Button("AutoStack: " + autoStack, text -> {
-            autoStack = !autoStack;
-            text.set("AutoStack: " + autoStack);
-        }));
-        subButtons.add(new GuiTTC.Button("AutoStack now", text -> {
-            autoStackIgnoreCount = true;
-            autoStack();
-            autoStackIgnoreCount = false;
-        }));
-        subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
-        
-        }));
+    public void panic() {
+        enabled = true;
+        panic = true;
+        onSubTick();
+        panic = false;
     }
     
     public AutoTotem() {
@@ -66,10 +53,18 @@ public class AutoTotem extends Module {
         return instance;
     }
     
-    public void updateButtons() {
-        subButtons.get(0).text.set("Count: " + orig_min_count);
-        subButtons.get(1).text.set("AutoStack: " + autoStack);
-        subButtons.get(3).text.set("Actual count: " + min_count);
+    public void updateBinds() {
+        subButtons.clear();
+        subButtons.add(Setting.createInt(0, 12, 1, "Count: $val", this, "orig_min_count"));
+        subButtons.add(Setting.createBoolean("AutoStack (WIP): $val", this, "autoStack"));
+        subButtons.add(new GuiTTC.Button("AutoStack now", text -> {
+            autoStackIgnoreCount = true;
+            autoStack();
+            autoStackIgnoreCount = false;
+        }));
+        subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
+        
+        }));
     }
     
     // Run checks and AI
@@ -77,22 +72,21 @@ public class AutoTotem extends Module {
     public void onSubTick() {
         if(TTC.isIngame()) {
             EntityPlayerSP player = TTC.player;
-    
+            
             if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {
                 // Don't switch yet
                 return;
             }
-    
+            
             // Run AI
             updateTotCount();
-            updateButtons();
             if (autoStack)
                 autoStack();
-    
+            
             ItemStack stack = player.getHeldItemOffhand();
-            if (stack.getCount() <= min_count) {
+            if (stack.getCount() <= min_count || (panic && stack.getItem() != Items.TOTEM_OF_UNDYING)) {
                 // Switch!
-        
+                
                 Integer slot = InventoryUtils.getSlotWithItem(
                         player.inventoryContainer,
                         Items.TOTEM_OF_UNDYING,
@@ -100,11 +94,19 @@ public class AutoTotem extends Module {
                         min_count + 1,
                         64
                 );
-                if (slot == null)
+                if (slot == null) {
+                    if(!noTotems)
+                        Notifications.add(new Notifications.Notification("No more totems! Couldn't switch!"));
+                    noTotems = true;
                     return; // Oh no!! No totems left!
-        
+                }
+                else
+                    noTotems = false;
+                
                 // Switch a new totem stack to the offhand
                 InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT);
+                
+                Notifications.add(new Notifications.Notification("Switched to next TotemStack"));
             }
         }
     }
@@ -174,6 +176,7 @@ public class AutoTotem extends Module {
                 ) != null
         ) {
             min_count = orig_min_count;
+            updateBinds();
             return;
         }
         
@@ -197,6 +200,7 @@ public class AutoTotem extends Module {
                     min_count + 1,
                     64
             );
+            updateBinds();
             
             if (min_count < 0) {
                 // No stacks left
@@ -238,10 +242,10 @@ public class AutoTotem extends Module {
                             0,
                             min - 1
                     );
-        
+                    
                     if (slot == null)
                         break;
-        
+                    
                     // Drop stack contents of the slot
                     InventoryUtils.drop(slot);
                     System.out.println("Dropped item in " + slot);
@@ -249,11 +253,11 @@ public class AutoTotem extends Module {
                 }
                 
             }
-    
+            
             if(orig_min_count == min_count && !autoStackIgnoreCount)
                 return;
-    
-    
+            
+            
             // Get slots with totems
             slots.clear();
             for (int j = 0; j < 100; j++) {
@@ -269,7 +273,7 @@ public class AutoTotem extends Module {
                 
                 slots.add(slot);
             }
-    
+            
             // Combine totems
             while (slots.size() >= 2) {
                 // Get empty slot
@@ -288,7 +292,7 @@ public class AutoTotem extends Module {
                 InventoryUtils.clickSlot(slot, ClickType.PICKUP, 0);
                 // Drop junk
                 InventoryUtils.drop(slots.get(1));
-    
+                
                 slots.remove(0);
                 slots.remove(0);
             }
@@ -305,14 +309,13 @@ public class AutoTotem extends Module {
             catch (Exception e) {
                 ChatUtils.print("ERROR: NaN");
             }
-        updateButtons();
+        updateBinds();
     }
     
     @Override
     public void loadConfig() {
         orig_min_count = min_count = Integer.parseInt(cfg.get("count"));
         autoStack = Boolean.parseBoolean(cfg.get("autoStack"));
-        updateButtons();
     }
     
     @Override

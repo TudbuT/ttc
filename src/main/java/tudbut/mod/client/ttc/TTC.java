@@ -26,7 +26,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.5.0a";
+    public static final String VERSION = "vC1.6.0a";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -142,7 +142,9 @@ public class TTC {
                 new LSD(),
                 new Bind(),
                 new PopCount(),
+                new PlayerSelector(),
                 new Takeoff(),
+                new Notifications(),
                 new ClickGUI()
         };
         sa = new Date().getTime() - sa;
@@ -186,6 +188,16 @@ public class TTC {
                 }
             }
         });
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
+    
+        System.out.println("Initializing modules...");
+        sa = new Date().getTime();
+    
+        for (int i = 0 ; i < modules.length ; i++) {
+            modules[i].init();
+        }
+    
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
     }
@@ -241,6 +253,6 @@ public class TTC {
                 return (T) modules[i];
             }
         }
-        return null;
+        throw new RuntimeException();
     }
 }

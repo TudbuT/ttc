@@ -106,7 +106,7 @@ public class ChatSuffix extends Module {
     public void onChat(String s, String[] args) {
         suffix = s;
         mode = -1;
-        ChatUtils.print("Done!");
+        ChatUtils.print("§a[TTC] §rDone!");
         
         updateButtons();
     }

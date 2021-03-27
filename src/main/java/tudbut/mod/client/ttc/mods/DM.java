@@ -27,6 +27,7 @@ public class DM extends Module {
     @Override
     public void onEveryChat(String s, String[] args) {
         users = args;
+        ChatUtils.print("§a[TTC] §rSet!");
     }
     
     @Override

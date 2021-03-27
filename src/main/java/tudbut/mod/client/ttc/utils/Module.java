@@ -43,6 +43,8 @@ public abstract class Module {
             onConfirm(false);
         });
     }
+    private GuiTTC.Button keyButton = Setting.createKey("KeyBind: $val", key);
+    
     
     public Module() {
         index = cIndex;
@@ -54,7 +56,9 @@ public abstract class Module {
     public final GuiTTC.Button[] getSubButtons() {
         if(displayConfirmation)
             return confirmationButtons;
-        return subButtons.toArray(new GuiTTC.Button[0]);
+        ArrayList<GuiTTC.Button> buttons = (ArrayList<GuiTTC.Button>) subButtons.clone();
+        buttons.add(keyButton);
+        return buttons.toArray(new GuiTTC.Button[0]);
     }
     
     // Defaults to override
@@ -73,19 +77,21 @@ public abstract class Module {
     // Event listeners
     public void onSubTick() { }
     
-    public void onEverySubTick() { }
+    public void onEverySubTick()                     { }
     
-    public void onTick() { }
+    public void init()                               { }
     
-    public void onEveryTick() { }
+    public void onTick()                             { }
     
-    public void onConfirm(boolean result) { }
+    public void onEveryTick()                        { }
     
-    public abstract void onChat(String s, String[] args);
+    public void onConfirm(boolean result)            { }
+    
+    public void onChat(String s, String[] args)      { }
     
     public void onEveryChat(String s, String[] args) { }
     
-    public void onEnable() { }
+    public void onEnable()                           { }
     
     public void onDisable() { }
     
@@ -122,6 +128,7 @@ public abstract class Module {
                     customKeyBinds.get(kb).key = Integer.parseInt(ckb.get(kb));
             }
         }
+        keyButton = Setting.createKey("KeyBind: $val", key);
         
         loadConfig();
         

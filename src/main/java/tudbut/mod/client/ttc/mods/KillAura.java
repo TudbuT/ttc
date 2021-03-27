@@ -45,6 +45,14 @@ public class KillAura extends Module {
         }));
     }
     
+    @Override
+    public void init() {
+        PlayerSelector.types.add(new PlayerSelector.Type(player -> {
+            targets.clear();
+            targets.add(player.getGameProfile().getName());
+        }, "Set KillAura target"));
+    }
+    
     static KillAura instance;
     {
         instance = this;
