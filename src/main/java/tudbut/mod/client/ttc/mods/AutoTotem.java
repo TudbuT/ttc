@@ -10,40 +10,41 @@ import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import org.lwjgl.input.Keyboard;
+import tudbut.debug.DebugProfiler;
 import tudbut.mod.client.ttc.TTC;
+import tudbut.mod.client.ttc.events.FMLEventHandler;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
 import tudbut.obj.Save;
+import tudbut.tools.Lock;
+import tudbut.tools.ThreadPool;
 
 import java.util.ArrayList;
 
 public class AutoTotem extends Module {
     
     static AutoTotem instance;
+    
+    public static DebugProfiler profiler = new DebugProfiler("AutoTotem", "idle");
+    
     // Actual count, set by AI
-    public int min_count = 0;
+    public int minCount = 0;
     // Count, set by user
-    @Save
-    public int orig_min_count = 0;
+    public int origMinCount = 0;
     // If the user seems to be restocking after respawning, if this is the case,
     // don't switch until any inventories are closed
     public boolean isRestockingAfterRespawn = false;
     // If totems should be stacked automatically
-    @Save
     public boolean autoStack = false;
     // If the AutoStack should always run, regardless of the count
     private boolean autoStackIgnoreCount = false;
-    // Panic mode, switch to totems instantly!
-    public boolean panic = false;
+    
+    public int delay = 0;
+    
+    Lock swapLock = new Lock();
+    ThreadPool swapThread = new ThreadPool(1, "Swap thread", true);
     
     private boolean noTotems = true;
-    
-    public void panic() {
-        enabled = true;
-        panic = true;
-        onSubTick();
-        panic = false;
-    }
     
     public AutoTotem() {
         instance = this;
@@ -55,14 +56,15 @@ public class AutoTotem extends Module {
     
     public void updateBinds() {
         subButtons.clear();
-        subButtons.add(Setting.createInt(0, 12, 1, "Count: $val", this, "orig_min_count"));
+        subButtons.add(Setting.createInt(0, 12, 1, "Count: $val", this, "origMinCount"));
         subButtons.add(Setting.createBoolean("AutoStack (WIP): $val", this, "autoStack"));
+        subButtons.add(Setting.createInt(0, 500, 50, "Delay: $val", this, "delay"));
         subButtons.add(new GuiTTC.Button("AutoStack now", text -> {
             autoStackIgnoreCount = true;
             autoStack();
             autoStackIgnoreCount = false;
         }));
-        subButtons.add(new GuiTTC.Button("Actual count: " + min_count, text -> {
+        subButtons.add(new GuiTTC.Button("Actual count: " + minCount, text -> {
         
         }));
     }
@@ -73,42 +75,62 @@ public class AutoTotem extends Module {
         if(TTC.isIngame()) {
             EntityPlayerSP player = TTC.player;
             
+            
+            profiler.next("RestockCheck");
             if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {
                 // Don't switch yet
                 return;
             }
             
             // Run AI
-            updateTotCount();
+            if(noTotems) {
+                profiler.next("TotCountUpdate");
+                updateTotCount();
+            }
+            profiler.next("AutoStack");
             if (autoStack)
                 autoStack();
             
+            profiler.next("Check");
             ItemStack stack = player.getHeldItemOffhand();
-            if (stack.getCount() <= min_count || (panic && stack.getItem() != Items.TOTEM_OF_UNDYING)) {
+            int minCount = this.minCount;
+            if (stack.getCount() <= minCount) {
                 // Switch!
                 
+                profiler.next("Switch.GetSlot");
                 Integer slot = InventoryUtils.getSlotWithItem(
                         player.inventoryContainer,
                         Items.TOTEM_OF_UNDYING,
                         new int[]{InventoryUtils.OFFHAND_SLOT},
-                        min_count + 1,
+                        minCount + 1,
                         64
                 );
                 if (slot == null) {
+                    profiler.next("Switch.NotifyEmpty");
                     if(!noTotems)
                         Notifications.add(new Notifications.Notification("No more totems! Couldn't switch!"));
                     noTotems = true;
+                    profiler.next("idle");
                     return; // Oh no!! No totems left!
                 }
                 else
                     noTotems = false;
                 
-                // Switch a new totem stack to the offhand
-                InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT);
+                profiler.next("Switch.Swap");
+                if(!swapLock.isLocked()) {
+                    swapThread.run(() -> {
+                        swapLock.lock();
+                        // Switch a new totem stack to the offhand
+                        InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT, delay);
+                        swapLock.lock(delay);
+                    });
+                }
                 
+                profiler.next("Switch.Notify");
                 Notifications.add(new Notifications.Notification("Switched to next TotemStack"));
             }
         }
+        profiler.next("idle");
     }
     
     // Tests if the player is likely to be restocking after having a empty inventory,
@@ -171,11 +193,11 @@ public class AutoTotem extends Module {
                         player.inventoryContainer,
                         Items.TOTEM_OF_UNDYING,
                         new int[]{InventoryUtils.OFFHAND_SLOT},
-                        orig_min_count + 1,
+                        origMinCount + 1,
                         64
                 ) != null
         ) {
-            min_count = orig_min_count;
+            minCount = origMinCount;
             updateBinds();
             return;
         }
@@ -185,26 +207,27 @@ public class AutoTotem extends Module {
                 player.inventoryContainer,
                 Items.TOTEM_OF_UNDYING,
                 new int[]{InventoryUtils.OFFHAND_SLOT},
-                min_count + 1,
+                minCount + 1,
                 64
         );
         // If it doesnt exist, step down the count until a stack exist or the count hits 0
         while (i == null) {
             // Step down
-            min_count--;
+            minCount--;
             // Check
             i = InventoryUtils.getSlotWithItem(
                     player.inventoryContainer,
                     Items.TOTEM_OF_UNDYING,
                     new int[]{InventoryUtils.OFFHAND_SLOT},
-                    min_count + 1,
+                    minCount + 1,
                     64
             );
             updateBinds();
             
-            if (min_count < 0) {
+            if (minCount < 0) {
                 // No stacks left
-                min_count = 0;
+                minCount = 0;
+                updateBinds();
                 return; // Sorry
             }
         }
@@ -214,7 +237,7 @@ public class AutoTotem extends Module {
     
     public void autoStack() {
         
-        if(min_count == 0)
+        if(minCount == 0)
             return;
         
         EntityPlayerSP player = TTC.player;
@@ -254,7 +277,7 @@ public class AutoTotem extends Module {
                 
             }
             
-            if(orig_min_count == min_count && !autoStackIgnoreCount)
+            if(origMinCount == minCount && !autoStackIgnoreCount)
                 return;
             
             
@@ -303,24 +326,28 @@ public class AutoTotem extends Module {
     public void onChat(String s, String[] args) {
         if (s.startsWith("count "))
             try {
-                orig_min_count = min_count = Integer.parseInt(s.substring("count ".length()));
+                origMinCount = minCount = Integer.parseInt(s.substring("count ".length()));
                 ChatUtils.print("Set!");
             }
             catch (Exception e) {
                 ChatUtils.print("ERROR: NaN");
             }
+        if(s.startsWith("debug"))
+            ChatUtils.print(profiler.getTempResults().toString());
         updateBinds();
     }
     
     @Override
     public void loadConfig() {
-        orig_min_count = min_count = Integer.parseInt(cfg.get("count"));
+        origMinCount = minCount = Integer.parseInt(cfg.get("count"));
         autoStack = Boolean.parseBoolean(cfg.get("autoStack"));
+        delay = Integer.parseInt(cfg.get("delay"));
     }
     
     @Override
     public void updateConfig() {
-        cfg.put("count", String.valueOf(orig_min_count));
+        cfg.put("count", String.valueOf(origMinCount));
         cfg.put("autoStack", String.valueOf(autoStack));
+        cfg.put("delay", String.valueOf(delay));
     }
 }

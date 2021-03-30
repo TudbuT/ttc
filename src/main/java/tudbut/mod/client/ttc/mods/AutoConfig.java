@@ -73,7 +73,7 @@ public class AutoConfig extends Module {
             if (stackedTots) {
                 i += (pvp ? 4 : 2);
             }
-            AutoTotem.getInstance().orig_min_count = i;
+            AutoTotem.getInstance().origMinCount = i;
             
             Team.getInstance().enabled = tpa;
             if (!tpa)

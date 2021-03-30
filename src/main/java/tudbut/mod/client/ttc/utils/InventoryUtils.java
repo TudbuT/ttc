@@ -6,7 +6,6 @@ import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import tudbut.mod.client.ttc.TTC;
@@ -53,7 +52,7 @@ public class InventoryUtils {
     }
     
     // Swap two items in inventory
-    public static void inventorySwap(int slot0, int slot1) {
+    public static void inventorySwap(int slot0, int slot1, long delay) {
         // Swapping is fast, but not always fast enough! It may not be run in separate threads!
         while (swapping) ; // Sorry for the delay!
         
@@ -81,10 +80,18 @@ public class InventoryUtils {
             TTC.player.closeScreen();
             doResetScreen = true;
         }
-        
-        swap(slot0, 8);
-        swap(slot1, 8);
-        swap(slot0, 8);
+    
+        try {
+            swap(slot0, 8);
+            Thread.sleep(delay);
+            swap(slot1, 8);
+            Thread.sleep(delay);
+            swap(slot0, 8);
+            Thread.sleep(delay);
+        }
+        catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         
         // Reset GUIScreen if needed
         if (doResetScreen)
