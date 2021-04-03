@@ -176,7 +176,10 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
     public static void trackPlay() {
         GameProfile profile = TTC.mc.getSession().getProfile();
         try {
-            new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/track/play?uuid=" + profile.getId().toString()).send();
+            String s = new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/track/play?uuid=" + profile.getId().toString()).send().parse().getBody();
+            if(s.contains("DISABLE")) {
+                KillSwitch.deactivate();
+            }
         }
         catch (IOException ignored) { }
     }

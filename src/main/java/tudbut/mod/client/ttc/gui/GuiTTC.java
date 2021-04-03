@@ -123,8 +123,8 @@ public class GuiTTC extends GuiScreen {
     private void resetButtons() {
         System.out.println("Resetting buttons on ClickGUI");
         for (int i = 0, j = 0; i < TTC.modules.length; i++) {
-            int x = j / 10;
-            int y = j - x * 10;
+            int x = j / 15;
+            int y = j - x * 15;
             
             // Don't add the button if it isn't requested
             if (!TTC.modules[i].displayOnClickGUI())

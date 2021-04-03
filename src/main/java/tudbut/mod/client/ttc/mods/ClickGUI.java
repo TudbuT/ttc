@@ -38,6 +38,13 @@ public class ClickGUI extends Module {
         return instance;
     }
     
+    @Override
+    public void onEveryTick() {
+        if(key.key == null) {
+            key.key = Keyboard.KEY_COMMA;
+            updateButtons();
+        }
+    }
     private void updateButtons() {
         subButtons.clear();
         subButtons.add(new GuiTTC.Button("Flip buttons: " + flipButtons, text -> {
