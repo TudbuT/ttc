@@ -45,10 +45,10 @@ public class ChatSuffix extends Module {
             else
                 mode++;
         
-            if(mode > 5)
+            if(mode > 6)
                 mode = 0;
             if(mode < 0)
-                mode = 5;
+                mode = 6;
         
             text.set("Mode:" + get(100));
         }));
@@ -75,6 +75,8 @@ public class ChatSuffix extends Module {
                         return " | TTC";
                     case 5:
                         return " → TTC";
+                    case 6:
+                        return " ᴛᴛᴄ ᴏɴ ᴛᴏᴘ";
                 }
             }
         }

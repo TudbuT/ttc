@@ -36,6 +36,17 @@ public class InventoryUtils {
         return null;
     }
     
+    public static int getItemAmount(Container inv, Item item) {
+        int c = 0;
+        for (int i = 0; i < inv.getInventory().size(); i++) {
+            ItemStack stack = inv.getSlot(i).getStack();
+            if (stack.getItem().equals(item))
+                c += stack.getCount();
+            
+        }
+        return c;
+    }
+    
     // Drop contents of a slot
     public static void drop(int slot) {
         clickSlot(slot, ClickType.THROW, 1);
@@ -52,7 +63,7 @@ public class InventoryUtils {
     }
     
     // Swap two items in inventory
-    public static void inventorySwap(int slot0, int slot1, long delay) {
+    public static void inventorySwap(int slot0, int slot1, long mainDelay, long postDelay, long cooldownDelay) {
         // Swapping is fast, but not always fast enough! It may not be run in separate threads!
         while (swapping) ; // Sorry for the delay!
         
@@ -83,11 +94,11 @@ public class InventoryUtils {
     
         try {
             swap(slot0, 8);
-            Thread.sleep(delay);
+            Thread.sleep(mainDelay);
             swap(slot1, 8);
-            Thread.sleep(delay);
+            Thread.sleep(postDelay);
             swap(slot0, 8);
-            Thread.sleep(delay);
+            Thread.sleep(cooldownDelay);
         }
         catch (InterruptedException e) {
             e.printStackTrace();

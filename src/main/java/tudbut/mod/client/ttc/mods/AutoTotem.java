@@ -2,20 +2,19 @@ package tudbut.mod.client.ttc.mods;
 
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.client.gui.inventory.GuiContainerCreative;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.init.Items;
 import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import org.lwjgl.input.Keyboard;
+import net.minecraft.util.EnumHandSide;
 import tudbut.debug.DebugProfiler;
 import tudbut.mod.client.ttc.TTC;
-import tudbut.mod.client.ttc.events.FMLEventHandler;
 import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.mod.client.ttc.gui.GuiTTCIngame;
 import tudbut.mod.client.ttc.utils.*;
-import tudbut.obj.Save;
 import tudbut.tools.Lock;
 import tudbut.tools.ThreadPool;
 
@@ -45,6 +44,7 @@ public class AutoTotem extends Module {
     ThreadPool swapThread = new ThreadPool(1, "Swap thread", true);
     
     private boolean noTotems = true;
+    public int fullCount;
     
     public AutoTotem() {
         instance = this;
@@ -52,6 +52,38 @@ public class AutoTotem extends Module {
     
     public static AutoTotem getInstance() {
         return instance;
+    }
+    
+    
+    public void renderTotems() {
+        if(fullCount != 0) {
+            ScaledResolution res = new ScaledResolution(TTC.mc);
+            int y = res.getScaledHeight() - 16 * 2 - 3 - 8;
+            int x;
+            if (TTC.player.getPrimaryHand() != EnumHandSide.LEFT)
+                x = res.getScaledWidth() / 2 - 91 - 26;
+            else
+                x = res.getScaledWidth() / 2 + 91 + 10;
+            
+            GuiTTCIngame.drawOffhandSlot(x - 3, y - 3);
+            GuiTTCIngame.drawItem(x, y, 1, TTC.player, new ItemStack(Items.TOTEM_OF_UNDYING, fullCount));
+        }
+    }
+    
+    public int getColor() {
+        if(fullCount < (origMinCount + 1) * 5) {
+            return 0xffff0000;
+        }
+        
+        if(fullCount < (origMinCount + 1) * 20) {
+            return 0xffffff00;
+        }
+        
+        return 0xff00ff00;
+    }
+    
+    public int getTotemCount() {
+        return InventoryUtils.getItemAmount(TTC.player.inventoryContainer, Items.TOTEM_OF_UNDYING);
     }
     
     public void updateBinds() {
@@ -72,62 +104,65 @@ public class AutoTotem extends Module {
     // Run checks and AI
     @Override
     public void onSubTick() {
-        if(TTC.isIngame()) {
-            EntityPlayerSP player = TTC.player;
-            
-            
-            profiler.next("RestockCheck");
-            if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {
-                // Don't switch yet
-                return;
-            }
-            
-            // Run AI
-            if(noTotems) {
-                profiler.next("TotCountUpdate");
-                updateTotCount();
-            }
-            profiler.next("AutoStack");
-            if (autoStack)
-                autoStack();
-            
-            profiler.next("Check");
-            ItemStack stack = player.getHeldItemOffhand();
-            int minCount = this.minCount;
-            if (stack.getCount() <= minCount) {
-                // Switch!
-                
-                profiler.next("Switch.GetSlot");
-                Integer slot = InventoryUtils.getSlotWithItem(
-                        player.inventoryContainer,
-                        Items.TOTEM_OF_UNDYING,
-                        new int[]{InventoryUtils.OFFHAND_SLOT},
-                        minCount + 1,
-                        64
-                );
-                if (slot == null) {
-                    profiler.next("Switch.NotifyEmpty");
-                    if(!noTotems)
-                        Notifications.add(new Notifications.Notification("No more totems! Couldn't switch!"));
-                    noTotems = true;
-                    profiler.next("idle");
-                    return; // Oh no!! No totems left!
+        if (TTC.isIngame()) {
+            fullCount = getTotemCount();
+    
+            if (!swapLock.isLocked()) {
+                EntityPlayerSP player = TTC.player;
+        
+        
+                profiler.next("RestockCheck");
+                if ((isRestockingAfterRespawn() || isRestockingAfterRespawn)) {
+                    // Don't switch yet
+                    return;
                 }
-                else
-                    noTotems = false;
-                
-                profiler.next("Switch.Swap");
-                if(!swapLock.isLocked()) {
+        
+                // Run AI
+                if (noTotems) {
+                    profiler.next("TotCountUpdate");
+                    updateTotCount();
+                }
+                profiler.next("AutoStack");
+                if (autoStack)
+                    autoStack();
+        
+                profiler.next("Check");
+                ItemStack stack = player.getHeldItemOffhand();
+                int minCount = this.minCount;
+                if (stack.getCount() <= minCount) {
+                    // Switch!
+            
+                    profiler.next("Switch.GetSlot");
+                    Integer slot = InventoryUtils.getSlotWithItem(
+                            player.inventoryContainer,
+                            Items.TOTEM_OF_UNDYING,
+                            new int[] { InventoryUtils.OFFHAND_SLOT },
+                            minCount + 1,
+                            64
+                    );
+                    if (slot == null) {
+                        profiler.next("Switch.NotifyEmpty");
+                        if (!noTotems)
+                            Notifications.add(new Notifications.Notification("No more totems! Couldn't switch!"));
+                        noTotems = true;
+                        profiler.next("idle");
+                        return; // Oh no!! No totems left!
+                    }
+                    else
+                        noTotems = false;
+            
+                    profiler.next("Switch.Swap");
+                    swapLock.lock(2000);
                     swapThread.run(() -> {
-                        swapLock.lock();
                         // Switch a new totem stack to the offhand
-                        InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT, delay);
-                        swapLock.lock(delay);
+                        InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT, delay, 300, 100);
+                        swapLock.lock(150);
                     });
+            
+            
+                    profiler.next("Switch.Notify");
+                    Notifications.add(new Notifications.Notification("Switched to next TotemStack"));
                 }
-                
-                profiler.next("Switch.Notify");
-                Notifications.add(new Notifications.Notification("Switched to next TotemStack"));
             }
         }
         profiler.next("idle");

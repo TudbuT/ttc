@@ -17,11 +17,16 @@ public class GuiTTC extends GuiScreen {
     // One button per module
     private Button[] buttons;
     
-    // Theme
-    public enum Theme {
+    public interface ITheme {
+        int getButtonColor();
+        int getSubButtonColor();
+        int getTextColor();
+        boolean hasShadow();
+    }
+    public enum Theme implements ITheme {
         TTC(0x8000ff00, 0x4000ff00),
         BARTENDER(0xff2d1537, 0xff0d0a0a),
-        ETERNAL_BLUE(0xff0000ff, 0xff000080),
+        ETERNAL_BLUE(0xff0000cc, 0xff000080),
         DARK(0xff202020, 0xff000000),
         LIGHT(0xffcccccc, 0xff999999, 0xff000000, false),
         HACKER(0xff202020, 0xff000000, 0xff00ff00),
@@ -32,6 +37,26 @@ public class GuiTTC extends GuiScreen {
         ORANGE(0xffcc8000, 0xff996000, 0xff404040, false),
         
         ;
+        
+        @Override
+        public int getButtonColor() {
+            return buttonColor;
+        }
+        
+        @Override
+        public int getSubButtonColor() {
+            return subButtonColor;
+        }
+        
+        @Override
+        public int getTextColor() {
+            return textColor;
+        }
+        
+        @Override
+        public boolean hasShadow() {
+            return shadow;
+        }
         
         public final int buttonColor;
         public final int subButtonColor;
@@ -229,7 +254,7 @@ public class GuiTTC extends GuiScreen {
         if(m != 0) {
             for (int i = 0; i < buttons.length; i++) {
                 if(buttons[i] != null) {
-                    buttons[i].x += (lastScrollPos - m) / 3;
+                    buttons[i].y += (lastScrollPos - m) / 3;
                 }
             }
         }
@@ -278,7 +303,7 @@ public class GuiTTC extends GuiScreen {
             this.event = event;
             this.module = module;
             if(ClickGUI.getInstance() != null)
-                this.color = ClickGUI.getInstance().getTheme().buttonColor;
+                this.color = ClickGUI.getInstance().getTheme().getButtonColor();
         }
         
         // Render the button
@@ -303,7 +328,7 @@ public class GuiTTC extends GuiScreen {
             }
             
             drawRect(x, y, x + 150, y + ySize(), color);
-            gui.fontRenderer.drawString(text.get(), x + 6, y + ySize() / 2f - 8 / 2f, ClickGUI.getInstance().getTheme().textColor, ClickGUI.getInstance().getTheme().shadow);
+            gui.fontRenderer.drawString(text.get(), x + 6, y + ySize() / 2f - 8 / 2f, ClickGUI.getInstance().getTheme().getTextColor(), ClickGUI.getInstance().getTheme().hasShadow());
             
             // Draw sub buttons
             if (module != null && (module.enabled ^ module.clickGuiShow)) {
@@ -314,7 +339,7 @@ public class GuiTTC extends GuiScreen {
                     if(b != null) {
                         b.x = x;
                         b.y = y + ( ( i + 1 ) * 15 + ( 20 - 15 ) );
-                        b.color = ClickGUI.getInstance().getTheme().subButtonColor;
+                        b.color = ClickGUI.getInstance().getTheme().getSubButtonColor();
                         b.draw(gui);
                     }
                 }
@@ -345,7 +370,7 @@ public class GuiTTC extends GuiScreen {
                     if(b != null) {
                         b.x = x;
                         b.y = y + ( ( i + 1 ) * 15 + ( 20 - 15 ) );
-                        b.color = ClickGUI.getInstance().getTheme().subButtonColor;
+                        b.color = ClickGUI.getInstance().getTheme().getSubButtonColor();
                         if (b.mouseClicked(clickX, clickY, button))
                             return true;
                     }
@@ -375,7 +400,7 @@ public class GuiTTC extends GuiScreen {
         }
         
         protected void onTick(GuiTTC gui) {
-            this.color = ClickGUI.getInstance().getTheme().buttonColor;
+            this.color = ClickGUI.getInstance().getTheme().getButtonColor();
             if (module != null) {
                 if (mouseDown && mouseDownButton == 1) {
                     x = gui.cx - 150 / 2;

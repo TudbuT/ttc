@@ -1,19 +1,26 @@
 package tudbut.mod.client.ttc.gui;
 
 import de.tudbut.type.Vector3d;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderHelper;
 import net.minecraft.entity.Entity;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.ResourceLocation;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.Notifications;
 import tudbut.mod.client.ttc.mods.PlayerSelector;
 import tudbut.mod.client.ttc.utils.FontRenderer;
 import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.Utils;
 import tudbut.obj.Vector2i;
 
-import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class GuiTTCIngame extends Gui {
     
@@ -23,6 +30,34 @@ public class GuiTTCIngame extends Gui {
         new GuiTTCIngame().drawImpl();
     }
     
+    public static void drawOffhandSlot(int x, int y) {
+        new GuiTTCIngame().drawOffhandSlot0(x,y);
+    }
+    
+    public void drawOffhandSlot0(int x, int y) {
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        TTC.mc.getTextureManager().bindTexture(new ResourceLocation("textures/gui/widgets.png"));
+        drawTexturedModalRect(x, y, 24, 22, 29, 24);
+    }
+    
+    public static void drawItem(int x, int y, float partialTicks, EntityPlayer player, ItemStack stack) {
+        Method m = Utils.getMethods(GuiIngame.class, int.class, int.class, float.class, EntityPlayer.class, ItemStack.class)[0];
+        m.setAccessible(true);
+        try {
+            GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+            GlStateManager.enableRescaleNormal();
+            GlStateManager.enableBlend();
+            GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+            RenderHelper.enableGUIStandardItemLighting();
+            m.invoke(Minecraft.getMinecraft().ingameGUI, x, y, partialTicks, player, stack);
+            RenderHelper.disableStandardItemLighting();
+            GlStateManager.disableRescaleNormal();
+            GlStateManager.disableBlend();
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
     public void drawImpl() {
         ScaledResolution sr = new ScaledResolution(TTC.mc);
         Vector2i screenSize = new Vector2i(sr.getScaledWidth(), sr.getScaledHeight());

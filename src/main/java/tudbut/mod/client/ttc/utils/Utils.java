@@ -2,22 +2,25 @@ package tudbut.mod.client.ttc.utils;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
-import com.mojang.authlib.GameProfile;
+import de.tudbut.tools.Hasher;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.entity.Entity;
-import tudbut.mod.client.ttc.TTC;
+import tudbut.net.http.HTTPContentType;
+import tudbut.net.http.HTTPHeader;
 import tudbut.net.http.HTTPRequest;
 import tudbut.net.http.HTTPRequestType;
+import tudbut.mod.client.ttc.TTC;
+import tudbut.tools.encryption.Key;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Utils { // A bunch of utils that don't deserve their own class, self-explanatory
     
@@ -166,21 +169,18 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
         return r.toString();
     }
     
-    public static void trackLogin() {
-        GameProfile profile = TTC.mc.getSession().getProfile();
-        try {
-            new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/track/login?uuid=" + profile.getId().toString()).send();
-        }
-        catch (IOException ignored) { }
-    }
-    public static void trackPlay() {
-        GameProfile profile = TTC.mc.getSession().getProfile();
-        try {
-            String s = new HTTPRequest(HTTPRequestType.POST, "api.tudbut.de", 80, "/api/track/play?uuid=" + profile.getId().toString()).send().parse().getBody();
-            if(s.contains("DISABLE")) {
-                KillSwitch.deactivate();
+    
+    public static Method[] getMethods(Class<GuiIngame> clazz, Class<?>... args) {
+        ArrayList<Method> methods = new ArrayList<>();
+        
+        Method[] declaredMethods = clazz.getDeclaredMethods();
+        for (int i = 0 ; i < declaredMethods.length ; i++) {
+            Method m = declaredMethods[i];
+            if(Arrays.equals(m.getParameterTypes(), args)) {
+                methods.add(m);
             }
         }
-        catch (IOException ignored) { }
+        
+        return methods.toArray(new Method[0]);
     }
 }

@@ -200,7 +200,7 @@ public class GuiPlayerSelect extends GuiScreen {
             this.y = y;
             this.text = new AtomicReference<>(text);
             this.event = event;
-            this.color = ClickGUI.getInstance().getTheme().buttonColor;
+            this.color = ClickGUI.getInstance().getTheme().getButtonColor();
         }
         
         // Render the button
@@ -222,7 +222,7 @@ public class GuiPlayerSelect extends GuiScreen {
             }
             
             drawRect(x, y, x + 150, y + 20, color);
-            gui.fontRenderer.drawString(text.get(), x + 6, y + 6, ClickGUI.getInstance().getTheme().textColor, ClickGUI.getInstance().getTheme().shadow);
+            gui.fontRenderer.drawString(text.get(), x + 6, y + 6, ClickGUI.getInstance().getTheme().getTextColor(), ClickGUI.getInstance().getTheme().hasShadow());
         }
         
         public boolean mouseClicked(int clickX, int clickY, int button) {
@@ -242,7 +242,7 @@ public class GuiPlayerSelect extends GuiScreen {
         }
     
         public void onTick() {
-            this.color = ClickGUI.getInstance().getTheme().buttonColor;
+            this.color = ClickGUI.getInstance().getTheme().getButtonColor();
         }
     }
     

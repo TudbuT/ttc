@@ -5,8 +5,10 @@ import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.FakeSkidUtils;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.Utils;
+import tudbut.obj.Save;
 
 import java.io.IOException;
 
@@ -20,7 +22,11 @@ public class ClickGUI extends Module {
     
     public int themeID = 0;
     
-    public GuiTTC.Theme getTheme() {
+    public GuiTTC.ITheme skidTheme = FakeSkidUtils.theme;
+    
+    public GuiTTC.ITheme getTheme() {
+        if(skidTheme != null)
+            return skidTheme;
         return GuiTTC.Theme.values()[themeID];
     }
     

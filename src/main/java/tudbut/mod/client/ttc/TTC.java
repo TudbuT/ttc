@@ -12,10 +12,9 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.Logger;
 import tudbut.mod.client.ttc.events.FMLEventHandler;
 import tudbut.mod.client.ttc.mods.*;
-import tudbut.mod.client.ttc.utils.Module;
-import tudbut.mod.client.ttc.utils.ThreadManager;
-import tudbut.mod.client.ttc.utils.Utils;
+import tudbut.mod.client.ttc.utils.*;
 import tudbut.parsing.TCN;
+import tudbut.tools.Lock;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -26,7 +25,10 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.8.0a";
+    public static final String VERSION = "vC1.9.0a";
+    // TODO: PLEASE change this when skidding or rebranding.
+    //  It is used for analytics and doesn't affect gameplay
+    public static final String BRAND = "TudbuT/ttc:master";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -100,8 +102,8 @@ public class TTC {
             }
             catch (TCN.TCNException ignored) { }
         }
-        Utils.trackLogin();
-        if(globalConfig.getBoolean("startup#show_credit")) {
+        WebServices.doLogin();
+        if(globalConfig.getSub("startup").getBoolean("show_credit")) {
             // Show the "TTC by TudbuT" message
             ThreadManager.run(() -> {
                 JOptionPane.showMessageDialog(null, "TTC by TudbuT");
@@ -123,7 +125,6 @@ public class TTC {
                 new ChatSuffix(),
                 new AutoConfig(),
                 new ChatColor(),
-                new Trap(),
                 new PlayerLog(),
                 new DMAll(),
                 new DM(),
@@ -170,22 +171,19 @@ public class TTC {
         
         // Starting thread to regularly save config
         ThreadManager.run(() -> {
+            Lock lock = new Lock();
             while (true) {
+                lock.lock(1000);
+                WebServices.trackPlay();
                 try {
-                    Utils.trackPlay();
-                    try {
-                        // Only save if on main
-                        if(AltControl.getInstance().mode != 1)
-                            saveConfig();
-                    }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    Thread.sleep(1000);
+                    // Only save if on main
+                    if(AltControl.getInstance().mode != 1)
+                        saveConfig();
                 }
-                catch (InterruptedException e) {
+                catch (IOException e) {
                     e.printStackTrace();
                 }
+                lock.waitHere();
             }
         });
         sa = new Date().getTime() - sa;

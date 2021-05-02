@@ -19,8 +19,11 @@ public class HUD extends Module {
     }
     
     public void renderHUD() {
-        if(enabled)
+        if(enabled) {
             GuiTTCIngame.draw();
+            if(AutoTotem.getInstance().enabled)
+                AutoTotem.instance.renderTotems();
+        }
     }
     
     @Override

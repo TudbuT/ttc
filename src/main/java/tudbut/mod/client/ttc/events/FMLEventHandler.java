@@ -7,6 +7,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.event.ClientChatEvent;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -62,9 +63,9 @@ public class FMLEventHandler {
                 }
                 
                 if (s.equals("help")) {
-                    String help = Utils.getRemote("help.chat.txt", false);
+                    String help = null;//Utils.getRemote("help.chat.txt", false);
                     if (help == null) {
-                        ChatUtils.print("§a[TTC] §cUnable retrieve help message! Check your connection!");
+                        ChatUtils.print("§a[TTC] §cUnable retrieve help message!");
                     } else {
                         help = help.replaceAll("%p", TTC.prefix);
                         ChatUtils.print(help);
@@ -218,10 +219,22 @@ public class FMLEventHandler {
         ChatUtils.print("§c§l§k|||§c§l You died at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
     }
     
+    
+    boolean allowHUDRender = false;
+    
     @SubscribeEvent
     public void onHUDRender(RenderGameOverlayEvent.Post event) {
-        if(event.getType() == RenderGameOverlayEvent.ElementType.ALL)
-            HUD.getInstance().renderHUD();
+        if (event.getType() == RenderGameOverlayEvent.ElementType.ALL) {
+            if (allowHUDRender) {
+                allowHUDRender = false;
+                HUD.getInstance().renderHUD();
+            }
+        }
+    }
+    
+    @SubscribeEvent
+    public void onRenderWorldLast(RenderWorldLastEvent event) {
+        allowHUDRender = true;
     }
     
     // Fired every tick
