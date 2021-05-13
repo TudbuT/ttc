@@ -9,9 +9,17 @@ import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.FlightBot;
 import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.Setting;
 
 public class ElytraFlight extends Module {
     boolean init;
+    float speed = 1;
+    
+    @Override
+    public void init() {
+        subButtons.clear();
+        subButtons.add(Setting.createSecureFloat(1, 50, 1, 10, "Speed: $val", this, "speed"));
+    }
     
     @Override
     public void onTick() {
@@ -39,9 +47,9 @@ public class ElytraFlight extends Module {
                         d = 1;
                     }
     
-                    player.motionX = x / d;
-                    player.motionY = y / d;
-                    player.motionZ = z / d;
+                    player.motionX = x / d * speed;
+                    player.motionY = y / d * speed;
+                    player.motionZ = z / d * speed;
                 }
             }
             else {
@@ -94,5 +102,15 @@ public class ElytraFlight extends Module {
     @Override
     public int danger() {
         return 2;
+    }
+    
+    @Override
+    public void updateConfig() {
+        cfg.put("speed", speed + "");
+    }
+    
+    @Override
+    public void loadConfig() {
+        speed = Float.parseFloat(cfg.get("speed"));
     }
 }

@@ -25,10 +25,11 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.9.0a";
+    public static final String VERSION = "vC1.10.0a";
     // TODO: PLEASE change this when skidding or rebranding.
     //  It is used for analytics and doesn't affect gameplay
     public static final String BRAND = "TudbuT/ttc:master";
+    public static final String REPO = "TudbuT/ttc";
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -146,7 +147,8 @@ public class TTC {
                 new PlayerSelector(),
                 new Takeoff(),
                 new Notifications(),
-                new ClickGUI()
+                new ClickGUI(),
+                new Update(),
         };
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");

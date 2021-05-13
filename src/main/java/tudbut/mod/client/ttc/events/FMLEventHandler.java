@@ -172,20 +172,23 @@ public class FMLEventHandler {
             }
             while (TTC.mc.world != null) {
                 if(TTC.globalConfig.getBoolean("messages#update")) {
-                    String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
-                    if (s == null) {
-                        ChatUtils.print("§a[TTC] §cUnable to check for a new version! Check your connection!");
-                    }
-                    else if (!s.equals(TTC.VERSION)) {
-                        ChatUtils.print(
-                                "§a§lA new TTC version was found! Current: " +
-                                TTC.VERSION +
-                                ", New: " +
-                                s +
-                                "! Please consider updating at " +
-                                "https://github.com/TudbuT/ttc/releases/tag/" +
-                                s
-                        );
+                    if(Update.send) {
+                        String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
+                        if (s == null) {
+                            ChatUtils.print("§a[TTC] §cUnable to check for a new version! Check your connection!");
+                        }
+                        else if (!s.equals(TTC.VERSION)) {
+                            ChatUtils.print(
+                                    "§a§lA new TTC version was found! Current: " +
+                                    TTC.VERSION +
+                                    ", New: " +
+                                    s +
+                                    "! Please consider updating at " +
+                                    "https://github.com/TudbuT/ttc/releases/tag/" +
+                                    s +
+                                    " or type ',update'"
+                            );
+                        }
                     }
                     try {
                         for (int i = 0; i < 60; i++) {
