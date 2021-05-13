@@ -171,7 +171,7 @@ public class FMLEventHandler {
                 e.printStackTrace(ChatUtils.chatPrinterDebug());
             }
             while (TTC.mc.world != null) {
-                if(TTC.globalConfig.getBoolean("messages#update")) {
+                if(TTC.globalConfig.getSub("messages").getBoolean("update")) {
                     if(Update.send) {
                         String s = Utils.removeNewlines(Utils.getRemote("version.txt", true));
                         if (s == null) {

@@ -25,7 +25,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.10.0a";
+    public static final String VERSION = "vC1.11.0a";
     // TODO: PLEASE change this when skidding or rebranding.
     //  It is used for analytics and doesn't affect gameplay
     public static final String BRAND = "TudbuT/ttc:master";
