@@ -60,7 +60,7 @@ public class AutoTotem extends Module {
             ScaledResolution res = new ScaledResolution(TTC.mc);
             int y = res.getScaledHeight() - 16 * 2 - 3 - 8;
             int x;
-            if (TTC.player.getPrimaryHand() != EnumHandSide.LEFT)
+            if (TTC.player.getPrimaryHand() == EnumHandSide.RIGHT)
                 x = res.getScaledWidth() / 2 - 91 - 26;
             else
                 x = res.getScaledWidth() / 2 + 91 + 10;
@@ -90,7 +90,7 @@ public class AutoTotem extends Module {
         subButtons.clear();
         subButtons.add(Setting.createInt(0, 12, 1, "Count: $val", this, "origMinCount"));
         subButtons.add(Setting.createBoolean("AutoStack (WIP): $val", this, "autoStack"));
-        subButtons.add(Setting.createInt(0, 500, 50, "Delay: $val", this, "delay"));
+        subButtons.add(Setting.createInt(0, 5000, 50, "Delay: $val", this, "delay"));
         subButtons.add(new GuiTTC.Button("AutoStack now", text -> {
             autoStackIgnoreCount = true;
             autoStack();
@@ -156,7 +156,7 @@ public class AutoTotem extends Module {
                     swapThread.run(() -> {
                         // Switch a new totem stack to the offhand
                         InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT, delay, 300, 100);
-                        swapLock.lock(150);
+                        swapLock.lock(1000);
                     });
             
             
