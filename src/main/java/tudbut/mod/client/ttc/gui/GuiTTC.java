@@ -95,7 +95,7 @@ public class GuiTTC extends GuiScreen {
     // Minecraft wants this
     @Override
     public boolean doesGuiPauseGame() {
-        return false;
+        return mc.player.timeInPortal != 0;
     }
     
     // The initiator, this can, for some reason, not be in the constructor

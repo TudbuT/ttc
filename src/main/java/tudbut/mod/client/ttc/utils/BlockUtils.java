@@ -118,6 +118,7 @@ public class BlockUtils {
         float[] rotations = getLegitRotations(vec);
         mc.player.connection.sendPacket(
                 new CPacketPlayer.Rotation(
+                        //mc.player.posX, mc.player.posY, mc.player.posZ,
                         rotations[0], rotations[1], mc.player.onGround
                 )
         );

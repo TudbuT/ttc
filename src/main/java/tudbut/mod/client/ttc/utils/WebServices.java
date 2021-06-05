@@ -1,23 +1,52 @@
 package tudbut.mod.client.ttc.utils;
 
-import de.tudbut.tools.Hasher;
 import net.minecraft.client.Minecraft;
 import tudbut.api.impl.RateLimit;
 import tudbut.api.impl.TudbuTAPIV2;
 import tudbut.mod.client.ttc.TTC;
-import tudbut.net.http.*;
+import tudbut.net.pbic2.PBIC2;
+import tudbut.net.pbic2.PBIC2AEventHandler;
+import tudbut.net.pbic2.PBIC2AListener;
 import tudbut.obj.DoubleTypedObject;
-import tudbut.tools.encryption.RawKey;
+import tudbut.parsing.JSON;
+import tudbut.parsing.TCN;
 
 import java.io.IOException;
-import java.util.UUID;
+import java.util.ArrayList;
 
 public class WebServices {
     
+    public static PBIC2 client;
+    public static PBIC2AEventHandler handler = new PBIC2AEventHandler();
+    private static final PBIC2AListener listener = new PBIC2AListener() {
+        @Override
+        public void onMessage(String s) throws IOException {
+            try {
+                TCN tcn = JSON.read(s);
+                if(tcn.getString("id").equalsIgnoreCase("message")) {
+                    queueMessage(tcn);
+                }
+            }
+            catch (JSON.JSONFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        @Override
+        public void onError(Throwable throwable) {
+            throwable.printStackTrace();
+            doLogin();
+        }
+    };
+    
     public static void handshake() throws IOException, RateLimit {
         TTC.logger.info("Starting handshake");
-    
+        
         TudbuTAPIV2.handshake(Minecraft.getMinecraft().getSession().getProfile().getId());
+        if(client != null) {
+            client.getSocket().close();
+            handler.remove(client);
+        }
         
         TTC.logger.info("Handshake passed");
         
@@ -29,7 +58,10 @@ public class WebServices {
         if(!s.o || !s.t.equals("OK")) {
             TTC.logger.info("Error during login. Redoing handshake.");
             doLogin();
+            return;
         }
+        client = TudbuTAPIV2.connectGateway(Minecraft.getMinecraft().getSession().getProfile().getId());
+        handler.start(client, listener);
     }
     
     private static boolean play() throws IOException, RateLimit {
@@ -42,21 +74,50 @@ public class WebServices {
     
     public static void doLogin() {
         try {
+            Thread.sleep(1000);
             handshake();
+            Thread.sleep(1000);
             login();
+            Thread.sleep(1000);
             play();
         }
-        catch (IOException | RateLimit e) {
+        catch (Exception e) {
             TTC.logger.info("Can't reach api.tudbut.de");
         }
     }
+    
+    static ArrayList<TCN> queuedMessages = new ArrayList<>();
+    
     public static void trackPlay() {
         try {
+            if(TTC.isIngame()) {
+                sendQueuedMessages();
+            }
             if(!play()) {
                 TTC.logger.info("Couldn't send track/play. Redoing handshake.");
                 doLogin();
             }
         }
-        catch (IOException | RateLimit ignored) { }
+        catch (Exception ignored) {
+            doLogin();
+        }
+    }
+    
+    public static void queueMessage(TCN event) {
+        queuedMessages.add(event);
+        if(TTC.isIngame()) {
+            sendQueuedMessages();
+        }
+    }
+    
+    public static synchronized void sendQueuedMessages() {
+        for (int i = 0, queuedMessagesSize = queuedMessages.size() ; i < queuedMessagesSize ; i++) {
+            TCN queuedMessage = queuedMessages.get(i);
+            
+            ChatUtils.print("§a[TTC] §lGOT MESSAGE");
+            ChatUtils.print("§a[TTC] <" + queuedMessage.getSub("from").getSub("record").getString("name") + "> " + queuedMessage.getString("message"));
+            
+            queuedMessages.remove(queuedMessage);
+        }
     }
 }

@@ -25,7 +25,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "vC1.11.1b";
+    public static final String VERSION = "vC1.12.0a";
     // TODO: PLEASE change this when skidding or rebranding.
     //  It is used for analytics and doesn't affect gameplay
     public static final String BRAND = "TudbuT/ttc:master";
@@ -149,6 +149,7 @@ public class TTC {
                 new Notifications(),
                 new ClickGUI(),
                 new Update(),
+                new Msg()
         };
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
@@ -171,10 +172,24 @@ public class TTC {
         System.out.println("Starting threads...");
         sa = new Date().getTime();
         
+        boolean[] b = {true, true};
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            b[0] = false;
+            while(b[1]);
+            if(AltControl.getInstance().mode != 1) {
+                try {
+                    saveConfig();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }));
+        
         // Starting thread to regularly save config
         ThreadManager.run(() -> {
             Lock lock = new Lock();
-            while (true) {
+            while (b[0]) {
                 lock.lock(1000);
                 WebServices.trackPlay();
                 try {
@@ -187,6 +202,7 @@ public class TTC {
                 }
                 lock.waitHere();
             }
+            b[1] = false;
         });
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
