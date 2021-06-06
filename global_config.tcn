@@ -1,5 +1,5 @@
 messages {
-    update: true
+    update: false
 }
 
 startup {
