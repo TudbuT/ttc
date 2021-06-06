@@ -29,6 +29,12 @@ public class WebServices {
                 if(tcn.getString("id").equalsIgnoreCase("message")) {
                     queueMessage(tcn);
                 }
+                if(
+                        tcn.getString("id").equalsIgnoreCase("save") ||
+                        tcn.getString("id").equalsIgnoreCase("welcome")
+                ) {
+                    usersOnline = tcn.getSub("data").getArray("onlineUsernames").toArray(new String[0]);
+                }
             }
             catch (JSON.JSONFormatException e) {
                 e.printStackTrace();
@@ -40,6 +46,8 @@ public class WebServices {
             throwable.printStackTrace();
         }
     };
+    
+    public static String[] usersOnline = new String[]{};
     
     public static void handshake() throws IOException, RateLimit {
         TTC.logger.info("Starting handshake");
