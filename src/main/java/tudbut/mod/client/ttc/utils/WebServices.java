@@ -10,6 +10,7 @@ import tudbut.net.pbic2.PBIC2AListener;
 import tudbut.obj.DoubleTypedObject;
 import tudbut.parsing.JSON;
 import tudbut.parsing.TCN;
+import tudbut.tools.Lock;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,9 +19,11 @@ public class WebServices {
     
     public static PBIC2 client;
     public static PBIC2AEventHandler handler = new PBIC2AEventHandler();
+    public static Lock keepAliveLock = new Lock(true);
     private static final PBIC2AListener listener = new PBIC2AListener() {
         @Override
         public void onMessage(String s) throws IOException {
+            keepAliveLock.lock(15000);
             try {
                 TCN tcn = JSON.read(s);
                 if(tcn.getString("id").equalsIgnoreCase("message")) {
@@ -35,7 +38,6 @@ public class WebServices {
         @Override
         public void onError(Throwable throwable) {
             throwable.printStackTrace();
-            doLogin();
         }
     };
     
@@ -92,6 +94,12 @@ public class WebServices {
         try {
             if(TTC.isIngame()) {
                 sendQueuedMessages();
+            }
+            if(!keepAliveLock.isLocked()) {
+                handler.remove(client);
+                client = TudbuTAPIV2.connectGateway(Minecraft.getMinecraft().getSession().getProfile().getId());
+                handler.start(client, listener);
+                keepAliveLock.lock();
             }
             if(!play()) {
                 TTC.logger.info("Couldn't send track/play. Redoing handshake.");
