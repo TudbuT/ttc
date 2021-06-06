@@ -24,6 +24,10 @@ archivesBaseName = 'ttc'
 compileJava {options.encoding = "UTF-8"}
 sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 
+configurations {
+    atj
+}
+
 minecraft {
     // The mappings can be changed at any time, and must be in the following format.
     // snapshot_YYYYMMDD   Snapshot are built nightly.
@@ -66,7 +70,7 @@ dependencies {
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
 
-    compile fileTree(include: ['*.jar'], dir: 'lib')
+    compile(atj(fileTree(include: ['*.jar'], dir: 'lib')))
 
     // You may put jars on which you depend on in ./libs or you may define them like so..
     // compile "some.group:artifact:version:classifier"
@@ -90,6 +94,13 @@ dependencies {
 
 // Example for how to get properties into the manifest for reading by the runtime..
 jar {
+    from {
+        configurations.atj
+                .collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "LICENSE.txt", "META-INF/MANIFSET.MF", "META-INF/maven/**", "META-INF/*.RSA", "META-INF/*.SF"
+    }
+    
     manifest {
         attributes([
             "Specification-Title": "ttc",
