@@ -59,15 +59,17 @@ public class Update extends Module {
                     byte[] bytes = res.getBodyBytes();
                     ChatUtils.print("Download finished. Saving to disk...");
                     File mods = new File("mods");
-                    File old = new File(mods, "old/ttc/" + TTC.VERSION);
+                    File old = new File("mods/old/ttc/" + TTC.VERSION);
                     old.mkdirs();
                     //noinspection ConstantConditions
                     for (File file : mods.listFiles()) {
                         if(file.getName().startsWith("ttc") && file.getName().endsWith(".jar")) {
-                            file.renameTo(new File(old, file.getName()));
+                            if(!file.renameTo(new File(old, file.getName()))) {
+                                file.delete();
+                            }
                         }
                     }
-                    File f = new File(mods, "ttc.jar");
+                    File f = new File("mods/ttc.jar");
                     FileOutputStream stream = new FileOutputStream(f);
                     stream.write(bytes);
                     ChatUtils.print("Finishing off...");
