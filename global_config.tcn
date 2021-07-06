@@ -3,5 +3,5 @@ messages {
 }
 
 startup {
-    show_credit: true
+    show_credit: false
 }
