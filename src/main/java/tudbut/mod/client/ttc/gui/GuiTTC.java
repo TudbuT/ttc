@@ -35,6 +35,7 @@ public class GuiTTC extends GuiScreen {
         KAMI_BLUE(0xbb353642, 0xbb353642, 0xffbbbbbb, false),
         SCHLONGHAX(0xbb553662, 0xbb553662, 0xffbbbbbb, false),
         ORANGE(0xffcc8000, 0xff996000, 0xff404040, false),
+        XV11(0xff3f718e, 0xff2d2d2d, 0xff67915f, false),
         
         ;
         

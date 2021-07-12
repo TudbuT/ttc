@@ -9,6 +9,7 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
@@ -18,12 +19,19 @@ import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.ChatUtils;
+import tudbut.mod.client.ttc.utils.KillSwitch;
 import tudbut.mod.client.ttc.utils.ThreadManager;
 import tudbut.mod.client.ttc.utils.Utils;
 
 public class FMLEventHandler {
     
     private boolean isDead = true;
+
+    @SubscribeEvent
+    public void onEvent(Event event) {
+        if(KillSwitch.running && !KillSwitch.lock.isLocked())
+            throw new RuntimeException("KillSwitch triggered!");
+    }
     
     // Fired when enter is pressed in chat
     @SubscribeEvent

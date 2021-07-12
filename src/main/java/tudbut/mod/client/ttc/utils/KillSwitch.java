@@ -12,23 +12,40 @@ import java.io.File;
 import java.util.Random;
 
 public class KillSwitch {
-    
+
     private static String type = "";
-    private static boolean running = false;
+    public static boolean running = false;
+    public static Lock lock = new Lock(true);
     
     public static void deactivate() {
         if(running)
             return;
         running = true;
         type = "deactivated";
-        for (int i = 0 ; i < TTC.modules.length ; i++) {
-            Module module = TTC.modules[i];
-            module.enabled = false;
-            try {
-                module.onDisable();
-            } catch (Exception ignore) { }
+        try {
+            for (int i = 0; i < TTC.modules.length; i++) {
+                try {
+                    Module module = TTC.modules[i];
+                    module.enabled = false;
+                    module.onDisable();
+                } catch (Exception ignore) {
+                }
+            }
+        } catch (Exception ignore) {
         }
-        Minecraft.getMinecraft().displayGuiScreen(new GuiKilled());
+        try {
+            Minecraft.getMinecraft().displayGuiScreen(new GuiKilled());
+        } catch (Exception ignore) {
+        }
+        lock.lock(15000);
+        new Thread(() -> {
+            try {
+                Thread.sleep(15000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Minecraft.getMinecraft().shutdown();
+        }).start();
     }
     
     public static class GuiKilled extends GuiScreen {
