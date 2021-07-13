@@ -224,8 +224,10 @@ public class FMLEventHandler {
     
     // When the player dies, NOT called by FML
     public void onDeath(EntityPlayer player) {
-        TPAParty.getInstance().enabled = false;
-        TPAParty.getInstance().onDisable();
+        if(TPAParty.getInstance().disableOnDeath) {
+            TPAParty.getInstance().enabled = false;
+            TPAParty.getInstance().onDisable();
+        }
         BlockPos pos = player.getPosition();
         ChatUtils.print("§c§l§k|||§c§l You died at " + pos.getX() + " " + pos.getY() + " " + pos.getZ());
     }

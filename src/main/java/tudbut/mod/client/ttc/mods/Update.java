@@ -55,6 +55,10 @@ public class Update extends Module {
                                 return;
                             }
                         }
+                        else {
+                            ChatUtils.print("Couldn't update! 404!");
+                            send = false;
+                        }
                     }
                     byte[] bytes = res.getBodyBytes();
                     ChatUtils.print("Download finished. Saving to disk...");

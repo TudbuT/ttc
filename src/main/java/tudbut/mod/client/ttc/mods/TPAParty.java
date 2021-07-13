@@ -2,11 +2,15 @@ package tudbut.mod.client.ttc.mods;
 
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.Module;
+import tudbut.mod.client.ttc.utils.Setting;
 
 public class TPAParty extends Module {
     
     static TPAParty instance;
-    
+    public boolean disableOnDeath = true;
+
+
+
     public TPAParty() {
         instance = this;
     }
@@ -14,7 +18,12 @@ public class TPAParty extends Module {
     public static TPAParty getInstance() {
         return instance;
     }
-    
+
+    public void updateButtons() {
+        subButtons.clear();
+        subButtons.add(Setting.createBoolean("DeathDisable: $val", this, "disableOnDeath"));
+    }
+
     @Override
     public void onSubTick() {
     
@@ -37,5 +46,15 @@ public class TPAParty extends Module {
     @Override
     public int danger() {
         return 4;
+    }
+
+    @Override
+    public void updateConfig() {
+        cfg.put("dod", disableOnDeath + "");
+    }
+
+    @Override
+    public void loadConfig() {
+        disableOnDeath = "true".equals(cfg.get("dod"));
     }
 }
