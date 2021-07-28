@@ -1,5 +1,5 @@
 package tudbut.mod.client.ttc.utils;
-
+// Actually Useful ThreadManager.
 public class ThreadManager { // Self-explanatory
     public static Thread run(Runnable runnable) {
         Thread t = new Thread(runnable);
