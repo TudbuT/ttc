@@ -15,7 +15,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.Freecam;
-
+// Best Freecam I've Seen Yet.
 @SideOnly(Side.CLIENT)
 public class FreecamPlayer extends EntityOtherPlayerMP
 {
