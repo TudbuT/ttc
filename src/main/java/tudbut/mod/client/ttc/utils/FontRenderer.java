@@ -2,7 +2,7 @@ package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.gui.Gui;
 import tudbut.obj.Vector2i;
-
+// Almost But Not Entirely Unlike Good Code.
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.image.BufferedImage;
