@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.text.TextComponentString;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.Debug;
-
+// How hard can it be?
 import java.io.OutputStream;
 import java.io.PrintStream;
 
