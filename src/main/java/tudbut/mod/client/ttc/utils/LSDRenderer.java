@@ -6,7 +6,7 @@ import net.minecraft.world.World;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.Freecam;
 import tudbut.mod.client.ttc.mods.LSD;
-
+// Warning: Not Only Will This Kill You, It Will Hurt The Whole Time You Are Dying.
 import java.util.Objects;
 
 public class LSDRenderer extends FreecamPlayer {
