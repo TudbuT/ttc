@@ -101,11 +101,6 @@ public class GuiTTC extends GuiScreen {
     
     // The initiator, this can, for some reason, not be in the constructor
     public void initGui() {
-        // Minecraft is stupid.
-        mc.mouseHelper.ungrabMouseCursor();
-        while (Mouse.isGrabbed())
-            mc.mouseHelper.ungrabMouseCursor();
-        
         // Creates buttons
         buttons = new Button[256];
         resetButtons();
