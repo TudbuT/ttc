@@ -6,6 +6,7 @@ import de.tudbut.tools.Hasher;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import tudbut.net.http.HTTPContentType;
 import tudbut.net.http.HTTPHeader;
 import tudbut.net.http.HTTPRequest;
@@ -64,7 +65,7 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
         }
     }
     
-    public static <T> Entity[] getEntities(Class<? extends T> entityType, Predicate<? super T> filter) {
+    public static <T> EntityLivingBase[] getEntities(Class<? extends T> entityType, Predicate<? super T> filter) {
         List<T> list = Lists.<T>newArrayList();
         
         List<Entity> loadedEntityList = TTC.world.loadedEntityList;
@@ -75,7 +76,7 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
             }
         }
         
-        return list.toArray(new Entity[0]);
+        return list.toArray(new EntityLivingBase[0]);
     }
     
     public static String removeNewlines(String s) {
