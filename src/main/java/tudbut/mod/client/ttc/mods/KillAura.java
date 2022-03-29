@@ -50,6 +50,8 @@ public class KillAura extends Module {
     Queue<EntityLivingBase> toAttack = new Queue<>();
     ArrayList<String> targets = new ArrayList<>();
     Lock timer = new Lock();
+    Lock iTimer = new Lock(true);
+    int iterationsToDo = 0;
     
     {
         customKeyBinds.put("select", new KeyBind(null, this::triggerSelect));
@@ -120,6 +122,8 @@ public class KillAura extends Module {
         subButtons.add(Setting.createInt(0, 100, 10, "IterationDelay: $val", this, "iterationDelay"));
     }
     
+    EntityLivingBase entity;
+    
     @Override
     public void onTick() {
         
@@ -177,6 +181,20 @@ public class KillAura extends Module {
             if(toAttack.hasNext())
                 attackNext();
         }
+        
+        if(!iTimer.isLocked()) {
+            iTimer.lock();
+            if(iterationsToDo > 0) {
+                BlockUtils.lookAt(entity.getPositionVector().addVector(0, (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2d, 0));
+                TTC.mc.playerController.attackEntity(TTC.player, entity);
+                if (swing)
+                    TTC.player.swingArm(EnumHand.MAIN_HAND);
+    
+                if(iterationsToDo-- > 1) {
+                    iTimer.lock(iterationDelay);
+                }
+            }
+        }
     }
     
     private int extraDelay() {
@@ -187,21 +205,8 @@ public class KillAura extends Module {
         EntityLivingBase entity = toAttack.next();
         
         if(!superAttack || entity.hurtTime <= 0) {
-            for (int i = 0 ; i < iterations ; i++) {
-                BlockUtils.lookAt(entity.getPositionVector().addVector(0, (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2d, 0));
-                TTC.mc.playerController.attackEntity(TTC.player, entity);
-                if (swing)
-                    TTC.player.swingArm(EnumHand.MAIN_HAND);
-                
-                if(iterations > 1) {
-                    try {
-                        Thread.sleep(iterationDelay);
-                    }
-                    catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+            iterationsToDo = iterations;
+            iTimer.unlock();
         }
     }
     
