@@ -36,6 +36,7 @@ public class GuiTTC extends GuiScreen {
         SCHLONGHAX(0xbb553662, 0xbb553662, 0xffbbbbbb, false),
         ORANGE(0xffcc8000, 0xff996000, 0xff404040, false),
         XV11(0xff3f718e, 0xff2d2d2d, 0xff67915f, false),
+        PDP8(0xfff400ff, 0xffbe00ff, 0xffeed9f5, true),
         
         ;
         
