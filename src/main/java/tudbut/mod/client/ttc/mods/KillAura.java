@@ -185,7 +185,6 @@ public class KillAura extends Module {
         if(!iTimer.isLocked()) {
             iTimer.lock();
             if(iterationsToDo > 0) {
-                BlockUtils.lookAt(entity.getPositionVector().addVector(0, (entity.getEntityBoundingBox().maxY - entity.getEntityBoundingBox().minY) / 2d, 0));
                 TTC.mc.playerController.attackEntity(TTC.player, entity);
                 if (swing)
                     TTC.player.swingArm(EnumHand.MAIN_HAND);
@@ -207,6 +206,7 @@ public class KillAura extends Module {
         if(!superAttack || entity.hurtTime <= 0) {
             iterationsToDo = iterations;
             iTimer.unlock();
+            this.entity = entity;
         }
     }
     
