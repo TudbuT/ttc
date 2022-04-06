@@ -89,7 +89,7 @@ public class Utils { // A bunch of utils that don't deserve their own class, sel
     // the newest version, or if it should always use the one for the current version
     public static String getRemote(String file, boolean master) {
         try {
-            URL updateCheckURL = new URL("https://raw.githubusercontent.com/TudbuT/ttc/" + (master ? "master" : TTC.VERSION) + "/" + file);
+            URL updateCheckURL = new URL("https://raw.githubusercontent.com/" + TTC.REPO + "/" + (master ? "master" : TTC.VERSION) + "/" + file);
             InputStream stream = updateCheckURL.openConnection().getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
             
