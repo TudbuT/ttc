@@ -41,6 +41,7 @@ public class KillAura extends Module {
     boolean cBatch = false;
     @Save
     boolean switchItem = false;
+    boolean switchItemTmp = false;
     @Save
     int iterations = 1;
     @Save
@@ -126,7 +127,6 @@ public class KillAura extends Module {
     
     @Override
     public void onTick() {
-        
         {
             if (!toAttack.hasNext()) {
                 EntityPlayer[] players = TTC.world.playerEntities.toArray(new EntityPlayer[0]);

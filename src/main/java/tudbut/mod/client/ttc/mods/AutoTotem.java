@@ -129,6 +129,11 @@ public class AutoTotem extends Module {
                 profiler.next("Check");
                 ItemStack stack = player.getHeldItemOffhand();
                 int minCount = this.minCount;
+                if(stack.getCount() <= minCount + 4) {
+                    KillAura ka = KillAura.getInstance();
+                    ka.switchItemTmp = ka.switchItem;
+                    ka.switchItem = false;
+                }
                 if (stack.getCount() <= minCount) {
                     // Switch!
             
@@ -156,7 +161,9 @@ public class AutoTotem extends Module {
                     swapThread.run(() -> {
                         // Switch a new totem stack to the offhand
                         InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT, delay, 300, 100);
-                        swapLock.lock(1000);
+                        KillAura ka = KillAura.getInstance();
+                        ka.switchItem = ka.switchItemTmp;
+                        swapLock.lock(200);
                     });
             
             
