@@ -194,7 +194,7 @@ public class FMLEventHandler {
                                     "! Please consider updating at " +
                                     "https://github.com/" + TTC.REPO + "/releases/tag/" +
                                     s +
-                                    " or type ',update'"
+                                    " or type '" + TTC.prefix + "update'"
                             );
                         }
                     }
