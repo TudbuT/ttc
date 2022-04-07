@@ -192,7 +192,7 @@ public class FMLEventHandler {
                                     ", New: " +
                                     s +
                                     "! Please consider updating at " +
-                                    "https://github.com/TudbuT/ttc/releases/tag/" +
+                                    "https://github.com/" + TTC.REPO + "/releases/tag/" +
                                     s +
                                     " or type ',update'"
                             );
