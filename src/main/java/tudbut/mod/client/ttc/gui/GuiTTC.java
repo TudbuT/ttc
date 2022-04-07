@@ -38,8 +38,8 @@ public class GuiTTC extends GuiScreen {
         XV11(0xff3f718e, 0xff2d2d2d, 0xff67915f, false),
         DIOWZ(0xffD7B4F3, 0xffE6E6FA, 0xff000000, false),
         DIOWZ_INVERTED(0xff000000, 0xffD7B4F3, 0xffE6E6FA, false),
-        VIRUS(0xddc0ddff, 0xaa404040, 0xffc0c0c0, true),
-        BROWN(0xffc0c0c0, 0xddc0ddff, 0xaa404040, false),
+        VIRUS(0xddc0ddff, 0xaa404040, 0xffeeeeee, true),
+        BROWN(0xffc0c0c0, 0xddddaa88, 0xaa404040, false),
         
         ;
         
