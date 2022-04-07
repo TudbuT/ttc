@@ -131,8 +131,10 @@ public class AutoTotem extends Module {
                 int minCount = this.minCount;
                 if(stack.getCount() <= minCount + 4) {
                     KillAura ka = KillAura.getInstance();
-                    ka.switchItemTmp = ka.switchItem;
-                    ka.switchItem = false;
+                    if(ka.switchItem) {
+                        ka.switchItemTmp = true;
+                        ka.switchItem = false;
+                    }
                 }
                 if (stack.getCount() <= minCount) {
                     // Switch!
@@ -163,6 +165,7 @@ public class AutoTotem extends Module {
                         InventoryUtils.inventorySwap(slot, InventoryUtils.OFFHAND_SLOT, delay, 300, 100);
                         KillAura ka = KillAura.getInstance();
                         ka.switchItem = ka.switchItemTmp;
+                        ka.switchItemTmp = false;
                         swapLock.lock(200);
                     });
             
