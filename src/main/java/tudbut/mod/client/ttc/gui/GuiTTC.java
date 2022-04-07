@@ -40,7 +40,7 @@ public class GuiTTC extends GuiScreen {
         DIOWZ_INVERTED(0xff000000, 0xffD7B4F3, 0xffE6E6FA, false),
         VIRUS(0xddc0ddff, 0xaa404040, 0xffeeeeee, true),
         BROWN(0xffc0c0c0, 0xddddaa88, 0xaa404040, false),
-        SOBERSHULKER(0xff000000, 0xff000000, 0xffff80dd, false);
+        SOBERSHULKER(0xff000000, 0xff000000, 0xffff80dd, false),
         
         ;
         
