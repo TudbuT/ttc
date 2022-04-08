@@ -185,7 +185,7 @@ public class FMLEventHandler {
                         if (s == null) {
                             ChatUtils.print("§a[TTC] §cUnable to check for a new version! Check your connection!");
                         }
-                        else if (!s.equals(TTC.VERSION)) {
+                        else if (!s.equals(TTC.VERSION) && Update.isNewer(s)) {
                             ChatUtils.print(
                                     "§a§lA new TTC version was found! Current: " +
                                     TTC.VERSION +

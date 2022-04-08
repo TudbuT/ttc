@@ -14,6 +14,18 @@ import java.net.URL;
 public class Update extends Module {
     
     public static boolean send = true;
+
+    // Checks if the version on master is actually newer than the current one in case the current version is a pre-release
+    public static boolean isNewer(String version) {
+        String current = TTC.VERSION;
+        String[] numbersCurrent = current.substring(1, current.length() - 1).split("[.]");
+        String[] numbers = version.substring(1, current.length() - 1).split("[.]");
+        for(int i = 0; i < numbers.length; i++) {
+            if(Integer.parseInt(numbers[i]) > Integer.parseInt(numbersCurrent[i]))
+                return true;
+        }
+        return version.charAt(version.length() - 1) > current.charAt(current.length() - 1);
+    }
     
     @Override
     public boolean displayOnClickGUI() {
