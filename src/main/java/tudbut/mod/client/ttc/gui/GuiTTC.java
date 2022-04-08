@@ -24,23 +24,24 @@ public class GuiTTC extends GuiScreen {
         boolean hasShadow();
     }
     public enum Theme implements ITheme {
-        TTC(0x8000ff00, 0x4000ff00),
-        BARTENDER(0xff2d1537, 0xff0d0a0a),
-        ETERNAL_BLUE(0xff0000cc, 0xff000080),
-        DARK(0xff202020, 0xff000000),
-        LIGHT(0xffcccccc, 0xff999999, 0xff000000, false),
-        HACKER(0xff202020, 0xff000000, 0xff00ff00),
-        BLOOD(0xffaa0000, 0xff880000, 0xff00ffff, false),
-        SKY(0xff00cccc, 0xff009999, 0x000000, false),
-        KAMI_BLUE(0xbb353642, 0xbb353642, 0xffbbbbbb, false),
-        SCHLONGHAX(0xbb553662, 0xbb553662, 0xffbbbbbb, false),
-        ORANGE(0xffcc8000, 0xff996000, 0xff404040, false),
-        XV11(0xff3f718e, 0xff2d2d2d, 0xff67915f, false),
-        DIOWZ(0xffD7B4F3, 0xffE6E6FA, 0xff000000, false),
-        DIOWZ_INVERTED(0xff000000, 0xffD7B4F3, 0xffE6E6FA, false),
-        VIRUS(0xddc0ddff, 0xaa404040, 0xffeeeeee, true),
-        BROWN(0xffc0c0c0, 0xddddaa88, 0xaa404040, false),
-        SOBERSHULKER(0xff000000, 0xff000000, 0xffff80dd, false),
+        TTC             (0x8000ff00, 0x4000ff00                   ),
+        BARTENDER       (0xff2d1537, 0xff0d0a0a                   ),
+        ETERNAL_BLUE    (0xff0000cc, 0xff000080                   ),
+        DARK            (0xff202020, 0xff000000                   ),
+        LIGHT           (0xffcccccc, 0xff999999, 0xff000000, false),
+        HACKER          (0xff202020, 0xff000000, 0xff00ff00       ),
+        BLOOD           (0xffaa0000, 0xff880000, 0xff00ffff, false),
+        SKY             (0xff00cccc, 0xff009999, 0xff000000, false),
+        KAMI_BLUE       (0xbb353642, 0xbb353642, 0xffbbbbbb, false),
+        SCHLONGHAX      (0xbb553662, 0xbb553662, 0xffbbbbbb, false),
+        ORANGE          (0xffcc8000, 0xff996000, 0xff404040, false),
+        XV11            (0xff3f718e, 0xff2d2d2d, 0xff67915f, false),
+        DIOWZ           (0xffD7B4F3, 0xffE6E6FA, 0xff000000, false),
+        DIOWZ_INVERTED  (0xff000000, 0xffD7B4F3, 0xffE6E6FA, false),
+        VIRUS           (0xddc0ddff, 0xaa404040, 0xffeeeeee, true ),
+        BROWN           (0xffc0c0c0, 0xddddaa88, 0xaa404040, false),
+        SOBERSHULKER    (0xff000000, 0xff000000, 0xffff80dd, false),
+        TRANS           (0xfff400ff, 0xffbe00ff, 0xffeed9f5, true ),
         
         ;
         
@@ -98,9 +99,9 @@ public class GuiTTC extends GuiScreen {
         this.mc = TTC.mc;
     }
     
-    // Minecraft wants this
     @Override
     public boolean doesGuiPauseGame() {
+        // This lets you open the gui while being in a portal.
         return mc.player.timeInPortal != 0;
     }
     
@@ -124,7 +125,7 @@ public class GuiTTC extends GuiScreen {
         ClickGUI.getInstance().enabled = false;
     }
     
-    // Called every tick, idk why its called update tho
+    // Called every tick
     @Override
     public void updateScreen() {
         // Minecraft is stupid and sometimes forgets to call initScreen, so this is needed
