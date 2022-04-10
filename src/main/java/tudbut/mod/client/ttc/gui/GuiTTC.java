@@ -42,6 +42,7 @@ public class GuiTTC extends GuiScreen {
         BROWN           (0xffc0c0c0, 0xddddaa88, 0xaa404040, false),
         SOBERSHULKER    (0xff000000, 0xff000000, 0xffff80dd, false),
         TRANS           (0xfff400ff, 0xffbe00ff, 0xffeed9f5, true ),
+        VOXERS          (0x80000000, 0x40000000, 0xffaa0000, true ),
         
         ;
         
