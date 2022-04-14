@@ -11,7 +11,7 @@ Changes/Other:
 none
 
 Notes:
-- Time taken (approx.): 1 hour
+- Time taken (approx.): 1h
 
 https://discord.gg/2WsVCQDpwy
 EOF
