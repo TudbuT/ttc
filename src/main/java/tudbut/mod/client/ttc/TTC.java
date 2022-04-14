@@ -226,7 +226,7 @@ public class TTC {
         setConfig();
         
         // Saving file
-        file.setContent(Utils.mapToString(cfg));
+        file.safeSetContent(Utils.mapToString(cfg));
     }
     
     public void setConfig() {
