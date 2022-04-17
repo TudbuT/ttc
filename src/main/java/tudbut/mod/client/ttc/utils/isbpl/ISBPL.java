@@ -1039,13 +1039,14 @@ public class ISBPL {
         }
         ISBPLObject o = toISBPL(object.getClass());
         if (object instanceof String) {
-            object = toISBPLString(((String) object));
+            return toISBPLString(((String) object));
         }
         if (object.getClass().isArray()) {
             ISBPLObject[] isbplArray = new ISBPLObject[Array.getLength(object)];
             for (int i = 0 ; i < isbplArray.length ; i++) {
                 isbplArray[i] = toISBPL(Array.get(object, i));
             }
+            o.type = getType("array");
             object = isbplArray;
         }
         o.object = object;
@@ -1426,7 +1427,7 @@ class ISBPLType {
 }
 
 class ISBPLObject {
-    final ISBPLType type;
+    ISBPLType type;
     Object object;
     
     public ISBPLObject(ISBPLType type, Object object) {
