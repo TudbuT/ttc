@@ -3,6 +3,7 @@ package tudbut.mod.client.ttc.utils;
 import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
+import tudbut.obj.Save;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,9 +18,12 @@ public abstract class Module {
     public Map<String, String> cfg = new HashMap<>();
     public int index;
     
+    @Save
     public boolean enabled = defaultEnabled();
     public boolean clickGuiShow = false;
+    @Save
     public Integer clickGuiX;
+    @Save
     public Integer clickGuiY;
     public KeyBind key = new KeyBind(null, () -> {
         enabled = !enabled;
@@ -134,8 +138,6 @@ public abstract class Module {
         
         if (enabled)
             onEnable();
-        else
-            onDisable();
     }
     
     public int danger() {

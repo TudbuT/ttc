@@ -53,7 +53,7 @@ public class FMLEventHandler {
                 // Toggle a module
                 if (s.startsWith("t ")) {
                     for (int i = 0; i < TTC.modules.length; i++) {
-                        if (TTC.modules[i].getClass().getSimpleName().equalsIgnoreCase(s.substring("t ".length()))) {
+                        if (TTC.modules[i].toString().equalsIgnoreCase(s.substring("t ".length()))) {
                             ChatUtils.print(String.valueOf(!TTC.modules[i].enabled));
                             
                             if (TTC.modules[i].enabled = !TTC.modules[i].enabled)
@@ -82,9 +82,9 @@ public class FMLEventHandler {
                 
                 // Module-specific commands
                 for (int i = 0; i < TTC.modules.length; i++) {
-                    if (s.toLowerCase().startsWith(TTC.modules[i].getClass().getSimpleName().toLowerCase())) {
+                    if (s.toLowerCase().startsWith(TTC.modules[i].toString().toLowerCase())) {
                         try {
-                            String args = s.substring(TTC.modules[i].getClass().getSimpleName().length() + 1);
+                            String args = s.substring(TTC.modules[i].toString().length() + 1);
                             if (TTC.modules[i].enabled)
                                 TTC.modules[i].onChat(args, args.split(" "));
                             TTC.modules[i].onEveryChat(args, args.split(" "));

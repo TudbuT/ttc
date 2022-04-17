@@ -1,8 +1,10 @@
 package tudbut.mod.client.ttc;
 
+import de.tudbut.io.StreamReader;
 import de.tudbut.tools.FileRW;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import tudbut.mod.client.ttc.events.FMLEventHandler;
 import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.*;
+import tudbut.obj.TLMap;
 import tudbut.parsing.TCN;
 import tudbut.tools.Lock;
 
@@ -42,6 +45,7 @@ public class TTC {
     public static FileRW file;
     public static TCN globalConfig;
     public static Map<String, String> cfg;
+    public static TLMap<String, String> obfMap = new TLMap<>();
     // Prefix for chat-commands
     public static String prefix = ",";
     
@@ -64,6 +68,48 @@ public class TTC {
             file = new FileRW("config/ttc.cfg");
         }
         catch (IOException e) {
+            e.printStackTrace();
+        }
+        createDeobfMap();
+    }
+    
+    static Boolean obfEnvCached;
+    public static boolean isObfEnv() {
+        if(obfEnvCached == null) {
+            try {
+                Minecraft.class.getDeclaredField("world");
+                obfEnvCached = false;
+            } catch (NoSuchFieldException e) {
+                obfEnvCached = true;
+            }
+        }
+        return obfEnvCached;
+    }
+    
+    private void createDeobfMap() {
+        if(!isObfEnv())
+            return;
+        try {
+            String[] srg = new StreamReader(ClassLoader.getSystemResourceAsStream("minecraft_obf.srg")).readAllAsString().replaceAll("\r\n", "\n").split("\n");
+            
+            for (int i = 0; i < srg.length; i++) {
+                if(srg[i].isEmpty())
+                    continue;
+                String[] srgLine = srg[i].split(" ");
+                if(srgLine[0].equalsIgnoreCase("FD:") || srgLine[0].equalsIgnoreCase("MD:") || srgLine[0].equalsIgnoreCase("CL:")) {
+                    if(srgLine.length == 3) {
+                        String out = srgLine[1];
+                        String in = srgLine[srgLine.length - 1];
+                        obfMap.set(out, in);
+                    }
+                    else if(srgLine.length == 5) {
+                        String out = srgLine[1];
+                        String in = srgLine[srgLine.length - 2];
+                        obfMap.set(out, in);
+                    }
+                }
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -149,7 +195,8 @@ public class TTC {
                 new Notifications(),
                 new ClickGUI(),
                 new Update(),
-                new Msg()
+                new Msg(),
+                new ISBPLModules(),
         };
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
@@ -201,6 +248,9 @@ public class TTC {
             if(AltControl.getInstance().mode != 1) {
                 try {
                     saveConfig();
+                    for (int i = 0 ; i < modules.length ; i++) {
+                        modules[i].onDisable();
+                    }
                 }
                 catch (IOException e) {
                     e.printStackTrace();
@@ -261,12 +311,6 @@ public class TTC {
         return mc.world != null && mc.player != null ;
     }
     
-    public static void addModule(Module module) {
-        List<Module> list = Arrays.asList(modules);
-        list.add(module);
-        modules = list.toArray(new Module[0]);
-    }
-    
     public static <T extends Module> T getModule(Class<? extends T> module) {
         for (int i = 0; i < modules.length; i++) {
             if(modules[i].getClass() == module) {
@@ -274,5 +318,17 @@ public class TTC {
             }
         }
         throw new RuntimeException();
+    }
+    
+    public static void addModule(Module module) {
+        ArrayList<Module> list = new ArrayList<>(Arrays.asList(modules));
+        list.add(module);
+        modules = list.toArray(new Module[0]);
+    }
+    
+    public static void removeModule(Module module) {
+        ArrayList<Module> list = new ArrayList<>(Arrays.asList(modules));
+        list.remove(module);
+        modules = list.toArray(new Module[0]);
     }
 }
