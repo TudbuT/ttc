@@ -87,7 +87,7 @@ public class ISBPLModules extends Module {
     }
 
     @Override
-    public void onEveryChat(String s, String[] args) {
+    public void onChat(String s, String[] args) {
         if(new File("config/ttc/modules/config").mkdirs()) {
             ChatUtils.print("Put ISBPLModule files in your config/ttc/modules folder!");
         }
