@@ -1490,7 +1490,7 @@ class ISBPLObject {
     }
     
     public boolean isTruthy() {
-        return object != null && object != Integer.valueOf(0);
+        return object != null && object != Integer.valueOf(0) && object != Boolean.valueOf(false);
     }
     
     // This has heavy optimizations, please do not change unless necessary
