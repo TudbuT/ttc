@@ -130,9 +130,18 @@ public class ISBPL {
                     }
                     return i.get();
                 };
+            // Returns closed function (func behaviour)
             case "{":
                 return (idx, words, file, stack) -> {
                     AtomicInteger i = new AtomicInteger(idx);
+                    ISBPLCallable block = readBlock(i, words, file, true);
+                    stack.push(new ISBPLObject(getType("func"), block));
+                    return i.get();
+                };
+            // Returns open function (lambda behaviour)
+            case "?":
+                return (idx, words, file, stack) -> {
+                    AtomicInteger i = new AtomicInteger(idx + 1);
                     ISBPLCallable block = readBlock(i, words, file, false);
                     stack.push(new ISBPLObject(getType("func"), block));
                     return i.get();
@@ -1106,8 +1115,28 @@ public class ISBPL {
         }
         return o.object;
     }
+
+    public Object primitiveDefault(Class<?> expectedType) {
+        if(expectedType == long.class)
+            return 0L;
+        if(expectedType == int.class)
+            return 0;
+        if(expectedType == double.class)
+            return 0.0d;
+        if(expectedType == float.class)
+            return 0.0f;
+        if(expectedType == short.class)
+            return (short) 0;
+        if(expectedType == boolean.class)
+            return false;
+        if(expectedType == char.class)
+            return (char) 0;
+        if(expectedType == byte.class)
+            return (byte) 0;
+        return null;
+    }
     
-    private Object fromISBPL(ISBPLObject o, Class<?> expectedType) {
+    public Object fromISBPL(ISBPLObject o, Class<?> expectedType) {
         ISBPLType type = o.type;
         if (type.equals(getType("null"))) {
             return null;
@@ -1126,7 +1155,8 @@ public class ISBPL {
             else
                 typeError("array", "matching-array");
             for (int i = 0 ; i < isbplArray.length ; i++) {
-                Array.set(array, i, fromISBPL(isbplArray[i], expectedType.getComponentType()));
+                Object obj = fromISBPL(isbplArray[i], expectedType.getComponentType());
+                Array.set(array, i, obj == null && expectedType.getComponentType().isPrimitive() ? primitiveDefault(expectedType.getComponentType()) : obj);
             }
             return array;
         }
@@ -1161,6 +1191,18 @@ public class ISBPL {
         if (object instanceof String) {
             return toISBPLString(((String) object));
         }
+        if (object instanceof Integer)
+            return new ISBPLObject(getType("int"), object);
+        if (object instanceof Character)
+            return new ISBPLObject(getType("char"), object);
+        if (object instanceof Byte)
+            return new ISBPLObject(getType("byte"), object);
+        if (object instanceof Float)
+            return new ISBPLObject(getType("float"), object);
+        if (object instanceof Long)
+            return new ISBPLObject(getType("long"), object);
+        if (object instanceof Double)
+            return new ISBPLObject(getType("double"), object);
         if (object.getClass().isArray()) {
             ISBPLObject[] isbplArray = new ISBPLObject[Array.getLength(object)];
             for (int i = 0 ; i < isbplArray.length ; i++) {
