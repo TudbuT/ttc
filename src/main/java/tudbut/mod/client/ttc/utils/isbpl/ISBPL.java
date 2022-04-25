@@ -920,14 +920,10 @@ public class ISBPL {
                 };
                 break;
             case "jio.context":
-                func = (stack) -> {
-                    stack.push(toISBPL(this));
-                };
+                func = (stack) -> stack.push(toISBPL(this));
                 break;
             case "null":
-                func = (stack) -> {
-                    stack.push(new ISBPLObject(getType("null"), 0));
-                };
+                func = (stack) -> stack.push(new ISBPLObject(getType("null"), 0));
                 break;
             case "delete":
                 func = (stack) -> {
@@ -941,7 +937,7 @@ public class ISBPL {
         }
         addFunction(name, func);
     }
-
+    
     ISBPLObject nullObj = null;
     public ISBPLObject getNullObject() {
         if(nullObj == null)
@@ -995,17 +991,30 @@ public class ISBPL {
                     }
                 });
             }
+            HashMap<String, ArrayList<Method>> methods = new HashMap<>();
             for (Method method : clazz.getDeclaredMethods()) {
                 String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + method.getName(), method.getName());
                 name = name.substring(name.lastIndexOf('/') + 1);
-                addFunction(type, name + method.getParameterCount(), stack -> {
-                    method.setAccessible(true);
+                ArrayList<Method> methodList = methods.get(name);
+                if(methodList == null)
+                    methodList = new ArrayList<>();
+                methodList.add(method);
+                methods.put(method.getName() + method.getParameterCount(), methodList);
+            }
+            for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
+                addFunction(type, entry.getKey(), stack -> {
                     Object o = stack.pop().object;
-                    Class<?>[] parameterTypes = method.getParameterTypes();
-                    Object[] params = new Object[method.getParameterCount()];
-                    for (int i = params.length - 1 ; i >= 0 ; i--) {
-                        params[i] = fromISBPL(stack.pop(), parameterTypes[i]);
+                    // Resolve
+                    AtomicInteger mid = new AtomicInteger(0);
+                    ArrayList<Method> ms = entry.getValue();
+                    Class<?>[][] paramTypes = new Class<?>[ms.size()][ms.get(0).getParameterCount()];
+                    for (int i = 0 ; i < ms.size() ; i++) {
+                        paramTypes[i] = ms.get(i).getParameterTypes();
                     }
+                    Object[] params = resolve(mid, stack, entry.getValue().get(0).getParameterCount(), paramTypes);
+                    Method method = ms.get(mid.get());
+                    
+                    method.setAccessible(true);
                     if(debug)
                         System.err.println("Java Call: " + method + " - " + Arrays.toString(params));
                     try {
@@ -1020,15 +1029,28 @@ public class ISBPL {
                     }
                 });
             }
+            HashMap<Integer, ArrayList<Constructor<?>>> constructors = new HashMap<>();
             for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
-                addFunction(type, "new" + constructor.getParameterCount(), stack -> {
-                    constructor.setAccessible(true);
+                ArrayList<Constructor<?>> constructorList = constructors.get(constructor.getParameterCount());
+                if (constructorList == null)
+                    constructorList = new ArrayList<>();
+                constructorList.add(constructor);
+                constructors.put(constructor.getParameterCount(), constructorList);
+            }
+            for (Map.Entry<Integer, ArrayList<Constructor<?>>> entry : constructors.entrySet()) {
+                addFunction(type, "new" + entry.getKey(), stack -> {
                     stack.pop();
-                    Class<?>[] parameterTypes = constructor.getParameterTypes();
-                    Object[] params = new Object[constructor.getParameterCount()];
-                    for (int i = params.length - 1 ; i >= 0 ; i--) {
-                        params[i] = fromISBPL(stack.pop(), parameterTypes[i]);
+    
+                    AtomicInteger mid = new AtomicInteger(0);
+                    ArrayList<Constructor<?>> ms = entry.getValue();
+                    Class<?>[][] paramTypes = new Class<?>[ms.size()][ms.get(0).getParameterCount()];
+                    for (int i = 0 ; i < ms.size() ; i++) {
+                        paramTypes[i] = ms.get(i).getParameterTypes();
                     }
+                    Object[] params = resolve(mid, stack, entry.getValue().get(0).getParameterCount(), paramTypes);
+                    Constructor<?> constructor = ms.get(mid.get());
+                    
+                    constructor.setAccessible(true);
                     if(debug)
                         System.err.println("Java Call: new - " + Arrays.toString(params));
                     try {
@@ -1044,6 +1066,37 @@ public class ISBPL {
             }
         }
         return new ISBPLObject(type, null);
+    }
+    
+    public Object[] resolve(AtomicInteger mid, Stack<ISBPLObject> stack, int paramCount, Class<?>[][] paramTypes) {
+        ISBPLObject[] o = new ISBPLObject[paramCount];
+        Object[][] params = new Object[paramTypes.length][paramCount];
+        int[] methodIDs = new int[paramCount];
+        Arrays.fill(methodIDs, -1);
+        for (int i = params[0].length - 1 ; i >= 0 ; i--) {
+            o[i] = stack.pop();
+            for (int j = 0 ; j < paramTypes.length ; j++) {
+                Class<?>[] m = paramTypes[j];
+                try {
+                    params[j][i] = fromISBPL(o[i], m[i]);
+                    methodIDs[i] = 1 << j;
+                }
+                catch (ISBPLError ignored) { }
+            }
+        }
+        int msize = paramTypes.length;
+        for (int i = 0 ; i < msize; i++) {
+            boolean works = true;
+            for (int j = 0 ; j < methodIDs.length ; j++) {
+                if ((methodIDs[j] & 1 << i) == 0) {
+                    works = false;
+                    break;
+                }
+            }
+            if(works)
+                mid.set(i);
+        }
+        return params[mid.get()];
     }
     
     private Object fromISBPL(ISBPLObject o) {
@@ -1063,14 +1116,18 @@ public class ISBPL {
         }
         return o.object;
     }
-
+    
     private Object fromISBPL(ISBPLObject o, Class<?> expectedType) {
         ISBPLType type = o.type;
         if (type.equals(getType("null"))) {
             return null;
         }
-        if (type.equals(getType("string")))
-            return toJavaString(o);
+        if (type.equals(getType("string"))) {
+            if(expectedType.isAssignableFrom(String.class))
+                return toJavaString(o);
+            else
+                typeError("string", expectedType.getName());
+        }
         if (type.equals(getType("array"))) {
             ISBPLObject[] isbplArray = ((ISBPLObject[]) o.object);
             Object array = new Object[isbplArray.length];
@@ -1083,6 +1140,8 @@ public class ISBPL {
             }
             return array;
         }
+        if(!expectedType.isAssignableFrom(o.object.getClass()))
+            typeError(o.type.name, expectedType.getName());
         return o.object;
     }
     

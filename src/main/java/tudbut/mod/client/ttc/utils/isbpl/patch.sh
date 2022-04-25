@@ -3,5 +3,4 @@ cat ISBPL.patch
 read
 cp ~/gitshit/isbpl/bootstrap/ISBPL.java ISBPL.java
 cp ~/gitshit/isbpl/bootstrap/ISBPL.java ISBPL.java.original
-patch ISBPL.java ISBPL.patch
-rm ISBPL.patch
+patch ISBPL.java ISBPL.patch && rm ISBPL.patch
