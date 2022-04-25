@@ -985,7 +985,7 @@ public class ISBPL {
                     if(debug)
                         System.err.println("Java Set: " + field);
                     try {
-                        field.set(stack.pop().object, fromISBPL(stack.pop()));
+                        field.set(stack.pop().object, fromISBPL(stack.pop(), field.getType()));
                     }
                     catch (IllegalAccessException ignored) {
                     }
@@ -1136,9 +1136,27 @@ public class ISBPL {
             else
                 typeError("array", "matching-array");
             for (int i = 0 ; i < isbplArray.length ; i++) {
-                Array.set(array, i, fromISBPL(isbplArray[i]));
+                Array.set(array, i, fromISBPL(isbplArray[i], expectedType.getComponentType()));
             }
             return array;
+        }
+        if(expectedType.isPrimitive()) {
+            if(expectedType == long.class)
+                return o.toLong();
+            if(expectedType == int.class)
+                return (int) o.toLong();
+            if(expectedType == double.class)
+                return o.toDouble();
+            if(expectedType == float.class)
+                return (float) o.toDouble();
+            if(expectedType == short.class)
+                return (short) o.toLong();
+            if(expectedType == boolean.class)
+                return o.isTruthy();
+            if(expectedType == char.class)
+                return (char) o.toLong();
+            if(expectedType == byte.class)
+                return (byte) o.toLong();
         }
         if(!expectedType.isAssignableFrom(o.object.getClass()))
             typeError(o.type.name, expectedType.getName());
