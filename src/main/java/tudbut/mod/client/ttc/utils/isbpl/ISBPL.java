@@ -25,7 +25,11 @@ public class ISBPL {
     public ISBPLDebugger.IPC debuggerIPC = new ISBPLDebugger.IPC();
     ArrayList<ISBPLType> types = new ArrayList<>();
     HashMap<String, ISBPLCallable> level0 = new HashMap<>();
-    final ISBPLThreadLocal<Stack<HashMap<String, ISBPLCallable>>> functionStack = ISBPLThreadLocal.withInitial(() -> { Stack<HashMap<String, ISBPLCallable>> stack = new Stack<>(); stack.push(level0); return stack; });
+    final ISBPLThreadLocal<Stack<HashMap<String, ISBPLCallable>>> functionStack = ISBPLThreadLocal.withInitial(() -> { 
+        Stack<HashMap<String, ISBPLCallable>> stack = new Stack<>(); 
+        stack.push(level0); 
+        return stack; 
+    });
     final ISBPLThreadLocal<Stack<File>> fileStack = ISBPLThreadLocal.withInitial(Stack::new);
     HashMap<ISBPLCallable, Object> varLinks = new HashMap<>();
     HashMap<Object, ISBPLObject> vars = new HashMap<>();
@@ -35,6 +39,7 @@ public class ISBPL {
     ArrayList<String> included = new ArrayList<>();
     HashMap<String, ISBPLCallable> natives = new HashMap<>();
     
+    private Object syncMakeThread = new Object();
     private ISBPLKeyword getKeyword(String word) {
         switch (word) {
             case "native":
@@ -117,6 +122,15 @@ public class ISBPL {
                         else {
                             throw error;
                         }
+                    } catch (Exception e) {
+                        if (Arrays.asList(allowed).contains("Java") || allowed.length == 1 && allowed[0].equals("all")) {
+                            stack.push(toISBPL(e));
+                            stack.push(toISBPLString(e.getClass().getName()));
+                            stack.push(toISBPLString("Java"));
+                        }
+                        else {
+                            throw e;
+                        }
                     }
                     return i.get();
                 };
@@ -134,34 +148,51 @@ public class ISBPL {
                     }
                     return i.get();
                 };
+            // Returns closed function (func behaviour)
             case "{":
                 return (idx, words, file, stack) -> {
                     AtomicInteger i = new AtomicInteger(idx);
+                    ISBPLCallable block = readBlock(i, words, file, true);
+                    stack.push(new ISBPLObject(getType("func"), block));
+                    return i.get();
+                };
+            // Returns open function (lambda behaviour)
+            case "?":
+                return (idx, words, file, stack) -> {
+                    AtomicInteger i = new AtomicInteger(idx + 1);
                     ISBPLCallable block = readBlock(i, words, file, false);
                     stack.push(new ISBPLObject(getType("func"), block));
                     return i.get();
                 };
             case "fork":
                 return (idx, words, file, stack) -> {
-                    idx++;
-                    AtomicInteger i = new AtomicInteger(idx);
-                    Stack<ISBPLObject> s = (Stack<ISBPLObject>) stack.clone();
-                    ISBPLCallable block = readBlock(i, words, file, false);
-                    long tid = Thread.currentThread().getId();
-                    Stack<HashMap<String, ISBPLCallable>> fs = (Stack<HashMap<String, ISBPLCallable>>) functionStack.get().clone();
-                    new Thread(() -> {
-                        debuggerIPC.run.put(Thread.currentThread().getId(), debuggerIPC.run.getOrDefault(tid, -1) == -1 ? -1 : 0);
-                        debuggerIPC.stack.put(Thread.currentThread().getId(), s);
-                        functionStack.set(fs);
-                        try {
-                            block.call(s);
-                        } catch (ISBPLStop stop) {
-                            if(stop.amount == -1) {
-                                System.exit(exitCode);
-                            }
+                    synchronized(syncMakeThread) {
+                        idx++;
+                        AtomicInteger i = new AtomicInteger(idx);
+                        Stack<ISBPLObject> s = new Stack<>();
+                        for(ISBPLObject obj : stack) {
+                            s.push(obj);
                         }
-                    }).start();
-                    return i.get();
+                        ISBPLCallable block = readBlock(i, words, file, false);
+                        long tid = Thread.currentThread().getId();
+                        Stack<HashMap<String, ISBPLCallable>> fs = new Stack<>();
+                        for(HashMap<String, ISBPLCallable> map : functionStack.get()) {
+                            fs.push(map);
+                        }
+                        new Thread(() -> {
+                            debuggerIPC.run.put(Thread.currentThread().getId(), debuggerIPC.run.getOrDefault(tid, -1) == -1 ? -1 : 0);
+                            debuggerIPC.stack.put(Thread.currentThread().getId(), s);
+                            functionStack.set(fs);
+                            try {
+                                block.call(s);
+                            } catch (ISBPLStop stop) {
+                                if(stop.amount == -1) {
+                                    System.exit(exitCode);
+                                }
+                            }
+                        }).start();
+                        return i.get();
+                    }
                 };
             default:
                 return null;
@@ -289,576 +320,576 @@ public class ISBPL {
             case "islong":
                 func = (Stack<ISBPLObject> stack) -> {
                     ISBPLObject o = stack.pop();
-                    stack.push(new ISBPLObject(getType("int"), o.type.equals(getType("long")) ? 1 : 0));
-                };
-                break;
-            case "isdouble":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o = stack.pop();
-                    stack.push(new ISBPLObject(getType("int"), o.type.equals(getType("double")) ? 1 : 0));
-                };
-                break;
-            case "isarray":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o = stack.pop();
-                    stack.push(new ISBPLObject(getType("int"), o.type.equals(getType("array")) ? 1 : 0));
-                };
-                break;
-            case "_layer_call":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject i = stack.pop();
-                    ISBPLObject s = stack.pop();
-                    i.checkType(getType("int"));
-                    functionStack.get().get(functionStack.get().size() - 1 - ((int) i.object)).get(toJavaString(s)).call(stack);
-                };
-                break;
-            case "reload":
-                func = (Stack<ISBPLObject> stack) -> {
-                    String filepath = getFilePathForInclude((Stack<ISBPLObject>) stack, fileStack.get());
+                stack.push(new ISBPLObject(getType("int"), o.type.equals(getType("long")) ? 1 : 0));
+            };
+            break;
+        case "isdouble":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o = stack.pop();
+                stack.push(new ISBPLObject(getType("int"), o.type.equals(getType("double")) ? 1 : 0));
+            };
+            break;
+        case "isarray":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o = stack.pop();
+                stack.push(new ISBPLObject(getType("int"), o.type.equals(getType("array")) ? 1 : 0));
+            };
+            break;
+        case "_layer_call":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject i = stack.pop();
+                ISBPLObject s = stack.pop();
+                i.checkType(getType("int"));
+                functionStack.get().get(functionStack.get().size() - 1 - ((int) i.object)).get(toJavaString(s)).call(stack);
+            };
+            break;
+        case "reload":
+            func = (Stack<ISBPLObject> stack) -> {
+                String filepath = getFilePathForInclude((Stack<ISBPLObject>) stack, fileStack.get());
+                File f = new File(filepath).getAbsoluteFile();
+                try {
+                    interpret(f, readFile(f), stack);
+                }
+                catch (IOException e) {
+                    throw new ISBPLError("IO", "Couldn't find file " + filepath + " required by reload keyword.");
+                }
+            };
+            break;
+        case "include":
+            func = (Stack<ISBPLObject> stack) -> {
+                String filepath = getFilePathForInclude((Stack<ISBPLObject>) stack, fileStack.get());
+                if(!included.contains(filepath)) {
                     File f = new File(filepath).getAbsoluteFile();
                     try {
                         interpret(f, readFile(f), stack);
                     }
                     catch (IOException e) {
-                        throw new ISBPLError("IO", "Couldn't find file " + filepath + " required by reload keyword.");
+                        throw new ISBPLError("IO", "Couldn't find file " + filepath + " required by include keyword.");
                     }
-                };
-                break;
-            case "include":
-                func = (Stack<ISBPLObject> stack) -> {
-                    String filepath = getFilePathForInclude((Stack<ISBPLObject>) stack, fileStack.get());
-                    if(!included.contains(filepath)) {
-                        File f = new File(filepath).getAbsoluteFile();
-                        try {
-                            interpret(f, readFile(f), stack);
-                        }
-                        catch (IOException e) {
-                            throw new ISBPLError("IO", "Couldn't find file " + filepath + " required by include keyword.");
-                        }
-                        included.add(filepath);
+                    included.add(filepath);
+                }
+            };
+            break;
+        case "putchar":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject c = stack.pop();
+                c.checkType(getType("char"));
+                System.out.print(((char) c.object));
+            };
+            break;
+        case "eputchar":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject c = stack.pop();
+                c.checkType(getType("char"));
+                System.err.print(((char) c.object));
+            };
+            break;
+        case "_file":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject s = stack.pop();
+                File f = new File(toJavaString(s));
+                stack.push(new ISBPLObject(getType("file"), f));
+            };
+            break;
+        case "read":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject end = stack.pop();
+                ISBPLObject begin = stack.pop();
+                ISBPLObject fileToRead = stack.pop();
+                end.checkType(getType("int"));
+                begin.checkType(getType("int"));
+                fileToRead.checkType(getType("file"));
+                try {
+                    FileInputStream f = new FileInputStream((File) fileToRead.object);
+                    int b = ((int) begin.object);
+                    int e = ((int) end.object);
+                    byte[] bytes = new byte[e - b];
+                    f.read(bytes, b, e);
+                    ISBPLObject[] arr = new ISBPLObject[bytes.length];
+                    for (int i = 0 ; i < arr.length ; i++) {
+                        arr[i] = new ISBPLObject(getType("byte"), bytes[i]);
                     }
-                };
-                break;
-            case "putchar":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject c = stack.pop();
-                    c.checkType(getType("char"));
-                    System.out.print(((char) c.object));
-                };
-                break;
-            case "eputchar":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject c = stack.pop();
-                    c.checkType(getType("char"));
-                    System.err.print(((char) c.object));
-                };
-                break;
-            case "_file":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject s = stack.pop();
-                    File f = new File(toJavaString(s));
-                    stack.push(new ISBPLObject(getType("file"), f));
-                };
-                break;
-            case "read":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject end = stack.pop();
-                    ISBPLObject begin = stack.pop();
-                    ISBPLObject fileToRead = stack.pop();
-                    end.checkType(getType("int"));
-                    begin.checkType(getType("int"));
-                    fileToRead.checkType(getType("file"));
-                    try {
-                        FileInputStream f = new FileInputStream((File) fileToRead.object);
-                        int b = ((int) begin.object);
-                        int e = ((int) end.object);
-                        byte[] bytes = new byte[e - b];
-                        f.read(bytes, b, e);
-                        ISBPLObject[] arr = new ISBPLObject[bytes.length];
-                        for (int i = 0 ; i < arr.length ; i++) {
-                            arr[i] = new ISBPLObject(getType("byte"), bytes[i]);
-                        }
-                        stack.push(new ISBPLObject(getType("array"), arr));
-                    }
-                    catch (FileNotFoundException e) {
-                        throw new ISBPLError("FileNotFound", "File not found.");
-                    }
-                    catch (IOException e) {
-                        throw new ISBPLError("IO", "File couldn't be read from" + (e.getMessage() != null ? ": " + e.getMessage() : "."));
-                    }
-                };
-                break;
-            case "flength":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject f = stack.pop();
-                    f.checkType(getType("file"));
-                    stack.push(new ISBPLObject(getType("int"), ((int) ((File) f.object).length())));
-                };
-                break;
-            case "write":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject content = stack.pop();
-                    ISBPLObject fileToWrite = stack.pop();
-                    content.checkType(getType("array"));
-                    fileToWrite.checkType(getType("file"));
-                    throw new ISBPLError("NotImplemented", "_file write is not implemented");
-                };
-                break;
-            case "getos":
-                func = (Stack<ISBPLObject> stack) -> {
-                    // TODO: This is not done yet, and it's horrible so far.
-                    stack.push(toISBPLString("linux"));
-                };
-                break;
-            case "mktype":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject s = stack.pop();
-                    ISBPLType type = registerType(toJavaString(s));
-                    stack.push(new ISBPLObject(getType("int"), type.id));
-                };
-                break;
-            case "typename":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject i = stack.pop();
-                    i.checkType(getType("int"));
-                    stack.push(toISBPLString(types.get(((int) i.object)).name));
-                };
-                break;
-            case "gettype":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o = stack.pop();
-                    stack.push(new ISBPLObject(getType("int"), o.type.id));
-                };
-                break;
-            case "settype":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject i = stack.pop();
-                    ISBPLObject o = stack.pop();
-                    i.checkType(getType("int"));
-                    stack.push(new ISBPLObject(types.get(((int) i.object)), o.object));
-                };
-                break;
-            case "throw":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject message = stack.pop();
-                    ISBPLObject type = stack.pop();
-                    String msg = toJavaString(message);
-                    String t = toJavaString(type);
-                    throw new ISBPLError(t, msg);
-                };
-                break;
-            case "exit":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject code = stack.pop();
-                    code.checkType(getType("int"));
-                    exitCode = ((int) code.object);
-                    throw new ISBPLStop(0);
-                };
-                break;
-            case "eq":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o1 = stack.pop();
-                    ISBPLObject o2 = stack.pop();
-                    stack.push(new ISBPLObject(getType("int"), o1.equals(o2) ? 1 : 0));
-                };
-                break;
-            case "gt":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    stack.push(new ISBPLObject(getType("int"), o1.toDouble() > o2.toDouble() ? 1 : 0));
-                };
-                break;
-            case "lt":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    stack.push(new ISBPLObject(getType("int"), o1.toDouble() < o2.toDouble() ? 1 : 0));
-                };
-                break;
-            case "not":
-                func = (Stack<ISBPLObject> stack) -> stack.push(new ISBPLObject(getType("int"), stack.pop().isTruthy() ? 0 : 1));
-                break;
-            case "neg":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o = stack.pop();
-                    o.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    stack.push(new ISBPLObject(o.type, o.negative()));
-                };
-                break;
-            case "or":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    if(o1.isTruthy())
-                        stack.push(o1);
+                    stack.push(new ISBPLObject(getType("array"), arr));
+                }
+                catch (FileNotFoundException e) {
+                    throw new ISBPLError("FileNotFound", "File not found.");
+                }
+                catch (IOException e) {
+                    throw new ISBPLError("IO", "File couldn't be read from" + (e.getMessage() != null ? ": " + e.getMessage() : "."));
+                }
+            };
+            break;
+        case "flength":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject f = stack.pop();
+                f.checkType(getType("file"));
+                stack.push(new ISBPLObject(getType("int"), ((int) ((File) f.object).length())));
+            };
+            break;
+        case "write":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject content = stack.pop();
+                ISBPLObject fileToWrite = stack.pop();
+                content.checkType(getType("array"));
+                fileToWrite.checkType(getType("file"));
+                throw new ISBPLError("NotImplemented", "_file write is not implemented");
+            };
+            break;
+        case "getos":
+            func = (Stack<ISBPLObject> stack) -> {
+                // TODO: This is not done yet, and it's horrible so far.
+                stack.push(toISBPLString("linux"));
+            };
+            break;
+        case "mktype":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject s = stack.pop();
+                ISBPLType type = registerType(toJavaString(s));
+                stack.push(new ISBPLObject(getType("int"), type.id));
+            };
+            break;
+        case "typename":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject i = stack.pop();
+                i.checkType(getType("int"));
+                stack.push(toISBPLString(types.get(((int) i.object)).name));
+            };
+            break;
+        case "gettype":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o = stack.pop();
+                stack.push(new ISBPLObject(getType("int"), o.type.id));
+            };
+            break;
+        case "settype":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject i = stack.pop();
+                ISBPLObject o = stack.pop();
+                i.checkType(getType("int"));
+                stack.push(new ISBPLObject(types.get(((int) i.object)), o.object));
+            };
+            break;
+        case "throw":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject message = stack.pop();
+                ISBPLObject type = stack.pop();
+                String msg = toJavaString(message);
+                String t = toJavaString(type);
+                throw new ISBPLError(t, msg);
+            };
+            break;
+        case "exit":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject code = stack.pop();
+                code.checkType(getType("int"));
+                exitCode = ((int) code.object);
+                throw new ISBPLStop(0);
+            };
+            break;
+        case "eq":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o1 = stack.pop();
+                ISBPLObject o2 = stack.pop();
+                stack.push(new ISBPLObject(getType("int"), o1.equals(o2) ? 1 : 0));
+            };
+            break;
+        case "gt":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                stack.push(new ISBPLObject(getType("int"), o1.toDouble() > o2.toDouble() ? 1 : 0));
+            };
+            break;
+        case "lt":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                stack.push(new ISBPLObject(getType("int"), o1.toDouble() < o2.toDouble() ? 1 : 0));
+            };
+            break;
+        case "not":
+            func = (Stack<ISBPLObject> stack) -> stack.push(new ISBPLObject(getType("int"), stack.pop().isTruthy() ? 0 : 1));
+            break;
+        case "neg":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o = stack.pop();
+                o.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                stack.push(new ISBPLObject(o.type, o.negative()));
+            };
+            break;
+        case "or":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                if(o1.isTruthy())
+                    stack.push(o1);
+                else
+                    stack.push(o2);
+            };
+            break;
+        case "and":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                // Pushes either 1 or the failed object
+                if (o1.isTruthy()) {
+                    if (o2.isTruthy())
+                        stack.push(new ISBPLObject(getType("int"), 1));
                     else
                         stack.push(o2);
-                };
-                break;
-            case "and":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    // Pushes either 1 or the failed object
-                    if (o1.isTruthy()) {
-                        if (o2.isTruthy())
-                            stack.push(new ISBPLObject(getType("int"), 1));
-                        else
-                            stack.push(o2);
-                    }
-                    else
-                        stack.push(o1);
-                };
-                break;
-            case "+":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    Object object1 = o1.object;
-                    Object object2 = o2.object;
-                    ISBPLObject r = null;
-                    if(object1 instanceof Integer && object2 instanceof Integer) {
-                        r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 + (int) (Integer) object2));
-                    }
-                    if(object1 instanceof Long && object2 instanceof Long) {
-                        r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 + (long) (Long) object2));
-                    }
-                    if(object1 instanceof Character && object2 instanceof Character) {
-                        r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 + (char) (Character) object2));
-                    }
-                    if(object1 instanceof Byte && object2 instanceof Byte) {
-                        r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) + Byte.toUnsignedInt((Byte) object2)));
-                    }
-                    if(object1 instanceof Float && object2 instanceof Float) {
-                        r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 + (float) (Float) object2));
-                    }
-                    if(object1 instanceof Double && object2 instanceof Double) {
-                        r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 + (double) (Double) object2));
-                    }
-                    if(r != null)
-                        stack.push(r);
-                    else
-                        typeError(o1.type.name, o2.type.name);
-                };
-                break;
-            case "-":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    Object object1 = o1.object;
-                    Object object2 = o2.object;
-                    ISBPLObject r = null;
-                    if(object1 instanceof Integer && object2 instanceof Integer) {
-                        r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 - (int) (Integer) object2));
-                    }
-                    if(object1 instanceof Long && object2 instanceof Long) {
-                        r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 - (long) (Long) object2));
-                    }
-                    if(object1 instanceof Character && object2 instanceof Character) {
-                        r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 - (char) (Character) object2));
-                    }
-                    if(object1 instanceof Byte && object2 instanceof Byte) {
-                        r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) - Byte.toUnsignedInt((Byte) object2)));
-                    }
-                    if(object1 instanceof Float && object2 instanceof Float) {
-                        r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 - (float) (Float) object2));
-                    }
-                    if(object1 instanceof Double && object2 instanceof Double) {
-                        r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 - (double) (Double) object2));
-                    }
-                    if(r != null)
-                        stack.push(r);
-                    else
-                        typeError(o1.type.name, o2.type.name);
-                };
-                break;
-            case "/":
-                func = (Stack<ISBPLObject> stack) -> {
-                    try {
-                        ISBPLObject o2 = stack.pop();
-                        ISBPLObject o1 = stack.pop();
-                        o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                        o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                        Object object1 = o1.object;
-                        Object object2 = o2.object;
-                        ISBPLObject r = null;
-                        if (object1 instanceof Integer && object2 instanceof Integer) {
-                            r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 / (int) (Integer) object2));
-                        }
-                        if (object1 instanceof Long && object2 instanceof Long) {
-                            r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 / (long) (Long) object2));
-                        }
-                        if (object1 instanceof Character && object2 instanceof Character) {
-                            r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 / (char) (Character) object2));
-                        }
-                        if (object1 instanceof Byte && object2 instanceof Byte) {
-                            r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) / Byte.toUnsignedInt((Byte) object2)));
-                        }
-                        if (object1 instanceof Float && object2 instanceof Float) {
-                            r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 / (float) (Float) object2));
-                        }
-                        if (object1 instanceof Double && object2 instanceof Double) {
-                            r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 / (double) (Double) object2));
-                        }
-                        if (r != null)
-                            stack.push(r);
-                        else
-                            typeError(o1.type.name, o2.type.name);
-                    } catch (ArithmeticException ex) {
-                        throw new ISBPLError("Arithmetic", "Division by 0");
-                    }
-                };
-                break;
-            case "*":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    Object object1 = o1.object;
-                    Object object2 = o2.object;
-                    ISBPLObject r = null;
-                    if(object1 instanceof Integer && object2 instanceof Integer) {
-                        r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 * (int) (Integer) object2));
-                    }
-                    if(object1 instanceof Long && object2 instanceof Long) {
-                        r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 * (long) (Long) object2));
-                    }
-                    if(object1 instanceof Character && object2 instanceof Character) {
-                        r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 * (char) (Character) object2));
-                    }
-                    if(object1 instanceof Byte && object2 instanceof Byte) {
-                        r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) * Byte.toUnsignedInt((Byte) object2)));
-                    }
-                    if(object1 instanceof Float && object2 instanceof Float) {
-                        r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 * (float) (Float) object2));
-                    }
-                    if(object1 instanceof Double && object2 instanceof Double) {
-                        r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 * (double) (Double) object2));
-                    }
-                    if(r != null)
-                        stack.push(r);
-                    else
-                        typeError(o1.type.name, o2.type.name);
-                };
-                break;
-            case "**":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                    Object object1 = o1.object;
-                    Object object2 = o2.object;
-                    ISBPLObject r = null;
-                    if(object1 instanceof Integer && object2 instanceof Integer) {
-                        r = new ISBPLObject(getType("int"), (int) Math.pow((int) (Integer) object1, (int) (Integer) object2));
-                    }
-                    if(object1 instanceof Long && object2 instanceof Long) {
-                        r = new ISBPLObject(getType("long"), (long) Math.pow((long) (Long) object1, (long) (Long) object2));
-                    }
-                    if(object1 instanceof Character && object2 instanceof Character) {
-                        r = new ISBPLObject(getType("char"), (char) Math.pow((char) (Character) object1, (char) (Character) object2));
-                    }
-                    if(object1 instanceof Byte && object2 instanceof Byte) {
-                        r = new ISBPLObject(getType("byte"), (byte) Math.pow(Byte.toUnsignedInt((Byte) object1), Byte.toUnsignedInt((Byte) object2)));
-                    }
-                    if(object1 instanceof Float && object2 instanceof Float) {
-                        r = new ISBPLObject(getType("float"), (float) Math.pow((float) (Float) object1, (float) (Float) object2));
-                    }
-                    if(object1 instanceof Double && object2 instanceof Double) {
-                        r = new ISBPLObject(getType("double"), (double) Math.pow((double) (Double) object1, (double) (Double) object2));
-                    }
-                    if(r != null)
-                        stack.push(r);
-                    else
-                        typeError(o1.type.name, o2.type.name);
-                };
-                break;
-            case "%":
-                func = (Stack<ISBPLObject> stack) -> {
-                    try {
-                        ISBPLObject o2 = stack.pop();
-                        ISBPLObject o1 = stack.pop();
-                        o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                        o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
-                        Object object1 = o1.object;
-                        Object object2 = o2.object;
-                        ISBPLObject r = null;
-                        if (object1 instanceof Integer && object2 instanceof Integer) {
-                            r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 % (int) (Integer) object2));
-                        }
-                        if (object1 instanceof Long && object2 instanceof Long) {
-                            r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 % (long) (Long) object2));
-                        }
-                        if (object1 instanceof Character && object2 instanceof Character) {
-                            r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 % (char) (Character) object2));
-                        }
-                        if (object1 instanceof Byte && object2 instanceof Byte) {
-                            r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) % Byte.toUnsignedInt((Byte) object2)));
-                        }
-                        if (object1 instanceof Float && object2 instanceof Float) {
-                            r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 % (float) (Float) object2));
-                        }
-                        if (object1 instanceof Double && object2 instanceof Double) {
-                            r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 % (double) (Double) object2));
-                        }
-                        if (r != null)
-                            stack.push(r);
-                        else
-                            typeError(o1.type.name, o2.type.name);
-                    } catch (ArithmeticException ex) {
-                        throw new ISBPLError("Arithmetic", "Division by 0");
-                    }
-                };
-                break;
-            case "^":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o2 = stack.pop();
-                    ISBPLObject o1 = stack.pop();
-                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("long"));
-                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("long"));
-                    Object object1 = o1.object;
-                    Object object2 = o2.object;
-                    ISBPLObject r = null;
-                    if(object1 instanceof Integer && object2 instanceof Integer) {
-                        r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 ^ (int) (Integer) object2));
-                    }
-                    if(object1 instanceof Long && object2 instanceof Long) {
-                        r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 ^ (long) (Long) object2));
-                    }
-                    if(object1 instanceof Character && object2 instanceof Character) {
-                        r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 ^ (char) (Character) object2));
-                    }
-                    if(object1 instanceof Byte && object2 instanceof Byte) {
-                        r = new ISBPLObject(getType("byte"), Byte.toUnsignedInt((Byte) object1) ^ Byte.toUnsignedInt((Byte) object2));
-                    }
-                    if(r != null)
-                        stack.push(r);
-                    else
-                        typeError(o1.type.name, o2.type.name);
-                };
-                break;
-            case "dup":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o = stack.pop();
-                    stack.push(new ISBPLObject(o.type, o.object));
-                    stack.push(new ISBPLObject(o.type, o.object));
-                };
-                break;
-            case "pop":
-                func = Stack::pop;
-                break;
-            case "swap":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o1 = stack.pop();
-                    ISBPLObject o2 = stack.pop();
+                }
+                else
                     stack.push(o1);
-                    stack.push(o2);
-                };
-                break;
-            case "_last_word":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject i = stack.pop();
-                    i.checkType(getType("int"));
-                    int n = (int) i.object;
-                    if(n >= lastWords.get().size())
-                        throw new ISBPLError("IllegalArgument", "_last_words called with wrong argument");
-                    stack.push(toISBPLString(lastWords.get().get(n)));
-                };
-                break;
-            case "time":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject i = stack.pop();
-                    long n = (long) i.toLong();
+            };
+            break;
+        case "+":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                Object object1 = o1.object;
+                Object object2 = o2.object;
+                ISBPLObject r = null;
+                if(object1 instanceof Integer && object2 instanceof Integer) {
+                    r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 + (int) (Integer) object2));
+                }
+                if(object1 instanceof Long && object2 instanceof Long) {
+                    r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 + (long) (Long) object2));
+                }
+                if(object1 instanceof Character && object2 instanceof Character) {
+                    r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 + (char) (Character) object2));
+                }
+                if(object1 instanceof Byte && object2 instanceof Byte) {
+                    r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) + Byte.toUnsignedInt((Byte) object2)));
+                }
+                if(object1 instanceof Float && object2 instanceof Float) {
+                    r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 + (float) (Float) object2));
+                }
+                if(object1 instanceof Double && object2 instanceof Double) {
+                    r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 + (double) (Double) object2));
+                }
+                if(r != null)
+                    stack.push(r);
+                else
+                    typeError(o1.type.name, o2.type.name);
+            };
+            break;
+        case "-":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                Object object1 = o1.object;
+                Object object2 = o2.object;
+                ISBPLObject r = null;
+                if(object1 instanceof Integer && object2 instanceof Integer) {
+                    r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 - (int) (Integer) object2));
+                }
+                if(object1 instanceof Long && object2 instanceof Long) {
+                    r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 - (long) (Long) object2));
+                }
+                if(object1 instanceof Character && object2 instanceof Character) {
+                    r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 - (char) (Character) object2));
+                }
+                if(object1 instanceof Byte && object2 instanceof Byte) {
+                    r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) - Byte.toUnsignedInt((Byte) object2)));
+                }
+                if(object1 instanceof Float && object2 instanceof Float) {
+                    r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 - (float) (Float) object2));
+                }
+                if(object1 instanceof Double && object2 instanceof Double) {
+                    r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 - (double) (Double) object2));
+                }
+                if(r != null)
+                    stack.push(r);
+                else
+                    typeError(o1.type.name, o2.type.name);
+            };
+            break;
+        case "/":
+            func = (Stack<ISBPLObject> stack) -> {
+                try {
+                    ISBPLObject o2 = stack.pop();
+                    ISBPLObject o1 = stack.pop();
+                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                    Object object1 = o1.object;
+                    Object object2 = o2.object;
+                    ISBPLObject r = null;
+                    if (object1 instanceof Integer && object2 instanceof Integer) {
+                        r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 / (int) (Integer) object2));
+                    }
+                    if (object1 instanceof Long && object2 instanceof Long) {
+                        r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 / (long) (Long) object2));
+                    }
+                    if (object1 instanceof Character && object2 instanceof Character) {
+                        r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 / (char) (Character) object2));
+                    }
+                    if (object1 instanceof Byte && object2 instanceof Byte) {
+                        r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) / Byte.toUnsignedInt((Byte) object2)));
+                    }
+                    if (object1 instanceof Float && object2 instanceof Float) {
+                        r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 / (float) (Float) object2));
+                    }
+                    if (object1 instanceof Double && object2 instanceof Double) {
+                        r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 / (double) (Double) object2));
+                    }
+                    if (r != null)
+                        stack.push(r);
+                    else
+                        typeError(o1.type.name, o2.type.name);
+                } catch (ArithmeticException ex) {
+                    throw new ISBPLError("Arithmetic", "Division by 0");
+                }
+            };
+            break;
+        case "*":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                Object object1 = o1.object;
+                Object object2 = o2.object;
+                ISBPLObject r = null;
+                if(object1 instanceof Integer && object2 instanceof Integer) {
+                    r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 * (int) (Integer) object2));
+                }
+                if(object1 instanceof Long && object2 instanceof Long) {
+                    r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 * (long) (Long) object2));
+                }
+                if(object1 instanceof Character && object2 instanceof Character) {
+                    r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 * (char) (Character) object2));
+                }
+                if(object1 instanceof Byte && object2 instanceof Byte) {
+                    r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) * Byte.toUnsignedInt((Byte) object2)));
+                }
+                if(object1 instanceof Float && object2 instanceof Float) {
+                    r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 * (float) (Float) object2));
+                }
+                if(object1 instanceof Double && object2 instanceof Double) {
+                    r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 * (double) (Double) object2));
+                }
+                if(r != null)
+                    stack.push(r);
+                else
+                    typeError(o1.type.name, o2.type.name);
+            };
+            break;
+        case "**":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                Object object1 = o1.object;
+                Object object2 = o2.object;
+                ISBPLObject r = null;
+                if(object1 instanceof Integer && object2 instanceof Integer) {
+                    r = new ISBPLObject(getType("int"), (int) Math.pow((int) (Integer) object1, (int) (Integer) object2));
+                }
+                if(object1 instanceof Long && object2 instanceof Long) {
+                    r = new ISBPLObject(getType("long"), (long) Math.pow((long) (Long) object1, (long) (Long) object2));
+                }
+                if(object1 instanceof Character && object2 instanceof Character) {
+                    r = new ISBPLObject(getType("char"), (char) Math.pow((char) (Character) object1, (char) (Character) object2));
+                }
+                if(object1 instanceof Byte && object2 instanceof Byte) {
+                    r = new ISBPLObject(getType("byte"), (byte) Math.pow(Byte.toUnsignedInt((Byte) object1), Byte.toUnsignedInt((Byte) object2)));
+                }
+                if(object1 instanceof Float && object2 instanceof Float) {
+                    r = new ISBPLObject(getType("float"), (float) Math.pow((float) (Float) object1, (float) (Float) object2));
+                }
+                if(object1 instanceof Double && object2 instanceof Double) {
+                    r = new ISBPLObject(getType("double"), (double) Math.pow((double) (Double) object1, (double) (Double) object2));
+                }
+                if(r != null)
+                    stack.push(r);
+                else
+                    typeError(o1.type.name, o2.type.name);
+            };
+            break;
+        case "%":
+            func = (Stack<ISBPLObject> stack) -> {
+                try {
+                    ISBPLObject o2 = stack.pop();
+                    ISBPLObject o1 = stack.pop();
+                    o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                    o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("float"), getType("long"), getType("double"));
+                    Object object1 = o1.object;
+                    Object object2 = o2.object;
+                    ISBPLObject r = null;
+                    if (object1 instanceof Integer && object2 instanceof Integer) {
+                        r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 % (int) (Integer) object2));
+                    }
+                    if (object1 instanceof Long && object2 instanceof Long) {
+                        r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 % (long) (Long) object2));
+                    }
+                    if (object1 instanceof Character && object2 instanceof Character) {
+                        r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 % (char) (Character) object2));
+                    }
+                    if (object1 instanceof Byte && object2 instanceof Byte) {
+                        r = new ISBPLObject(getType("byte"), (byte) (Byte.toUnsignedInt((Byte) object1) % Byte.toUnsignedInt((Byte) object2)));
+                    }
+                    if (object1 instanceof Float && object2 instanceof Float) {
+                        r = new ISBPLObject(getType("float"), (float) ((float) (Float) object1 % (float) (Float) object2));
+                    }
+                    if (object1 instanceof Double && object2 instanceof Double) {
+                        r = new ISBPLObject(getType("double"), (double) ((double) (Double) object1 % (double) (Double) object2));
+                    }
+                    if (r != null)
+                        stack.push(r);
+                    else
+                        typeError(o1.type.name, o2.type.name);
+                } catch (ArithmeticException ex) {
+                    throw new ISBPLError("Arithmetic", "Division by 0");
+                }
+            };
+            break;
+        case "^":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o2 = stack.pop();
+                ISBPLObject o1 = stack.pop();
+                o1.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("long"));
+                o2.checkTypeMulti(getType("int"), getType("byte"), getType("char"), getType("long"));
+                Object object1 = o1.object;
+                Object object2 = o2.object;
+                ISBPLObject r = null;
+                if(object1 instanceof Integer && object2 instanceof Integer) {
+                    r = new ISBPLObject(getType("int"), (int) ((int) (Integer) object1 ^ (int) (Integer) object2));
+                }
+                if(object1 instanceof Long && object2 instanceof Long) {
+                    r = new ISBPLObject(getType("long"), (long) ((long) (Long) object1 ^ (long) (Long) object2));
+                }
+                if(object1 instanceof Character && object2 instanceof Character) {
+                    r = new ISBPLObject(getType("char"), (char) ((char) (Character) object1 ^ (char) (Character) object2));
+                }
+                if(object1 instanceof Byte && object2 instanceof Byte) {
+                    r = new ISBPLObject(getType("byte"), Byte.toUnsignedInt((Byte) object1) ^ Byte.toUnsignedInt((Byte) object2));
+                }
+                if(r != null)
+                    stack.push(r);
+                else
+                    typeError(o1.type.name, o2.type.name);
+            };
+            break;
+        case "dup":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o = stack.pop();
+                stack.push(new ISBPLObject(o.type, o.object));
+                stack.push(new ISBPLObject(o.type, o.object));
+            };
+            break;
+        case "pop":
+            func = Stack::pop;
+            break;
+        case "swap":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o1 = stack.pop();
+                ISBPLObject o2 = stack.pop();
+                stack.push(o1);
+                stack.push(o2);
+            };
+            break;
+        case "_last_word":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject i = stack.pop();
+                i.checkType(getType("int"));
+                int n = (int) i.object;
+                if(n >= lastWords.get().size())
+                    throw new ISBPLError("IllegalArgument", "_last_words called with wrong argument");
+                stack.push(toISBPLString(lastWords.get().get(n)));
+            };
+            break;
+        case "time":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject i = stack.pop();
+                long n = (long) i.toLong();
+                try {
+                    Thread.sleep(n);
+                }
+                catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                stack.push(new ISBPLObject(getType("long"), System.currentTimeMillis()));
+            };
+            break;
+        case "stream":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject action = stack.pop();
+                action.checkType(getType("int"));
+                int n = ((int) action.object);
+                try {
+                    streamer.action(stack, n);
+                }
+                catch (IOException e) {
+                    throw new ISBPLError("IO", e.getMessage());
+                }
+            };
+            break;
+        case "_enable_debug":
+            func = (Stack<ISBPLObject> stack) -> {
+                if(debuggerIPC.threadID == -1) {
+                    ISBPLDebugger debugger = new ISBPLDebugger(this);
+                    debugger.start();
                     try {
-                        Thread.sleep(n);
+                        while(debuggerIPC.threadID == -1) Thread.sleep(1);
                     }
                     catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                    stack.push(new ISBPLObject(getType("long"), System.currentTimeMillis()));
-                };
-                break;
-            case "stream":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject action = stack.pop();
-                    action.checkType(getType("int"));
-                    int n = ((int) action.object);
-                    try {
-                        streamer.action(stack, n);
-                    }
-                    catch (IOException e) {
-                        throw new ISBPLError("IO", e.getMessage());
-                    }
-                };
-                break;
-            case "_enable_debug":
-                func = (Stack<ISBPLObject> stack) -> {
-                    if(debuggerIPC.threadID == -1) {
-                        ISBPLDebugger debugger = new ISBPLDebugger(this);
-                        debugger.start();
-                        try {
-                            while(debuggerIPC.threadID == -1) Thread.sleep(1);
-                        }
-                        catch (InterruptedException e) {
-                            e.printStackTrace();
+                }
+                stack.push(new ISBPLObject(getType("int"), debuggerIPC.port));
+            };
+            break;
+        case "_getvars":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject[] objects = new ISBPLObject[functionStack.get().size()];
+                int i = 0;
+                for (HashMap<String, ISBPLCallable> map : functionStack.get()) {
+                    ArrayList<ISBPLObject> strings = new ArrayList<>();
+                    for (String key : map.keySet()) {
+                        if(key.startsWith("=")) {
+                            strings.add(toISBPLString(key.substring(1)));
                         }
                     }
-                    stack.push(new ISBPLObject(getType("int"), debuggerIPC.port));
-                };
-                break;
-            case "_getvars":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject[] objects = new ISBPLObject[functionStack.get().size()];
-                    int i = 0;
-                    for (HashMap<String, ISBPLCallable> map : functionStack.get()) {
-                        ArrayList<ISBPLObject> strings = new ArrayList<>();
-                        for (String key : map.keySet()) {
-                            if(key.startsWith("=")) {
-                                strings.add(toISBPLString(key.substring(1)));
-                            }
-                        }
-                        objects[i++] = new ISBPLObject(getType("array"), strings.toArray(new ISBPLObject[0]));
-                    }
-                    ISBPLObject array = new ISBPLObject(getType("array"), objects);
-                    stack.push(array);
-                };
-                break;
-            case "stacksize":
-                func = (Stack<ISBPLObject> stack) -> stack.push(new ISBPLObject(getType("int"), stack.size()));
-                break;
-            case "fcall":
-                func = (Stack<ISBPLObject> stack) -> {
-                    ISBPLObject o = stack.pop();
-                    o.checkType(getType("func"));
-                    ((ISBPLCallable) o.object).call(stack);
-                };
-                break;
-            case "subprocess":
-                func = (Stack<ISBPLObject> stack) -> {
-                    try {
-                        Runtime.getRuntime().exec(toJavaString(stack.pop()));
-                    } catch(IOException e) {
-                        throw new ISBPLError("IO", "Couldn't start process");
-                    }
-                };
-                break;
-            case "deffunc":
-                func = (stack) -> {
-                    ISBPLObject str = stack.pop();
-                    ISBPLObject callable = stack.pop();
-                    String s = toJavaString(str);
-                    callable.checkType(getType("func"));
+                    objects[i++] = new ISBPLObject(getType("array"), strings.toArray(new ISBPLObject[0]));
+                }
+                ISBPLObject array = new ISBPLObject(getType("array"), objects);
+                stack.push(array);
+            };
+            break;
+        case "stacksize":
+            func = (Stack<ISBPLObject> stack) -> stack.push(new ISBPLObject(getType("int"), stack.size()));
+            break;
+        case "fcall":
+            func = (Stack<ISBPLObject> stack) -> {
+                ISBPLObject o = stack.pop();
+                o.checkType(getType("func"));
+                ((ISBPLCallable) o.object).call(stack);
+            };
+            break;
+        case "subprocess":
+            func = (Stack<ISBPLObject> stack) -> {
+                try {
+                    Runtime.getRuntime().exec(toJavaString(stack.pop()));
+                } catch(IOException e) {
+                    throw new ISBPLError("IO", "Couldn't start process");
+                }
+            };
+            break;
+        case "deffunc":
+            func = (stack) -> {
+                ISBPLObject str = stack.pop();
+                ISBPLObject callable = stack.pop();
+                String s = toJavaString(str);
+                callable.checkType(getType("func"));
                     addFunction(s, (ISBPLCallable) callable.object);
                 };
                 break;
@@ -945,127 +976,130 @@ public class ISBPL {
         return nullObj;
     }
     
+    private Object syncJIOClass = new Object();
     public ISBPLObject toISBPL(Class<?> clazz) {
-        ISBPLType type = getType(clazz.getName());
-        if(type == null) {
-            type = registerType(clazz.getName());
-            Class<?> superClass = clazz.getSuperclass();
-            if (superClass != null)
-                type.superTypes.add(toISBPL(superClass).type);
-            Class<?>[] interfaces = clazz.getInterfaces();
-            for(Class<?> c : interfaces) {
-                type.superTypes.add(toISBPL(c).type);
-            }
-            if (clazz.isEnum()) {
-                for (Object o : clazz.getEnumConstants()) {
-                    String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + o.toString(), o.toString());
+        synchronized(syncJIOClass) {
+            ISBPLType type = getType(clazz.getName());
+            if(type == null) {
+                type = registerType(clazz.getName());
+                Class<?> superClass = clazz.getSuperclass();
+                if (superClass != null)
+                    type.superTypes.add(toISBPL(superClass).type);
+                Class<?>[] interfaces = clazz.getInterfaces();
+                for(Class<?> c : interfaces) {
+                    type.superTypes.add(toISBPL(c).type);
+                }
+                if (clazz.isEnum()) {
+                    for (Object o : clazz.getEnumConstants()) {
+                        String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + o.toString(), o.toString());
+                        name = name.substring(name.lastIndexOf('/') + 1);
+                        addFunction(type, name, stack -> {
+                            if(debug)
+                                System.err.println("Java GetEnum: " + o);
+                            stack.push(toISBPL(o));
+                        });
+                    }
+                }
+                for (Field field : clazz.getDeclaredFields()) {
+                    String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + field.getName(), field.getName());
                     name = name.substring(name.lastIndexOf('/') + 1);
                     addFunction(type, name, stack -> {
+                        field.setAccessible(true);
                         if(debug)
-                            System.err.println("Java GetEnum: " + o);
-                        stack.push(toISBPL(o));
+                            System.err.println("Java Get: " + field);
+                        try {
+                            stack.push(toISBPL(field.get(stack.pop().object)));
+                        }
+                        catch (IllegalAccessException ignored) {
+                        }
+                    });
+                    addFunction(type, "=" + name, stack -> {
+                        field.setAccessible(true);
+                        if(debug)
+                            System.err.println("Java Set: " + field);
+                        try {
+                            field.set(stack.pop().object, fromISBPL(stack.pop(), field.getType()));
+                        }
+                        catch (IllegalAccessException ignored) {
+                        }
+                    });
+                }
+                HashMap<String, ArrayList<Method>> methods = new HashMap<>();
+                for (Method method : clazz.getDeclaredMethods()) {
+                    String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + method.getName(), method.getName());
+                    name = name.substring(name.lastIndexOf('/') + 1);
+                    ArrayList<Method> methodList = methods.get(name);
+                    if(methodList == null)
+                        methodList = new ArrayList<>();
+                    methodList.add(method);
+                    methods.put(method.getName() + method.getParameterCount(), methodList);
+                }
+                for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
+                    addFunction(type, entry.getKey(), stack -> {
+                        Object o = stack.pop().object;
+                        // Resolve
+                        AtomicInteger mid = new AtomicInteger(0);
+                        ArrayList<Method> ms = entry.getValue();
+                        Class<?>[][] paramTypes = new Class<?>[ms.size()][ms.get(0).getParameterCount()];
+                        for (int i = 0 ; i < ms.size() ; i++) {
+                            paramTypes[i] = ms.get(i).getParameterTypes();
+                        }
+                        Object[] params = resolve(mid, stack, entry.getValue().get(0).getParameterCount(), paramTypes);
+                        Method method = ms.get(mid.get());
+                        
+                        method.setAccessible(true);
+                        if(debug)
+                            System.err.println("Java Call: " + method + " - " + Arrays.toString(params));
+                        try {
+                            Object r = method.invoke(o, params);
+                            if(method.getReturnType() != void.class)
+                                stack.push(toISBPL(r));
+                        }
+                        catch (IllegalAccessException ignored) { }
+                        catch (InvocationTargetException e) {
+                            stack.push(toISBPL(e));
+                            throw new ISBPLError("Java", "Java error");
+                        }
+                    });
+                }
+                HashMap<Integer, ArrayList<Constructor<?>>> constructors = new HashMap<>();
+                for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+                    ArrayList<Constructor<?>> constructorList = constructors.get(constructor.getParameterCount());
+                    if (constructorList == null)
+                        constructorList = new ArrayList<>();
+                    constructorList.add(constructor);
+                    constructors.put(constructor.getParameterCount(), constructorList);
+                }
+                for (Map.Entry<Integer, ArrayList<Constructor<?>>> entry : constructors.entrySet()) {
+                    addFunction(type, "new" + entry.getKey(), stack -> {
+                        stack.pop();
+        
+                        AtomicInteger mid = new AtomicInteger(0);
+                        ArrayList<Constructor<?>> ms = entry.getValue();
+                        Class<?>[][] paramTypes = new Class<?>[ms.size()][ms.get(0).getParameterCount()];
+                        for (int i = 0 ; i < ms.size() ; i++) {
+                            paramTypes[i] = ms.get(i).getParameterTypes();
+                        }
+                        Object[] params = resolve(mid, stack, entry.getValue().get(0).getParameterCount(), paramTypes);
+                        Constructor<?> constructor = ms.get(mid.get());
+                        
+                        constructor.setAccessible(true);
+                        if(debug)
+                            System.err.println("Java Call: new - " + Arrays.toString(params));
+                        try {
+                            Object r = constructor.newInstance(params);
+                            stack.push(toISBPL(r));
+                        }
+                        catch (IllegalAccessException ignored) { }
+                        catch (InvocationTargetException | InstantiationException e) {
+                            stack.push(toISBPL(e));
+                            throw new ISBPLError("Java", "Java error");
+                        }
                     });
                 }
             }
-            for (Field field : clazz.getDeclaredFields()) {
-                String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + field.getName(), field.getName());
-                name = name.substring(name.lastIndexOf('/') + 1);
-                addFunction(type, name, stack -> {
-                    field.setAccessible(true);
-                    if(debug)
-                        System.err.println("Java Get: " + field);
-                    try {
-                        stack.push(toISBPL(field.get(stack.pop().object)));
-                    }
-                    catch (IllegalAccessException ignored) {
-                    }
-                });
-                addFunction(type, "=" + name, stack -> {
-                    field.setAccessible(true);
-                    if(debug)
-                        System.err.println("Java Set: " + field);
-                    try {
-                        field.set(stack.pop().object, fromISBPL(stack.pop(), field.getType()));
-                    }
-                    catch (IllegalAccessException ignored) {
-                    }
-                });
-            }
-            HashMap<String, ArrayList<Method>> methods = new HashMap<>();
-            for (Method method : clazz.getDeclaredMethods()) {
-                String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + method.getName(), method.getName());
-                name = name.substring(name.lastIndexOf('/') + 1);
-                ArrayList<Method> methodList = methods.get(name);
-                if(methodList == null)
-                    methodList = new ArrayList<>();
-                methodList.add(method);
-                methods.put(method.getName() + method.getParameterCount(), methodList);
-            }
-            for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
-                addFunction(type, entry.getKey(), stack -> {
-                    Object o = stack.pop().object;
-                    // Resolve
-                    AtomicInteger mid = new AtomicInteger(0);
-                    ArrayList<Method> ms = entry.getValue();
-                    Class<?>[][] paramTypes = new Class<?>[ms.size()][ms.get(0).getParameterCount()];
-                    for (int i = 0 ; i < ms.size() ; i++) {
-                        paramTypes[i] = ms.get(i).getParameterTypes();
-                    }
-                    Object[] params = resolve(mid, stack, entry.getValue().get(0).getParameterCount(), paramTypes);
-                    Method method = ms.get(mid.get());
-                    
-                    method.setAccessible(true);
-                    if(debug)
-                        System.err.println("Java Call: " + method + " - " + Arrays.toString(params));
-                    try {
-                        Object r = method.invoke(o, params);
-                        if(method.getReturnType() != void.class)
-                            stack.push(toISBPL(r));
-                    }
-                    catch (IllegalAccessException ignored) { }
-                    catch (InvocationTargetException e) {
-                        stack.push(toISBPL(e));
-                        throw new ISBPLError("Java", "Java error");
-                    }
-                });
-            }
-            HashMap<Integer, ArrayList<Constructor<?>>> constructors = new HashMap<>();
-            for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
-                ArrayList<Constructor<?>> constructorList = constructors.get(constructor.getParameterCount());
-                if (constructorList == null)
-                    constructorList = new ArrayList<>();
-                constructorList.add(constructor);
-                constructors.put(constructor.getParameterCount(), constructorList);
-            }
-            for (Map.Entry<Integer, ArrayList<Constructor<?>>> entry : constructors.entrySet()) {
-                addFunction(type, "new" + entry.getKey(), stack -> {
-                    stack.pop();
-    
-                    AtomicInteger mid = new AtomicInteger(0);
-                    ArrayList<Constructor<?>> ms = entry.getValue();
-                    Class<?>[][] paramTypes = new Class<?>[ms.size()][ms.get(0).getParameterCount()];
-                    for (int i = 0 ; i < ms.size() ; i++) {
-                        paramTypes[i] = ms.get(i).getParameterTypes();
-                    }
-                    Object[] params = resolve(mid, stack, entry.getValue().get(0).getParameterCount(), paramTypes);
-                    Constructor<?> constructor = ms.get(mid.get());
-                    
-                    constructor.setAccessible(true);
-                    if(debug)
-                        System.err.println("Java Call: new - " + Arrays.toString(params));
-                    try {
-                        Object r = constructor.newInstance(params);
-                        stack.push(toISBPL(r));
-                    }
-                    catch (IllegalAccessException ignored) { }
-                    catch (InvocationTargetException | InstantiationException e) {
-                        stack.push(toISBPL(e));
-                        throw new ISBPLError("Java", "Java error");
-                    }
-                });
-            }
+            return new ISBPLObject(type, null);
         }
-        return new ISBPLObject(type, null);
     }
     
     public Object[] resolve(AtomicInteger mid, Stack<ISBPLObject> stack, int paramCount, Class<?>[][] paramTypes) {
@@ -1099,88 +1133,129 @@ public class ISBPL {
         return params[mid.get()];
     }
     
+    private Object syncFromISBPL = new Object();
     private Object fromISBPL(ISBPLObject o) {
-        ISBPLType type = o.type;
-        if (type.equals(getType("null"))) {
-            return null;
-        }
-        if (type.equals(getType("string")))
-            return toJavaString(o);
-        if (type.equals(getType("array"))) {
-            ISBPLObject[] isbplArray = ((ISBPLObject[]) o.object);
-            Object[] array = new Object[isbplArray.length];
-            for (int i = 0 ; i < array.length ; i++) {
-                array[i] = fromISBPL(isbplArray[i]);
+        synchronized(syncFromISBPL) {
+            ISBPLType type = o.type;
+            if (type.equals(getType("null"))) {
+                return null;
             }
-            return array;
-        }
-        return o.object;
-    }
-    
-    private Object fromISBPL(ISBPLObject o, Class<?> expectedType) {
-        ISBPLType type = o.type;
-        if (type.equals(getType("null"))) {
-            return null;
-        }
-        if (type.equals(getType("string"))) {
-            if(expectedType.isAssignableFrom(String.class))
+            if (type.equals(getType("string")))
                 return toJavaString(o);
-            else
-                typeError("string", expectedType.getName());
-        }
-        if (type.equals(getType("array"))) {
-            ISBPLObject[] isbplArray = ((ISBPLObject[]) o.object);
-            Object array = new Object[isbplArray.length];
-            if(expectedType.isArray())
-                array = Array.newInstance(expectedType.getComponentType(), isbplArray.length);
-            else
-                typeError("array", "matching-array");
-            for (int i = 0 ; i < isbplArray.length ; i++) {
-                Array.set(array, i, fromISBPL(isbplArray[i], expectedType.getComponentType()));
+            if (type.equals(getType("array"))) {
+                ISBPLObject[] isbplArray = ((ISBPLObject[]) o.object);
+                Object[] array = new Object[isbplArray.length];
+                for (int i = 0 ; i < array.length ; i++) {
+                    array[i] = fromISBPL(isbplArray[i]);
+                }
+                return array;
             }
-            return array;
+            return o.object;
         }
-        if(expectedType.isPrimitive()) {
-            if(expectedType == long.class)
-                return o.toLong();
-            if(expectedType == int.class)
-                return (int) o.toLong();
-            if(expectedType == double.class)
-                return o.toDouble();
-            if(expectedType == float.class)
-                return (float) o.toDouble();
-            if(expectedType == short.class)
-                return (short) o.toLong();
-            if(expectedType == boolean.class)
-                return o.isTruthy();
-            if(expectedType == char.class)
-                return (char) o.toLong();
-            if(expectedType == byte.class)
-                return (byte) o.toLong();
-        }
-        if(!expectedType.isAssignableFrom(o.object.getClass()))
-            typeError(o.type.name, expectedType.getName());
-        return o.object;
+    }
+
+    public Object primitiveDefault(Class<?> expectedType) {
+        if(expectedType == long.class)
+            return 0L;
+        if(expectedType == int.class)
+            return 0;
+        if(expectedType == double.class)
+            return 0.0d;
+        if(expectedType == float.class)
+            return 0.0f;
+        if(expectedType == short.class)
+            return (short) 0;
+        if(expectedType == boolean.class)
+            return false;
+        if(expectedType == char.class)
+            return (char) 0;
+        if(expectedType == byte.class)
+            return (byte) 0;
+        return null;
     }
     
-    public ISBPLObject toISBPL(Object object) {
-        if(object == null) {
-            return new ISBPLObject(getType("null"), 0);
-        }
-        ISBPLObject o = toISBPL(object.getClass());
-        if (object instanceof String) {
-            return toISBPLString(((String) object));
-        }
-        if (object.getClass().isArray()) {
-            ISBPLObject[] isbplArray = new ISBPLObject[Array.getLength(object)];
-            for (int i = 0 ; i < isbplArray.length ; i++) {
-                isbplArray[i] = toISBPL(Array.get(object, i));
+    public Object fromISBPL(ISBPLObject o, Class<?> expectedType) {
+        synchronized(syncFromISBPL) {
+            ISBPLType type = o.type;
+            if (type.equals(getType("null"))) {
+                return null;
             }
-            o.type = getType("array");
-            object = isbplArray;
+            if (type.equals(getType("string"))) {
+                if(expectedType.isAssignableFrom(String.class))
+                    return toJavaString(o);
+                else
+                    typeError("string", expectedType.getName());
+            }
+            if (type.equals(getType("array"))) {
+                ISBPLObject[] isbplArray = ((ISBPLObject[]) o.object);
+                Object array = new Object[isbplArray.length];
+                if(expectedType.isArray())
+                    array = Array.newInstance(expectedType.getComponentType(), isbplArray.length);
+                else
+                    typeError("array", "matching-array");
+                for (int i = 0 ; i < isbplArray.length ; i++) {
+                    Object obj = fromISBPL(isbplArray[i], expectedType.getComponentType());
+                    Array.set(array, i, obj == null && expectedType.getComponentType().isPrimitive() ? primitiveDefault(expectedType.getComponentType()) : obj);
+                }
+                return array;
+            }
+            if(expectedType.isPrimitive()) {
+                if(expectedType == long.class)
+                    return o.toLong();
+                if(expectedType == int.class)
+                    return (int) o.toLong();
+                if(expectedType == double.class)
+                    return o.toDouble();
+                if(expectedType == float.class)
+                    return (float) o.toDouble();
+                if(expectedType == short.class)
+                    return (short) o.toLong();
+                if(expectedType == boolean.class)
+                    return o.isTruthy();
+                if(expectedType == char.class)
+                    return (char) o.toLong();
+                if(expectedType == byte.class)
+                    return (byte) o.toLong();
+            }
+            if(!expectedType.isAssignableFrom(o.object.getClass()))
+                typeError(o.type.name, expectedType.getName());
+            return o.object;
         }
-        o.object = object;
-        return o;
+    }
+    
+    private Object syncToISBPL = new Object();
+    public ISBPLObject toISBPL(Object object) {
+        synchronized (syncToISBPL) {
+            if(object == null) {
+                return new ISBPLObject(getType("null"), 0);
+            }
+            ISBPLObject o = toISBPL(object.getClass());
+            if (object instanceof String) {
+                return toISBPLString(((String) object));
+            }
+            if (object instanceof Integer)
+                return new ISBPLObject(getType("int"), object);
+            if (object instanceof Character)
+                return new ISBPLObject(getType("char"), object);
+            if (object instanceof Byte)
+                return new ISBPLObject(getType("byte"), object);
+            if (object instanceof Float)
+                return new ISBPLObject(getType("float"), object);
+            if (object instanceof Long)
+                return new ISBPLObject(getType("long"), object);
+            if (object instanceof Double)
+                return new ISBPLObject(getType("double"), object);
+            if (object.getClass().isArray()) {
+                ISBPLObject[] isbplArray = new ISBPLObject[Array.getLength(object)];
+                for (int i = 0 ; i < isbplArray.length ; i++) {
+                    isbplArray[i] = toISBPL(Array.get(object, i));
+                }
+                o.type = getType("array");
+                object = isbplArray;
+            }
+            o.object = object;
+            return o;
+        }
     }
     
     public void addFunction(ISBPLType type, String name, ISBPLCallable callable) {
@@ -1268,7 +1343,7 @@ public class ISBPL {
         return new ISBPLObject(getType("string"), objects);
     }
     
-    public ISBPLType registerType(String name) {
+    public synchronized ISBPLType registerType(String name) {
         ISBPLType type = new ISBPLType(name, types.size());
         types.add(type);
         return type;
@@ -1572,7 +1647,7 @@ class ISBPLObject {
     }
     
     public boolean isTruthy() {
-        return object != null && object != Integer.valueOf(0) && object != Boolean.valueOf(false);
+        return object != null && object != Integer.valueOf(0) && !object.equals(Boolean.valueOf(false));
     }
     
     // This has heavy optimizations, please do not change unless necessary
