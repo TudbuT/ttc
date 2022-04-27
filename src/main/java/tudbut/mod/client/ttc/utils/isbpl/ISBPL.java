@@ -2143,14 +2143,14 @@ class ISBPLThreadLocal<T> {
         return new ISBPLThreadLocal<>(supplier);
     }
     
-    public T get() {
+    public synchronized T get() {
         long tid = Thread.currentThread().getId();
         if(!map.containsKey(tid))
             map.put(tid, supplier.get());
         return map.get(tid);
     }
     
-    public void set(T t) {
+    public synchronized void set(T t) {
         map.put(Thread.currentThread().getId(), t);
     }
 }
