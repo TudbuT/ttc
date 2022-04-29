@@ -35,7 +35,7 @@ public class ISBPLModule extends Module {
     }
     
     public boolean functionExists(String fn) {
-        return context.functionStack.get().get(0).containsKey(fn);
+        return context.frameStack.get().get(0).map.containsKey(fn);
     }
     
     @Override
