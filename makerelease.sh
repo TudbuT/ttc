@@ -18,5 +18,6 @@ EOF
 
 nvim message.txt
 
+git push
 git tag -aF message.txt $(cat version.txt)
 git push --tags
