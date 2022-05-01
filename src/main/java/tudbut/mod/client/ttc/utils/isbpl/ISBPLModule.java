@@ -18,24 +18,16 @@ import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-public class ISBPLModule extends Module {
+public class ISBPLModule extends Module implements ISBPLScript {
 
     private final ISBPL context;
     public final String id;
     
     public TCN config;
-
-    public Stack<ISBPLObject> run(String code, Object... args) {
-        Stack<ISBPLObject> stack = new Stack<>();
-        for (int i = 0 ; i < args.length ; i++) {
-            stack.push(context.toISBPL(args[i]));
-        }
-        context.interpret(new File("_eval"), code, stack);
-        return stack;
-    }
     
-    public boolean functionExists(String fn) {
-        return context.frameStack.get().peek().all().containsKey(fn);
+    @Override
+    public ISBPL context() {
+        return context;
     }
     
     @Override
@@ -54,7 +46,7 @@ public class ISBPLModule extends Module {
         try {
             context.natives.put("jm", stack -> stack.push(context.toISBPL(this)));
             context.natives.put("mc", stack -> stack.push(context.toISBPL(Minecraft.getMinecraft())));
-            context.interpret(new File("_ttc"), "native mc native jm", new Stack<>());
+            run("native mc native jm");
             run("def config jm config =config");
             run("def sb jm subButtons =sb");
             run("def Setting \"tudbut.mod.client.ttc.utils.Setting\" JIO class =Setting");
@@ -188,36 +180,10 @@ public class ISBPLModule extends Module {
 
     public static class Loader {
 
-        static {
-            try {
-                URL url = new URL("https://codeload.github.com/TudbuT/isbpl/zip/refs/heads/master");
-                ZipInputStream inputStream = new ZipInputStream(url.openStream());
-                ZipEntry entry;
-                while ((entry = inputStream.getNextEntry()) != null) {
-                    File associatedFile = new File("config/ttc/isbpl", entry.getName().substring("isbpl-master/".length()));
-                    if(entry.isDirectory()) {
-                        associatedFile.mkdirs();
-                    }
-                    else {
-                        associatedFile.getParentFile().mkdirs();
-                        FileOutputStream stream = new FileOutputStream(associatedFile);
-                        stream.write(new StreamReader(inputStream).readAllAsBytes());
-                        stream.close();
-                    }
-                }
-            }
-            catch (IOException e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(null, "Unable to download ISBPL");
-            }
-        }
-        
         public static ISBPLModule create(String id) {
             try {
+                ISBPL context = ISBPLScript.Loader.makeContext();
                 Stack<ISBPLObject> stack = new Stack<>();
-                ISBPL context = new ISBPL();
-                File std = new File("config/ttc/isbpl/std.isbpl");
-                context.interpret(std, ISBPL.readFile(std), stack);
                 File file = new File("config/ttc/modules/" + id + ".ttcmodule.isbpl").getAbsoluteFile();
                 context.interpret(file, ISBPL.readFile(file), stack);
                 return new ISBPLModule(context, id);

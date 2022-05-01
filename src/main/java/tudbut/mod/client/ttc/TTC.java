@@ -4,7 +4,6 @@ import de.tudbut.io.StreamReader;
 import de.tudbut.tools.FileRW;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -15,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import tudbut.mod.client.ttc.events.FMLEventHandler;
 import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.*;
+import tudbut.mod.client.ttc.utils.isbpl.UpdateManager;
 import tudbut.obj.TLMap;
 import tudbut.parsing.TCN;
 import tudbut.tools.Lock;
@@ -28,7 +28,7 @@ public class TTC {
     // FML stuff and version
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "v1.2.2b";
+    public static final String VERSION = "v1.3.0a";
     // TODO: PLEASE change this when skidding or rebranding.
     //  It is used for analytics and doesn't affect gameplay
     public static final String BRAND = "TudbuT/ttc:master";
@@ -156,6 +156,12 @@ public class TTC {
                 JOptionPane.showMessageDialog(null, "TTC by TudbuT");
             });
         }
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
+    
+        System.out.println("Update checking...");
+        sa = new Date().getTime();
+        new UpdateManager().run();
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
         

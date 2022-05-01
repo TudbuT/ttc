@@ -10,12 +10,9 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
-import net.minecraftforge.fml.relauncher.Side;
-import org.lwjgl.input.Keyboard;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.mods.*;
 import tudbut.mod.client.ttc.utils.ChatUtils;
@@ -185,17 +182,15 @@ public class FMLEventHandler {
                         if (s == null) {
                             ChatUtils.print("§a[TTC] §cUnable to check for a new version! Check your connection!");
                         }
-                        else if (!s.equals(TTC.VERSION) && Update.isNewer(s)) {
+                        else if (!s.equals(TTC.VERSION) && Update.isNewer(s, TTC.VERSION)) {
                             ChatUtils.print(
                                     "§a§lA new TTC version was found! Current: " +
                                     TTC.VERSION +
                                     ", New: " +
                                     s +
-                                    "! Please consider updating at " +
-                                    "https://github.com/" + TTC.REPO + "/releases/tag/" +
-                                    s +
-                                    " or type '" + TTC.prefix + "update'"
+                                    "! The new version will now be installed."
                             );
+                            TTC.getModule(Update.class).onEveryChat("", null);
                         }
                     }
                     try {

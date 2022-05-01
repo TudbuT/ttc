@@ -116,9 +116,17 @@ public class ISBPL {
                     ISBPLCallable block = readBlock(i, words, file);
                     i.getAndIncrement();
                     ISBPLCallable catcher = readBlock(i, words, file);
+                    int stackHeight = stack.size();
                     try {
                         block.call(stack);
                     } catch (ISBPLError error) {
+                        if(stack.size() > stackHeight) {
+                            stack.setSize(stackHeight);
+                            stack.trimToSize();
+                        }
+                        while(stack.size() < stackHeight) {
+                            stack.push(getNullObject());
+                        }
                         if (Arrays.asList(allowed).contains(error.type) || allowed.length == 1 && allowed[0].equals("all")) {
                             stack.push(toISBPLString(error.message));
                             stack.push(toISBPLString(error.type));
@@ -166,7 +174,7 @@ public class ISBPL {
                     synchronized(syncMakeThread) {
                         idx++;
                         AtomicInteger i = new AtomicInteger(idx);
-                        Stack<ISBPLObject> s = new ISBPLStack<>();
+                        Stack<ISBPLObject> s = new ISBPLStack();
                         for(ISBPLObject obj : stack) {
                             s.push(obj);
                         }
@@ -969,7 +977,7 @@ public class ISBPL {
     
     ISBPLObject nullObj = null;
     public ISBPLObject getNullObject() {
-        if(nullObj == null)
+        if(nullObj == null || nullObj.type == null)
             nullObj = new ISBPLObject(getType("null"), 0);
         return nullObj;
     }
@@ -1524,7 +1532,7 @@ public class ISBPL {
     }
     
     public static void main(String[] args) {
-        Stack<ISBPLObject> stack = new ISBPLStack<>();
+        Stack<ISBPLObject> stack = new ISBPLStack();
         ISBPL isbpl = new ISBPL();
         isbpl.debuggerIPC.stack.put(Thread.currentThread().getId(), stack);
         debug = !System.getenv().getOrDefault("DEBUG", "").equals("");
@@ -1556,7 +1564,7 @@ public class ISBPL {
         return new ISBPLObject(isbpl.getType("array"), array);
     }
     
-    static String readFile(File f) throws IOException {
+    public static String readFile(File f) throws IOException {
         //noinspection resource
         FileInputStream fis = new FileInputStream(f);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
@@ -2158,12 +2166,14 @@ class ISBPLThreadLocal<T> {
     }
 }
 
-class ISBPLStack<T> extends Stack<T> {
+class ISBPLStack extends Stack<ISBPLObject> {
     
     @Override
-    public T push(T t) {
+    public ISBPLObject push(ISBPLObject t) {
         if(t == null)
             new IllegalArgumentException("item is null").printStackTrace();
+        else if(t.type == null)
+            new IllegalArgumentException("item.type is null").printStackTrace();
         return super.push(t);
     }
 }
