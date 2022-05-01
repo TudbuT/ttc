@@ -67,7 +67,7 @@ public class Update extends Module {
                         }
                         else {
                             ChatUtils.print("Couldn't update! 404!");
-                            send = false;
+                            return;
                         }
                     }
                     byte[] bytes = res.getBodyBytes();
