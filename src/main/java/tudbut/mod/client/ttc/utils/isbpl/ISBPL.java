@@ -136,6 +136,13 @@ public class ISBPL {
                             throw error;
                         }
                     } catch (Exception e) {
+                        if(stack.size() > stackHeight) {
+                            stack.setSize(stackHeight);
+                            stack.trimToSize();
+                        }
+                        while(stack.size() < stackHeight) {
+                            stack.push(getNullObject());
+                        }
                         if (Arrays.asList(allowed).contains("Java") || allowed.length == 1 && allowed[0].equals("all")) {
                             stack.push(toISBPL(e));
                             stack.push(toISBPLString(e.getClass().getName()));
@@ -788,8 +795,8 @@ public class ISBPL {
             case "dup":
                 func = (Stack<ISBPLObject> stack) -> {
                     ISBPLObject o = stack.pop();
-                    stack.push(new ISBPLObject(o.type, o.object));
-                    stack.push(new ISBPLObject(o.type, o.object));
+                    stack.push(o);
+                    stack.push(o);
                 };
                 break;
             case "pop":
@@ -966,6 +973,12 @@ public class ISBPL {
                 func = (stack) -> {
                     ISBPLObject o = stack.pop();
                     o.type.vars.remove(o);
+                };
+                break;
+            case "mkinstance":
+                func = (stack) -> {
+                    ISBPLObject type = stack.pop();
+                    stack.push(new ISBPLObject(types.get((int) type.toLong()), new Object()));
                 };
                 break;
             default:
@@ -1394,7 +1407,7 @@ public class ISBPL {
                         if (rid == -2) {
                             if (word.equals(debuggerIPC.until)) {
                                 debuggerIPC.run.put(Thread.currentThread().getId(), 0);
-                                while (debuggerIPC.run.get(Thread.currentThread().getId()) != -1) Thread.sleep(1);
+                                while (debuggerIPC.run.get(Thread.currentThread().getId()) == 0) Thread.sleep(1);
                             }
                         }
                         if (rid == -3 && Thread.currentThread().getId() != debuggerIPC.threadID) {
@@ -1495,6 +1508,11 @@ public class ISBPL {
                     word.append('\r');
                     continue;
                 }
+                if(c == 't' && escaping) {
+                    escaping = false;
+                    word.append('\t');
+                    continue;
+                }
                 if(c == '"') {
                     if (escaping) {
                         escaping = false;
@@ -1530,6 +1548,43 @@ public class ISBPL {
                 .replaceAll("\n", " ")
                 ;
     }
+
+    public void dump(Stack<ISBPLObject> stack) {
+        try {
+            System.err.println("VAR DUMP\n----------------");
+            for (ISBPLFrame map : frameStack.get()) {
+                HashMap<String, ISBPLCallable> all = map.all();
+                for (String key : all.keySet()) {
+                    if (key.startsWith("=")) {
+                        all.get(key.substring(1)).call(stack);
+                        System.err.println("\t" + key.substring(1) + ": \t" + stack.pop());
+                    }
+                }
+                System.err.println("----------------");
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("!!! VARS CORRUPTED! CANNOT FIX AUTOMATICALLY.");
+        }
+        boolean fixed = false;
+        while (!fixed) {
+            try {
+                System.err.println("STACK DUMP");
+                for (ISBPLObject object : stack) {
+                    System.err.println("\t" + object);
+                }
+                fixed = true;
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+                System.err.println("!!! STACK CORRUPTED!");
+                stack.pop();
+                System.err.println("Popped. Trying again.");
+            }
+        }
+    }
+
     
     public static void main(String[] args) {
         Stack<ISBPLObject> stack = new ISBPLStack();
@@ -1544,10 +1599,27 @@ public class ISBPL {
         try {
             File std = new File(System.getenv().getOrDefault("ISBPL_PATH", "/usr/lib/isbpl") + "/std.isbpl");
             isbpl.interpret(std, readFile(std), stack);
-            File file = new File(args[0]).getAbsoluteFile();
-            isbpl.interpret(file, readFile(file), stack);
-            stack.push(argarray(isbpl, args));
-            isbpl.interpret(file, "main exit", stack);
+            if(args.length > 0) {
+                File file = new File(args[0]).getAbsoluteFile();
+                isbpl.interpret(file, readFile(file), stack);
+                stack.push(argarray(isbpl, args));
+                isbpl.interpret(file, "main exit", stack);
+            } else {
+                isbpl.level0.add("dump", isbpl::dump);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+                String line;
+                System.out.print("> ");
+                while ((line = reader.readLine()) != null) {
+                    try {
+                        isbpl.interpret(new File("_shell"), line, stack);
+                    } catch(ISBPLError e) {
+                        System.out.println("Error: " + e.type + ": " + e.message);
+                    } catch(Throwable e) {
+                        e.printStackTrace();
+                    }
+                    System.out.print("\n> ");
+                }
+            }
         } catch (ISBPLStop stop) {
             System.exit(isbpl.exitCode);
         } catch (Exception e) {
@@ -1662,6 +1734,7 @@ class ISBPLObject {
             return false;
         if(this.object == object.object)
             return true;
+        // These can return false because the strict equality check has already been performed.
         if(this.object == null)
             return false;
         if(object.object == null)
@@ -2203,8 +2276,6 @@ class ISBPLFrame {
         if(map.containsKey(name))
             return map.get(name);
         if(parent != null) {
-            if(context.printCalls)
-                System.err.println("Referring to parent frame...");
             return parent.resolve(name);
         }
         return null;
