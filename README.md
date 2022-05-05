@@ -11,7 +11,7 @@ DONT ACTIVATE ANY OTHER AUTOTOTEM ALONG THIS ONE, it will glitch it out!
 
 ClickGUI opens with COMMA
 
-The first client to have a SeedOverlay ( / Seed Overlay ) module. For free.
+The first client to have a SeedOverlay ( / Seed Overlay ) module. For free. (Konas skidded it)
 
 ## WebServices explaination
 
