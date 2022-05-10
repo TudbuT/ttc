@@ -29,6 +29,7 @@ import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.gui.GuiTTC;
 import tudbut.mod.client.ttc.utils.*;
 import tudbut.obj.Vector2i;
+import tudbut.tools.Lock;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class SeedOverlay extends Module {
     WorldType worldType;
     long seed = Long.MAX_VALUE;
     boolean isUpdating = false;
-    boolean lock = false;
+    Lock lock = new Lock();
     int renderType = 0;
     
     static final ArrayList<Block> disableCheck = new ArrayList<>();
@@ -166,9 +167,9 @@ public class SeedOverlay extends Module {
             }
         }
         
-        lock = true;
+        lock.lock();
         this.toRender = toRender;
-        lock = false;
+        lock.unlock();
     }
     
     public static WorldGeneratorV2 createFreshWorldCopy(World worldIn, long seed) {
@@ -232,7 +233,7 @@ public class SeedOverlay extends Module {
                 Entity e = TTC.mc.getRenderViewEntity();
                 pos =
                         e.getPositionEyes(((RenderWorldLastEvent) event).getPartialTicks()).addVector(0, -e.getEyeHeight(), 0);
-                while (lock);
+                lock.waitHere(500);
                 Map<BlockPos, Integer> toRender = this.toRender;
                 BlockPos[] toRenderPositions = this.toRender.keySet().toArray(new BlockPos[0]);
                 
