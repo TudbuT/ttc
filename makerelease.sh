@@ -30,8 +30,9 @@ https://discord.gg/2WsVCQDpwy
 EOF
 
 git diff master > gitdiff
-vim -p message.txt gitdiff
-rm gitdiff
+git log --graph --oneline --decorate > gitlog
+vim -p message.txt gitdiff gitlog
+rm gitdiff gitlog
 
 xdg-open "https://github.com/tudbut/ttc/releases/new" &
 
