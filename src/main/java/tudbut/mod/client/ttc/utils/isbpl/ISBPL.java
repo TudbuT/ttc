@@ -103,6 +103,8 @@ public class ISBPL {
                     ISBPLObject array = stack.pop();
                     array.checkTypeMulti(getType("array"), getType("string"));
                     String[] allowed;
+                    if(debug)
+                        System.out.println("try with " + array);
                     if(array.type.name.equals("string")) {
                         allowed = new String[] { toJavaString(array) };
                     }
@@ -214,7 +216,7 @@ public class ISBPL {
                     ISBPLType type = registerType(typename);
 
                     for(; !words[idx].equals("{"); idx++) {
-                        ISBPLType t = getType(words[idx]);
+                        ISBPLType t = getType(words[idx].startsWith("\"") ? words[idx].substring(1) : words[idx]);
                         if(!type.superTypes.contains(t))
                             type.superTypes.add(t);
                     }
@@ -247,6 +249,8 @@ public class ISBPL {
                         }
                     }
                     stack.push(new ISBPLObject(getType("int"), type.id));
+                    if(debug)
+                        System.err.println("Constructing type " + type);
                     return i.get();
                 };
             case "string!":
@@ -1806,6 +1810,8 @@ class ISBPLType {
         return "ISBPLType{" +
                "id=" + id +
                ", name='" + name + '\'' +
+               ", superTypes=" + superTypes +
+               ", methods=" + methods +
                '}';
     }
 }
@@ -1852,9 +1858,9 @@ class ISBPLObject {
         Queue<ISBPLType> types = new LinkedList<>();
         types.add(type);
         while (!types.isEmpty()) {
-            type = types.poll();
-            types.addAll(type.superTypes);
-            if(type.id == wanted.id) {
+            ISBPLType t = types.poll();
+            types.addAll(t.superTypes);
+            if(t.id == wanted.id) {
                 return;
             }
         }
@@ -1868,9 +1874,9 @@ class ISBPLObject {
             Queue<ISBPLType> types = new LinkedList<>();
             types.add(type);
             while (!types.isEmpty()) {
-                type = types.poll();
-                types.addAll(type.superTypes);
-                if(type.id == wanted[i].id) {
+                ISBPLType t = types.poll();
+                types.addAll(t.superTypes);
+                if(t.id == wanted[i].id) {
                     return;
                 }
             }
