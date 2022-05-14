@@ -20,4 +20,4 @@ EOF
 git diff master > gitdiff
 git log --oneline --graph --decorate > gitlog
 vim -p message.txt gitdiff gitlog
-rm gitdiff
+rm gitdiff gitlog
