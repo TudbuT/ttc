@@ -249,6 +249,17 @@ public class ISBPL {
                     stack.push(new ISBPLObject(getType("int"), type.id));
                     return i.get();
                 };
+            case "string!":
+                return (idx, words, file, stack) -> {
+                    idx++;
+                    AtomicInteger i = new AtomicInteger(idx);
+                    String s = "";
+                    for(String w : readBlock(i, words, file))
+                        s += w + " ";
+                    s = s.substring(0, s.length() - 1);
+                    stack.push(toISBPLString(s));
+                    return i.get();
+                };
             default:
                 return null;
         }
