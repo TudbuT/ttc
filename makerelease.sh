@@ -27,7 +27,9 @@ Notes:
 https://discord.gg/2WsVCQDpwy
 EOF
 
-nvim message.txt
+git diff master > gitdiff
+vim -p message.txt gitdiff
+rm gitdiff
 
 xdg-open "https://github.com/tudbut/ttc/releases/new" &
 
