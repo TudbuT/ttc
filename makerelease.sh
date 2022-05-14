@@ -1,6 +1,8 @@
 cat version.txt
 echo " <- old version"
+echo "v new version"
 read VERSION
+echo
 echo -n "$VERSION" > version.txt
 sed "s/$(cat previousVersion.txt)/$(cat version.txt)/g" < src/main/java/tudbut/mod/client/ttc/TTC.java > tmp.TTC.java
 sed "s/$(cat previousVersion.txt)/$(cat version.txt)/g" < src/main/resources/mcmod.info > tmp.mcmod.info
@@ -28,7 +30,7 @@ https://discord.gg/2WsVCQDpwy
 EOF
 
 git diff master > gitdiff
-nvim -p message.txt gitdiff
+vim -p message.txt gitdiff
 rm gitdiff
 
 xdg-open "https://github.com/tudbut/ttc/releases/new" &
