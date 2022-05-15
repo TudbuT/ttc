@@ -32,6 +32,9 @@ public class ISBPL {
             throw new Error(e);
         }
     }
+
+    public static PrintStream gOutputStream = System.out;
+    public static PrintStream gErrorStream = System.err;
     
     static boolean debug = false, printCalls = false;
     public ISBPLDebugger.IPC debuggerIPC = new ISBPLDebugger.IPC();
@@ -104,7 +107,7 @@ public class ISBPL {
                     array.checkTypeMulti(getType("array"), getType("string"));
                     String[] allowed;
                     if(debug)
-                        System.out.println("try with " + array);
+                        ISBPL.gOutputStream.println("try with " + array);
                     if(array.type.name.equals("string")) {
                         allowed = new String[] { toJavaString(array) };
                     }
@@ -250,7 +253,7 @@ public class ISBPL {
                     }
                     stack.push(new ISBPLObject(getType("int"), type.id));
                     if(debug)
-                        System.err.println("Constructing type " + type);
+                        ISBPL.gErrorStream.println("Constructing type " + type);
                     return i.get();
                 };
             case "string!":
@@ -449,14 +452,14 @@ public class ISBPL {
                 func = (Stack<ISBPLObject> stack) -> {
                     ISBPLObject c = stack.pop();
                     c.checkType(getType("char"));
-                    System.out.print(((char) c.object));
+                    ISBPL.gOutputStream.print(((char) c.object));
                 };
                 break;
             case "eputchar":
                 func = (Stack<ISBPLObject> stack) -> {
                     ISBPLObject c = stack.pop();
                     c.checkType(getType("char"));
-                    System.err.print(((char) c.object));
+                    ISBPL.gErrorStream.print(((char) c.object));
                 };
                 break;
             case "_file":
@@ -1094,7 +1097,7 @@ public class ISBPL {
                         name = name.substring(name.lastIndexOf('/') + 1);
                         addFunction(type, name, stack -> {
                             if(debug)
-                                System.err.println("Java GetEnum: " + o);
+                                ISBPL.gErrorStream.println("Java GetEnum: " + o);
                             stack.push(toISBPL(o));
                         });
                     }
@@ -1105,7 +1108,7 @@ public class ISBPL {
                     addFunction(type, name, stack -> {
                         forceAccessible(field);
                         if(debug)
-                            System.err.println("Java Get: " + field);
+                            ISBPL.gErrorStream.println("Java Get: " + field);
                         try {
                             stack.push(toISBPL(field.get(stack.pop().object)));
                         }
@@ -1115,7 +1118,7 @@ public class ISBPL {
                     addFunction(type, "=" + name, stack -> {
                         forceAccessible(field);
                         if(debug)
-                            System.err.println("Java Set: " + field);
+                            ISBPL.gErrorStream.println("Java Set: " + field);
                         try {
                             field.set(stack.pop().object, fromISBPL(stack.pop(), field.getType()));
                         }
@@ -1148,7 +1151,7 @@ public class ISBPL {
                         
                         forceAccessible(method);
                         if(debug)
-                            System.err.println("Java Call: " + method + " - " + Arrays.toString(params));
+                            ISBPL.gErrorStream.println("Java Call: " + method + " - " + Arrays.toString(params));
                         try {
                             Object r = method.invoke(o, params);
                             if(method.getReturnType() != void.class)
@@ -1184,7 +1187,7 @@ public class ISBPL {
                         
                         forceAccessible(constructor);
                         if(debug)
-                            System.err.println("Java Call: " + constructor + " - " + Arrays.toString(params));
+                            ISBPL.gErrorStream.println("Java Call: " + constructor + " - " + Arrays.toString(params));
                         try {
                             Object r = constructor.newInstance(params);
                             stack.push(toISBPL(r));
@@ -1208,7 +1211,7 @@ public class ISBPL {
         int[] methodIDs = new int[paramCount];
         Arrays.fill(methodIDs, 0);
         if(debug)
-            System.err.println("Consideration of " + paramTypes.length + " methods...");
+            ISBPL.gErrorStream.println("Consideration of " + paramTypes.length + " methods...");
         for (int i = paramCount - 1 ; i >= 0 ; i--) {
             o[i] = stack.pop();
             for (int j = 0 ; j < paramTypes.length ; j++) {
@@ -1217,15 +1220,15 @@ public class ISBPL {
                     params[j][i] = fromISBPL(o[i], m[i]);
                     methodIDs[i] += 1 << j;
                     if(debug)
-                        System.err.println("Consideration: Pass " + i + " " + Arrays.toString(paramTypes[j]));
+                        ISBPL.gErrorStream.println("Consideration: Pass " + i + " " + Arrays.toString(paramTypes[j]));
                 }
                 catch (ISBPLError ignored) {
                     if(debug)
-                        System.err.println("Consideration: Fail " + i + " " + Arrays.toString(paramTypes[j]));
+                        ISBPL.gErrorStream.println("Consideration: Fail " + i + " " + Arrays.toString(paramTypes[j]));
                 }
             }
             if(debug)
-                System.err.println("Considerartion: " + i + " " + Integer.toBinaryString(methodIDs[i] + (1 << 31)).substring(32 - paramTypes.length));
+                ISBPL.gErrorStream.println("Considerartion: " + i + " " + Integer.toBinaryString(methodIDs[i] + (1 << 31)).substring(32 - paramTypes.length));
         }
         int msize = paramTypes.length;
         for (int i = 0 ; i < msize; i++) {
@@ -1239,11 +1242,11 @@ public class ISBPL {
             if(works) {
                 mid.set(i);
                 if(debug)
-                    System.err.println("Considering: " + Arrays.toString(paramTypes[i]));
+                    ISBPL.gErrorStream.println("Considering: " + Arrays.toString(paramTypes[i]));
             }
         }
         if(debug)
-            System.err.println("Considered " + paramTypes.length + " methods. Result: " + Arrays.toString(paramTypes[mid.get()]));
+            ISBPL.gErrorStream.println("Considered " + paramTypes.length + " methods. Result: " + Arrays.toString(paramTypes[mid.get()]));
         return params[mid.get()];
     }
     
@@ -1482,7 +1485,7 @@ public class ISBPL {
                     for (int x = 0 ; x < frameStack.get().size() ; x++) {
                         s.append("\t");
                     }
-                    System.err.println(s + word + "\t\t" + (debug ? stack : ""));
+                    ISBPL.gErrorStream.println(s + word + "\t\t" + (debug ? stack : ""));
                 }
                 while (debuggerIPC.run.getOrDefault(Thread.currentThread().getId(), -1) == 0) Thread.sleep(1);
                 int rid = debuggerIPC.run.getOrDefault(Thread.currentThread().getId(), -1);
@@ -1512,11 +1515,11 @@ public class ISBPL {
                     // Doing this nonrecursively because it's much better despite the slight readability disadvantage.
                     if(stack.peek() == null) {
                         // We need to dump things immediately.
-                        System.err.println("!!! ISBPL WORD PARSER ERROR !!!");
-                        System.err.println("This is most likely due to a garbage collector malfunction.");
-                        System.err.println("Stack: " + stack);
-                        System.err.println("LastWords: " + lastWords);
-                        System.err.println("FileStack: " + fileStack);
+                        ISBPL.gErrorStream.println("!!! ISBPL WORD PARSER ERROR !!!");
+                        ISBPL.gErrorStream.println("This is most likely due to a garbage collector malfunction.");
+                        ISBPL.gErrorStream.println("Stack: " + stack);
+                        ISBPL.gErrorStream.println("LastWords: " + lastWords);
+                        ISBPL.gErrorStream.println("FileStack: " + fileStack);
                     }
                     ISBPLType type = stack.peek().type;
                     Queue<ISBPLType> types = new LinkedList<>();
@@ -1566,11 +1569,11 @@ public class ISBPL {
             e.printStackTrace();
         }
         catch (Throwable t) {
-            if(debug) System.out.println("Passing exception " + t + " to caller.");
+            if(debug) ISBPL.gOutputStream.println("Passing exception " + t + " to caller.");
             if(stopExceptions) {
                 t.printStackTrace();
-                System.out.println("Current Words: ");
-                System.out.println(Arrays.toString(words));
+                ISBPL.gOutputStream.println("Current Words: ");
+                ISBPL.gOutputStream.println(Arrays.toString(words));
                 dump(stack);
             }
             throw t;
@@ -1646,43 +1649,43 @@ public class ISBPL {
     
     private String cleanCode(String code) {
         return code
-                .replaceAll("\r", "\n")
+                .replaceAll("\r\n", "\n")
                 .replaceAll("\n", " ")
                 ;
     }
 
     public void dump(Stack<ISBPLObject> stack) {
         try {
-            System.err.println("VAR DUMP\n----------------");
+            ISBPL.gErrorStream.println("VAR DUMP\n----------------");
             for (ISBPLFrame map : frameStack.get()) {
                 HashMap<String, ISBPLCallable> all = map.all();
                 for (String key : all.keySet()) {
                     if (key.startsWith("=")) {
                         all.get(key.substring(1)).call(stack);
-                        System.err.println("\t" + key.substring(1) + ": \t" + stack.pop());
+                        ISBPL.gErrorStream.println("\t" + key.substring(1) + ": \t" + stack.pop());
                     }
                 }
-                System.err.println("----------------");
+                ISBPL.gErrorStream.println("----------------");
             }
         }
         catch (Exception e) {
             e.printStackTrace();
-            System.err.println("!!! VARS CORRUPTED! CANNOT FIX AUTOMATICALLY.");
+            ISBPL.gErrorStream.println("!!! VARS CORRUPTED! CANNOT FIX AUTOMATICALLY.");
         }
         boolean fixed = false;
         while (!fixed) {
             try {
-                System.err.println("STACK DUMP");
+                ISBPL.gErrorStream.println("STACK DUMP");
                 for (ISBPLObject object : stack) {
-                    System.err.println("\t" + object);
+                    ISBPL.gErrorStream.println("\t" + object);
                 }
                 fixed = true;
             }
             catch (Exception e) {
                 e.printStackTrace();
-                System.err.println("!!! STACK CORRUPTED!");
+                ISBPL.gErrorStream.println("!!! STACK CORRUPTED!");
                 stack.pop();
-                System.err.println("Popped. Trying again.");
+                ISBPL.gErrorStream.println("Popped. Trying again.");
             }
         }
     }
@@ -1710,23 +1713,23 @@ public class ISBPL {
                 isbpl.level0.add("dump", isbpl::dump);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
                 String line;
-                System.out.print("> ");
+                ISBPL.gOutputStream.print("> ");
                 while ((line = reader.readLine()) != null) {
                     try {
                         isbpl.interpret(new File("_shell"), line, stack);
                     } catch(ISBPLError e) {
-                        System.out.println("Error: " + e.type + ": " + e.message);
+                        ISBPL.gOutputStream.println("Error: " + e.type + ": " + e.message);
                     } catch(Throwable e) {
                         e.printStackTrace();
                     }
-                    System.out.print("\n> ");
+                    ISBPL.gOutputStream.print("\n> ");
                 }
             }
         } catch (ISBPLStop stop) {
             System.exit(isbpl.exitCode);
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(stack);
+            ISBPL.gOutputStream.println(stack);
         }
     }
     
@@ -1759,7 +1762,7 @@ public class ISBPL {
             theSafe.putBoolean(thing, theSafe.objectFieldOffset(FakeAccessibleObject.class.getDeclaredField("override")), true);
         } catch(Exception e) { //we are doomed
             e.printStackTrace();
-            System.err.println("Failed to set accessible property. We are doomed.");
+            ISBPL.gErrorStream.println("Failed to set accessible property. We are doomed.");
             System.exit(1);
         }
     }
@@ -2004,7 +2007,7 @@ class ISBPLDebugger extends Thread {
                 //noinspection resource
                 socket = new ServerSocket(Integer.parseInt(System.getenv().getOrDefault("DEBUG", "9736")));
                 port = socket.getLocalPort();
-                System.err.println("Debugger listening on :" + socket.getLocalPort());
+                ISBPL.gErrorStream.println("Debugger listening on :" + socket.getLocalPort());
             }
             catch (BindException e) {
                 while (socket == null) {
@@ -2012,7 +2015,7 @@ class ISBPLDebugger extends Thread {
                         //noinspection resource
                         socket = new ServerSocket((int) (Math.random() * 5000 + 5000));
                         port = socket.getLocalPort();
-                        System.err.println("Debugger listening on :" + socket.getLocalPort());
+                        ISBPL.gErrorStream.println("Debugger listening on :" + socket.getLocalPort());
                     }
                     catch (BindException ignored) { }
                 }
@@ -2069,51 +2072,51 @@ class ISBPLDebugger extends Thread {
                                             boolean fixed = false;
                                             while (!fixed) {
                                                 try {
-                                                    System.err.println("Stack recovered: " + isbpl.debuggerIPC.stack.get(tid));
+                                                    ISBPL.gErrorStream.println("Stack recovered: " + isbpl.debuggerIPC.stack.get(tid));
                                                     fixed = true;
                                                 }
                                                 catch (Exception e1) {
                                                     e.printStackTrace();
-                                                    System.err.println("!!! STACK CORRUPTED!");
+                                                    ISBPL.gErrorStream.println("!!! STACK CORRUPTED!");
                                                     isbpl.debuggerIPC.stack.get(tid).pop();
-                                                    System.err.println("Popped. Trying again.");
+                                                    ISBPL.gErrorStream.println("Popped. Trying again.");
                                                 }
                                             }
                                         }
                                         break;
                                     case "dump":
                                         try {
-                                            System.err.println("VAR DUMP\n----------------");
+                                            ISBPL.gErrorStream.println("VAR DUMP\n----------------");
                                             for (ISBPLFrame map : isbpl.frameStack.map.get(tid)) {
                                                 HashMap<String, ISBPLCallable> all = map.all();
                                                 for (String key : all.keySet()) {
                                                     if (key.startsWith("=")) {
                                                         all.get(key.substring(1)).call(isbpl.debuggerIPC.stack.get(tid));
-                                                        System.err.println("\t" + key.substring(1) + ": \t" + isbpl.debuggerIPC.stack.get(tid).pop());
+                                                        ISBPL.gErrorStream.println("\t" + key.substring(1) + ": \t" + isbpl.debuggerIPC.stack.get(tid).pop());
                                                     }
                                                 }
-                                                System.err.println("----------------");
+                                                ISBPL.gErrorStream.println("----------------");
                                             }
                                         }
                                         catch (Exception e) {
                                             e.printStackTrace();
-                                            System.err.println("!!! VARS CORRUPTED! CANNOT FIX AUTOMATICALLY.");
+                                            ISBPL.gErrorStream.println("!!! VARS CORRUPTED! CANNOT FIX AUTOMATICALLY.");
                                         }
                                     case "stack":
                                         boolean fixed = false;
                                         while (!fixed) {
                                             try {
-                                                System.err.println("STACK DUMP");
+                                                ISBPL.gErrorStream.println("STACK DUMP");
                                                 for (ISBPLObject object : isbpl.debuggerIPC.stack.get(tid)) {
-                                                    System.err.println("\t" + object);
+                                                    ISBPL.gErrorStream.println("\t" + object);
                                                 }
                                                 fixed = true;
                                             }
                                             catch (Exception e) {
                                                 e.printStackTrace();
-                                                System.err.println("!!! STACK CORRUPTED!");
+                                                ISBPL.gErrorStream.println("!!! STACK CORRUPTED!");
                                                 isbpl.debuggerIPC.stack.get(tid).pop();
-                                                System.err.println("Popped. Trying again.");
+                                                ISBPL.gErrorStream.println("Popped. Trying again.");
                                             }
                                         }
                                         break;
@@ -2133,10 +2136,10 @@ class ISBPLDebugger extends Thread {
                                         System.exit(255);
                                         break;
                                     case "threads":
-                                        System.err.println("THREAD DUMP");
+                                        ISBPL.gErrorStream.println("THREAD DUMP");
                                         for (Thread thread : Thread.getAllStackTraces().keySet()) {
                                             if (isbpl.debuggerIPC.stack.containsKey(thread.getId()))
-                                                System.err.println(thread.getId() + "\t" + thread.getName());
+                                                ISBPL.gErrorStream.println(thread.getId() + "\t" + thread.getName());
                                         }
                                         break;
                                     case "setthread":
@@ -2144,10 +2147,10 @@ class ISBPLDebugger extends Thread {
                                         long l = Long.parseLong(line.split(" ")[1]);
                                         if (isbpl.debuggerIPC.stack.containsKey(l)) {
                                             tid = l;
-                                            System.err.println("Set TID=" + l);
+                                            ISBPL.gErrorStream.println("Set TID=" + l);
                                         }
                                         else
-                                            System.err.println("Thread not valid");
+                                            ISBPL.gErrorStream.println("Thread not valid");
                                         break;
                                     default:
                                         break;
