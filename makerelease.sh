@@ -36,6 +36,7 @@ rm gitdiff gitlog
 
 xdg-open "https://github.com/tudbut/ttc/releases/new" &
 
+
 cp version.txt previousVersion.txt
 git commit -m "makerelease.sh: set previous version" previousVersion.txt
 git push
@@ -50,6 +51,6 @@ echo "then press enter and hit publish once the"
 echo "script is done."
 read
 git push
-git tag -aF message.txt $(cat version.txt)
+git tag -aF message.txt "$(cat version.txt)"
 git push --tags
 git checkout dev
