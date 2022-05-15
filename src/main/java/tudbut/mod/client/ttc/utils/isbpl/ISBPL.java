@@ -261,8 +261,12 @@ public class ISBPL {
                     idx++;
                     AtomicInteger i = new AtomicInteger(idx);
                     String s = "";
-                    for(String w : readBlock(i, words, file))
-                        s += w + " ";
+                    for(String w : readBlock(i, words, file)) {
+                        s += w;
+                        if(w.length() > 0 && w.charAt(0) == '"') 
+                            s += '"';
+                        s += " ";
+                    }
                     s = s.substring(0, s.length() - 1);
                     stack.push(toISBPLString(s));
                     return i.get();
@@ -1467,6 +1471,7 @@ public class ISBPL {
     public void interpret(File file, String code, Stack<ISBPLObject> stack) {
         if(code.startsWith("#!"))
             code = code.substring(code.indexOf("\n") + 1);
+        debuggerIPC.stack.put(Thread.currentThread().getId(), stack);
         fileStack.get().push(file);
         code = cleanCode(code);
         String[] words = splitWords(code);
