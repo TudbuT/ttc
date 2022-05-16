@@ -1138,7 +1138,7 @@ public class ISBPL {
                     if(methodList == null)
                         methodList = new ArrayList<>();
                     methodList.add(method);
-                    methods.put(method.getName() + method.getParameterCount(), methodList);
+                    methods.put(name + method.getParameterCount(), methodList);
                 }
                 for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
                     addFunction(type, entry.getKey(), stack -> {
