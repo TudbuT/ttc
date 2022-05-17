@@ -256,6 +256,16 @@ public class ISBPL {
                         ISBPL.gErrorStream.println("Constructing type " + type);
                     return i.get();
                 };
+            case "with":
+                return (idx, words, file, stack) -> {
+                    idx++;
+                    int i = 1;
+                    for(; !words[idx].equals(";"); idx++, i++);
+                    for(idx--; !words[idx].equals("with"); idx--) {
+                        frameStack.get().peek().define(words[idx], stack.pop());
+                    }
+                    return idx + i;
+                };
             case "string!":
                 return (idx, words, file, stack) -> {
                     idx++;
@@ -315,6 +325,19 @@ public class ISBPL {
                         arr[j] = getNullObject();
                     }
                     stack.push(new ISBPLObject(getType("array"), arr));
+                };
+                break;
+            case "acopy":
+                func = (stack) -> {
+                    ISBPLObject len = stack.pop();
+                    ISBPLObject idx2 = stack.pop();
+                    ISBPLObject idx1 = stack.pop();
+                    ISBPLObject arr2 = stack.pop();
+                    ISBPLObject arr1 = stack.pop();
+                    arr1.checkType(getType("array"));
+                    arr2.checkType(getType("array"));
+                    System.arraycopy((ISBPLObject[]) arr1.object, (int) idx1.toLong(), (ISBPLObject[]) arr2.object, (int) idx2.toLong(), (int) len.toLong());
+                    stack.push(arr2);
                 };
                 break;
             case "_array":
@@ -552,6 +575,18 @@ public class ISBPL {
                     ISBPLObject o = stack.pop();
                     i.checkType(getType("int"));
                     stack.push(new ISBPLObject(types.get(((int) i.object)), o.object));
+                };
+                break;
+            case "extends":
+                func = (stack) -> {
+                    ISBPLObject b = stack.pop();
+                    ISBPLObject a = stack.pop();
+                    if(a.type.extendsOther(getType("int")) && b.type.extendsOther(getType("int"))) {
+                        stack.push(new ISBPLObject(getType("int"), types.get((int) a.object).extendsOther(types.get((int) b.object)) ? 1 : 0));
+                    }
+                    else {
+                        stack.push(new ISBPLObject(getType("int"), a.type.extendsOther(b.type) ? 1 : 0));
+                    }
                 };
                 break;
             case "throw":
@@ -1114,7 +1149,7 @@ public class ISBPL {
                         if(debug)
                             ISBPL.gErrorStream.println("Java Get: " + field);
                         try {
-                            stack.push(toISBPL(field.get(stack.pop().object)));
+                            stack.push(toISBPL(field.get(fromISBPL(stack.pop(), clazz))));
                         }
                         catch (IllegalAccessException ignored) {
                         }
@@ -1124,7 +1159,7 @@ public class ISBPL {
                         if(debug)
                             ISBPL.gErrorStream.println("Java Set: " + field);
                         try {
-                            field.set(stack.pop().object, fromISBPL(stack.pop(), field.getType()));
+                            field.set(fromISBPL(stack.pop(), clazz), fromISBPL(stack.pop(), field.getType()));
                         }
                         catch (IllegalAccessException ignored) {
                         }
@@ -1142,7 +1177,7 @@ public class ISBPL {
                 }
                 for (Map.Entry<String, ArrayList<Method>> entry : methods.entrySet()) {
                     addFunction(type, entry.getKey(), stack -> {
-                        Object o = stack.pop().object;
+                        Object o = fromISBPL(stack.pop(), clazz);
                         // Resolve
                         AtomicInteger mid = new AtomicInteger(0);
                         ArrayList<Method> ms = entry.getValue();
@@ -1276,9 +1311,10 @@ public class ISBPL {
     
     public Object fromISBPL(ISBPLObject o, Class<?> expectedType) {
         ISBPLType type = o.type;
-        if (type.equals(getType("null"))) {
+        if (type.equals(getType("null")))
             return null;
-        }
+        if(o.object == null)
+            return null;
         if (type.equals(getType("string"))) {
             if(expectedType.isAssignableFrom(String.class))
                 return toJavaString(o);
@@ -1355,7 +1391,7 @@ public class ISBPL {
     
     public void addFunction(ISBPLType type, String name, ISBPLCallable callable) {
         type.methods.put(name, callable);
-        type.methods.put("&" + name, stack -> stack.push(new ISBPLObject(getType("func"), callable)));
+        type.methods.put("&" + name, stack -> {stack.pop(); stack.push(new ISBPLObject(getType("func"), callable)); });
     }
     
     private String getFilePathForInclude(Stack<ISBPLObject> stack, Stack<File> file) {
@@ -1819,8 +1855,19 @@ class ISBPLType {
                "id=" + id +
                ", name='" + name + '\'' +
                ", superTypes=" + superTypes +
-               ", methods=" + methods +
                '}';
+    }
+
+    public boolean extendsOther(ISBPLType other) {
+        Queue<ISBPLType> q = new LinkedList<>();
+        q.add(this);
+        while(!q.isEmpty()) {
+            ISBPLType t = q.poll();
+            q.addAll(t.superTypes);
+            if(other.equals(t))
+                return true;
+        }
+        return false;
     }
 }
 
