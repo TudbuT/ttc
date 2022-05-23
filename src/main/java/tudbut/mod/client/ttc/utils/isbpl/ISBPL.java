@@ -1130,6 +1130,14 @@ public class ISBPL {
                 for(Class<?> c : interfaces) {
                     type.superTypes.add(toISBPL(c).type);
                 }
+                for (Class<?> subclass : clazz.getDeclaredClasses()) {
+                    addFunction(type, subclass.getSimpleName(), stack -> {
+                        if(debug)
+                            ISBPL.gErrorStream.println("Java GetSubclass: " + subclass.getName());
+                        stack.pop();
+                        stack.push(toISBPL(subclass));
+                    });
+                }
                 if (clazz.isEnum()) {
                     for (Object o : clazz.getEnumConstants()) {
                         String name = TTC.obfMap.get(clazz.getName().replaceAll("\\.", "/") + "/" + o.toString(), o.toString());
@@ -1351,6 +1359,11 @@ public class ISBPL {
                 return (char) o.toLong();
             if(expectedType == byte.class)
                 return (byte) o.toLong();
+        }
+        if(expectedType == Runnable.class) {
+            return (Runnable) () -> {
+                ((ISBPLCallable) o.object).call(new ISBPLStack<>());
+            };
         }
         if(!expectedType.isAssignableFrom(o.object.getClass()))
             typeError(o.type.name, expectedType.getName());
