@@ -1362,7 +1362,7 @@ public class ISBPL {
         }
         if(expectedType == Runnable.class) {
             return (Runnable) () -> {
-                ((ISBPLCallable) o.object).call(new ISBPLStack<>());
+                ((ISBPLCallable) o.object).call(new ISBPLStack());
             };
         }
         if(!expectedType.isAssignableFrom(o.object.getClass()))
