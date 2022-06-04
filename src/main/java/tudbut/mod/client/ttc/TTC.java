@@ -97,23 +97,21 @@ public class TTC {
             if (!isObfEnv())
                 return;
             try {
-                String[] srg = new StreamReader(ClassLoader.getSystemResourceAsStream("minecraft_obf.srg")).readAllAsString().replaceAll("\r\n", "\n").split("\n");
-        
+                String[] srg = new StreamReader(ClassLoader.getSystemResourceAsStream("minecraft_obf.srg")).readAllAsString().split("\n");
+                
                 for (int i = 0 ; i < srg.length ; i++) {
                     if (srg[i].isEmpty())
                         continue;
                     String[] srgLine = srg[i].split(" ");
-                    if (srgLine[0].equalsIgnoreCase("FD:") || srgLine[0].equalsIgnoreCase("MD:") || srgLine[0].equalsIgnoreCase("CL:")) {
-                        if (srgLine.length == 3) {
-                            String out = srgLine[1];
-                            String in = srgLine[srgLine.length - 1];
-                            obfMap.set(out, in);
-                        }
-                        else if (srgLine.length == 5) {
-                            String out = srgLine[1];
-                            String in = srgLine[srgLine.length - 2];
-                            obfMap.set(out, in);
-                        }
+                    if (srgLine[0].equals("FD:") || srgLine[0].equals("CL:")) {
+                        String out = srgLine[1];
+                        String in = srgLine[srgLine.length - 1];
+                        obfMap.set(out, in);
+                    }
+                    if (srgLine[0].equals("MD:")) {
+                        String out = srgLine[1];
+                        String in = srgLine[3];
+                        obfMap.set(out, in);
                     }
                 }
                 res.call(null);
