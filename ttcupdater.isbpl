@@ -1,0 +1,10 @@
+def error null =error
+
+func migrate {
+    with old new ;
+
+    old puts "\n" puts
+    new puts "\n" puts
+
+    error not not
+}

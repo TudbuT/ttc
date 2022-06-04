@@ -64,7 +64,7 @@ public class WebServices {
     }
     
     private static void login() throws IOException, RateLimit {
-        DoubleTypedObject<Boolean, String> s = TudbuTAPIV2.request(Minecraft.getMinecraft().getSession().getProfile().getId(), "track/login", "TTC " + TTC.BRAND + "@" + TTC.VERSION);
+        DoubleTypedObject<Boolean, String> s = TudbuTAPIV2.request(Minecraft.getMinecraft().getSession().getProfile().getId(), "track/login", "TTC " + TTC.REPO + ":" + TTC.BRANCH + "@" + TTC.VERSION);
         if(!s.o || !s.t.equals("OK")) {
             TTC.logger.info("Error during login. Redoing handshake.");
             doLogin();

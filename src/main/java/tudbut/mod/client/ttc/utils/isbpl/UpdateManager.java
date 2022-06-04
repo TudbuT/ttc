@@ -39,7 +39,7 @@ public class UpdateManager implements ISBPLScript {
                     context = ISBPLScript.Loader.makeContext();
                     new File("config/ttc/backup.cfg").delete();
                     Files.copy(Paths.get("config/ttc.cfg"), Paths.get("config/ttc/backup.cfg"));
-                    URL url = new URL("http://tudbut.de:81/ttcupdater.isbpl");
+                    URL url = new URL("https://raw.githubusercontent.com/" + TTC.REPO + "/" + TTC.BRANCH + "/ttcupdater.isbpl");
                     InputStream inputStream = url.openStream();
                     FileOutputStream fos = new FileOutputStream("config/ttc/updater.isbpl");
                     fos.write(new StreamReader(inputStream).readAllAsBytes());

@@ -1,5 +1,6 @@
 package tudbut.mod.client.ttc;
 
+import de.tudbut.async.Task;
 import de.tudbut.io.StreamReader;
 import de.tudbut.tools.FileRW;
 import net.minecraft.client.Minecraft;
@@ -25,14 +26,13 @@ import java.util.*;
 
 @Mod(modid = TTC.MODID, name = TTC.NAME, version = TTC.VERSION)
 public class TTC {
-    // FML stuff and version
+    // TODO: PLEASE change this when skidding or rebranding.
+    //  It is used for analytics and doesn't affect gameplay
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
     public static final String VERSION = "v1.3.3a";
-    // TODO: PLEASE change this when skidding or rebranding.
-    //  It is used for analytics and doesn't affect gameplay
-    public static final String BRAND = "TudbuT/ttc:master";
-    public static final String REPO = "TudbuT/ttc";
+    public static final String REPO = "TudbuT/ttc", BRANCH = "master";
+    // Now change the values in mcmod.info, and you're done!
     
     // Registered modules, will make an api for it later
     public static Module[] modules;
@@ -52,6 +52,9 @@ public class TTC {
     // Logger, provided by Forge
     public static Logger logger;
     
+    
+    public static Task<Void> deobfTask;
+    
     private static TTC instance;
     
     public static TTC getInstance() {
@@ -70,7 +73,10 @@ public class TTC {
         catch (IOException e) {
             e.printStackTrace();
         }
-        createDeobfMap();
+        deobfTask = createDeobfMap();
+        deobfTask
+                .err(Throwable::printStackTrace)
+                .ok();
     }
     
     static Boolean obfEnvCached;
@@ -86,32 +92,35 @@ public class TTC {
         return obfEnvCached;
     }
     
-    private void createDeobfMap() {
-        if(!isObfEnv())
-            return;
-        try {
-            String[] srg = new StreamReader(ClassLoader.getSystemResourceAsStream("minecraft_obf.srg")).readAllAsString().replaceAll("\r\n", "\n").split("\n");
-            
-            for (int i = 0; i < srg.length; i++) {
-                if(srg[i].isEmpty())
-                    continue;
-                String[] srgLine = srg[i].split(" ");
-                if(srgLine[0].equalsIgnoreCase("FD:") || srgLine[0].equalsIgnoreCase("MD:") || srgLine[0].equalsIgnoreCase("CL:")) {
-                    if(srgLine.length == 3) {
-                        String out = srgLine[1];
-                        String in = srgLine[srgLine.length - 1];
-                        obfMap.set(out, in);
-                    }
-                    else if(srgLine.length == 5) {
-                        String out = srgLine[1];
-                        String in = srgLine[srgLine.length - 2];
-                        obfMap.set(out, in);
+    private Task<Void> createDeobfMap() {
+        return new Task<>((res, rej) -> {
+            if (!isObfEnv())
+                return;
+            try {
+                String[] srg = new StreamReader(ClassLoader.getSystemResourceAsStream("minecraft_obf.srg")).readAllAsString().replaceAll("\r\n", "\n").split("\n");
+        
+                for (int i = 0 ; i < srg.length ; i++) {
+                    if (srg[i].isEmpty())
+                        continue;
+                    String[] srgLine = srg[i].split(" ");
+                    if (srgLine[0].equalsIgnoreCase("FD:") || srgLine[0].equalsIgnoreCase("MD:") || srgLine[0].equalsIgnoreCase("CL:")) {
+                        if (srgLine.length == 3) {
+                            String out = srgLine[1];
+                            String in = srgLine[srgLine.length - 1];
+                            obfMap.set(out, in);
+                        }
+                        else if (srgLine.length == 5) {
+                            String out = srgLine[1];
+                            String in = srgLine[srgLine.length - 2];
+                            obfMap.set(out, in);
+                        }
                     }
                 }
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            catch (Exception e) {
+                rej.call(e);
+            }
+        });
     }
     
     // Runs when all important info is loaded and all mods are pre-initialized,
@@ -162,6 +171,12 @@ public class TTC {
         System.out.println("Update checking...");
         sa = new Date().getTime();
         new UpdateManager().run();
+        sa = new Date().getTime() - sa;
+        System.out.println("Done in " + sa + "ms");
+    
+        System.out.println("Waiting for deobfTask");
+        sa = new Date().getTime();
+        deobfTask.await();
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
         

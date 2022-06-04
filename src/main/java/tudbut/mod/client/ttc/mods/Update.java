@@ -1,5 +1,6 @@
 package tudbut.mod.client.ttc.mods;
 
+import de.tudbut.api.TTCVersion;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
@@ -16,13 +17,7 @@ public class Update extends Module {
 
     // Checks if the version on master is actually newer than the current one in case the current version is a pre-release
     public static boolean isNewer(String current, String version) {
-        String[] numbersCurrent = current.substring(1, current.length() - 1).split("[.]");
-        String[] numbers = version.substring(1, current.length() - 1).split("[.]");
-        for(int i = 0; i < numbers.length; i++) {
-            if(Integer.parseInt(numbers[i]) > Integer.parseInt(numbersCurrent[i]))
-                return true;
-        }
-        return version.charAt(version.length() - 1) > current.charAt(current.length() - 1);
+        return new TTCVersion("", "", current).isOlderThan(new TTCVersion("", "", version));
     }
     
     @Override
