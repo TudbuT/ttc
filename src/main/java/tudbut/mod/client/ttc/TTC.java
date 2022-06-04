@@ -116,6 +116,7 @@ public class TTC {
                         }
                     }
                 }
+                res.call(null);
             }
             catch (Exception e) {
                 rej.call(e);
