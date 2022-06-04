@@ -2,6 +2,7 @@ package tudbut.mod.client.ttc.utils;
 
 import net.minecraft.client.Minecraft;
 import tudbut.api.impl.RateLimit;
+import tudbut.api.impl.Restart;
 import tudbut.api.impl.TudbuTAPIV2;
 import tudbut.mod.client.ttc.TTC;
 import tudbut.net.pbic2.PBIC2;
@@ -14,16 +15,18 @@ import tudbut.tools.Lock;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class WebServices {
     
+    public static UUID uuid = TTC.mc.getSession().getProfile().getId();
     public static PBIC2 client;
     public static PBIC2AEventHandler handler = new PBIC2AEventHandler();
     public static Lock keepAliveLock = new Lock(true);
     private static final PBIC2AListener listener = new PBIC2AListener() {
         @Override
         public void onMessage(String s) throws IOException {
-            keepAliveLock.lock(15000);
+            keepAliveLock.lock(20000);
             try {
                 TCN tcn = JSON.read(s);
                 if(tcn.getString("id").equalsIgnoreCase("message")) {
@@ -34,6 +37,10 @@ public class WebServices {
                         tcn.getString("id").equalsIgnoreCase("welcome")
                 ) {
                     usersOnline = tcn.getSub("data").getArray("onlineUsernames").toArray(new String[0]);
+                    client.writeMessage("OK");
+                }
+                if(JSON.read(s).getString("id").equals("restart")) {
+                    throw new Restart();
                 }
             }
             catch (JSON.JSONFormatException e) {
@@ -44,6 +51,16 @@ public class WebServices {
         @Override
         public void onError(Throwable throwable) {
             throwable.printStackTrace();
+            if(throwable instanceof Restart) {
+                try {
+                    System.out.println("Restart");
+                    Thread.sleep(10000);
+                    handler.start(TudbuTAPIV2.connectGateway(uuid), listener);
+                }
+                catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     };
     
