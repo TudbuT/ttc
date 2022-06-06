@@ -35,6 +35,7 @@ public class Msg extends Module {
                     }
                 })
                 .then(v -> ChatUtils.print("Done!"))
-                .err(e -> ChatUtils.print("Couldn't find that player! Usage: ,msg <name> <message...>"));
+                .err(e -> ChatUtils.print("Couldn't find that player! Usage: ,msg <name> <message...>"))
+                .ok();
     }
 }

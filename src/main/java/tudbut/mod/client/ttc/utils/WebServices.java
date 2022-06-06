@@ -54,7 +54,7 @@ public class WebServices {
             if(throwable instanceof Restart) {
                 try {
                     System.out.println("Restart");
-                    Thread.sleep(10000);
+                    Thread.sleep(15000);
                     handler.start(TudbuTAPIV2.connectGateway(uuid), listener);
                 }
                 catch (IOException | InterruptedException e) {
