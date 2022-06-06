@@ -26,9 +26,10 @@ public class Msg extends Module {
         String name = args[0];
         TudbuTAPI
                 .getUUID(name)
-                .compose((resp, res, rej) -> {
+                .<Void>compose((resp, res, rej) -> {
                     try {
                         TudbuTAPIV2.request(TTC.player.getUniqueID(), "message", "other=" + resp, s.substring(name.length() + 1));
+                        res.call(null);
                     }
                     catch (IOException | RateLimit e) {
                         rej.call(e);
