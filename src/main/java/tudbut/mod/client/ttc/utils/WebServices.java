@@ -23,6 +23,7 @@ public class WebServices {
     public static PBIC2 client;
     public static PBIC2AEventHandler handler = new PBIC2AEventHandler();
     public static Lock keepAliveLock = new Lock(true);
+    public static Lock restartLock = new Lock();
     private static final PBIC2AListener listener = new PBIC2AListener() {
         @Override
         public void onMessage(String s) throws IOException {
@@ -53,6 +54,7 @@ public class WebServices {
             throwable.printStackTrace();
             if(throwable instanceof Restart) {
                 keepAliveLock.lock();
+                restartLock.lock();
                 try {
                     ChatUtils.print("§a[TTC] §r[WebServices] §bAPI Restart detected. Reconnecting...");
                     Thread.sleep(15000);
@@ -62,6 +64,7 @@ public class WebServices {
                 catch (Throwable e) {
                     e.printStackTrace();
                 }
+                restartLock.unlock();
                 keepAliveLock.lock(20000);
             }
         }
@@ -123,6 +126,7 @@ public class WebServices {
             if(TTC.isIngame()) {
                 sendQueuedMessages();
             }
+            restartLock.waitHere();
             if(!keepAliveLock.isLocked()) {
                 handler.remove(client);
                 client = TudbuTAPIV2.connectGateway(Minecraft.getMinecraft().getSession().getProfile().getId());
@@ -135,7 +139,8 @@ public class WebServices {
             }
         }
         catch (Exception ignored) {
-            doLogin();
+            if(!restartLock.isLocked())
+                doLogin();
         }
     }
     
