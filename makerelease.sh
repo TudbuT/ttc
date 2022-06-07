@@ -5,9 +5,10 @@ read VERSION
 echo
 echo -n "$VERSION" > version.txt
 sed "s/$(cat previousVersion.txt)/$(cat version.txt)/g" < src/main/java/tudbut/mod/client/ttc/TTC.java > tmp.TTC.java
-sed 's/BRANCH = "dev"/BRANCH = "master"'                < tmp.TTC.java > src/main/java/tudbut/mod/client/ttc/TTC.java
+sed 's/BRANCH = "dev"/BRANCH = "master"/g'              < tmp.TTC.java > src/main/java/tudbut/mod/client/ttc/TTC.java
 sed "s/$(cat previousVersion.txt)/$(cat version.txt)/g" < src/main/resources/mcmod.info > tmp.mcmod.info
 mv tmp.mcmod.info src/main/resources/mcmod.info
+rm tmp.TTC.java
 ./gradlew jar
 git commit -m "makerelease.sh: set version" version.txt build src/main/java/tudbut/mod/client/ttc/TTC.java src/main/resources/mcmod.info
 git push
@@ -54,5 +55,5 @@ git push
 git tag -aF message.txt "$(cat version.txt)"
 git push --tags
 git checkout dev
-sed 's/BRANCH = "master"/BRANCH = "dev"'                < src/main/java/tudbut/mod/client/ttc/TTC.java > tmp.TTC.java
+sed 's/BRANCH = "master"/BRANCH = "dev"/g'              < src/main/java/tudbut/mod/client/ttc/TTC.java > tmp.TTC.java
 mv tmp.TTC.java src/main/java/tudbut/mod/client/ttc/TTC.java
