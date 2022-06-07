@@ -30,7 +30,7 @@ public class TTC {
     //  It is used for analytics and doesn't affect gameplay
     public static final String MODID = "ttc";
     public static final String NAME = "TTC Client";
-    public static final String VERSION = "v1.3.3a";
+    public static final String VERSION = "v1.3.4a";
     public static final String REPO = "TudbuT/ttc", BRANCH = "master";
     // Now change the values in mcmod.info, and you're done!
     
