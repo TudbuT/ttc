@@ -52,14 +52,17 @@ public class WebServices {
         public void onError(Throwable throwable) {
             throwable.printStackTrace();
             if(throwable instanceof Restart) {
+                keepAliveLock.lock();
                 try {
-                    System.out.println("Restart");
+                    ChatUtils.print("§a[TTC] §r[WebServices] §bAPI Restart detected. Reconnecting...");
                     Thread.sleep(15000);
                     handler.start(TudbuTAPIV2.connectGateway(uuid), listener);
+                    ChatUtils.print("§a[TTC] §r[WebServices] §aConnected!");
                 }
-                catch (IOException | InterruptedException e) {
-                    throw new RuntimeException(e);
+                catch (Throwable e) {
+                    e.printStackTrace();
                 }
+                keepAliveLock.lock(20000);
             }
         }
     };
