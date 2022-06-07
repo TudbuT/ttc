@@ -57,3 +57,5 @@ git push --tags
 git checkout dev
 sed 's/BRANCH = "master"/BRANCH = "dev"/g'              < src/main/java/tudbut/mod/client/ttc/TTC.java > tmp.TTC.java
 mv tmp.TTC.java src/main/java/tudbut/mod/client/ttc/TTC.java
+git commit -m "makerelease.sh: set BRANCH to dev" src/main/java/tudbut/mod/client/ttc/TTC.java
+git push
