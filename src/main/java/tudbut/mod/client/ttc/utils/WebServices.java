@@ -155,7 +155,6 @@ public class WebServices {
         for (int i = 0, queuedMessagesSize = queuedMessages.size() ; i < queuedMessagesSize ; i++) {
             TCN queuedMessage = queuedMessages.get(i);
             
-            ChatUtils.print("§a[TTC] §lGOT MESSAGE");
             ChatUtils.print("§a[TTC] <" + queuedMessage.getSub("from").getSub("record").getString("name") + "> " + queuedMessage.getString("message"));
             
             queuedMessages.remove(queuedMessage);
