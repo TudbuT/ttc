@@ -27,7 +27,6 @@ public class WebServices {
     private static final PBIC2AListener listener = new PBIC2AListener() {
         @Override
         public void onMessage(String s) throws IOException {
-            keepAliveLock.lock(20000);
             try {
                 TCN tcn = JSON.read(s);
                 if(tcn.getString("id").equalsIgnoreCase("message")) {
@@ -47,6 +46,7 @@ public class WebServices {
             catch (JSON.JSONFormatException e) {
                 e.printStackTrace();
             }
+            keepAliveLock.lock(20000);
         }
         
         @Override
@@ -57,6 +57,9 @@ public class WebServices {
                 restartLock.lock();
                 try {
                     ChatUtils.print("§a[TTC] §r[WebServices] §bAPI Restart detected. Reconnecting...");
+                    handler.remove(client);
+                    client.getSocket().close();
+                    client.getRealSocket().close();
                     Thread.sleep(15000);
                     handler.start(TudbuTAPIV2.connectGateway(uuid), listener);
                     ChatUtils.print("§a[TTC] §r[WebServices] §aConnected!");
