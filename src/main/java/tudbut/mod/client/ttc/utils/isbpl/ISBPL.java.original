@@ -1719,15 +1719,25 @@ public class ISBPL {
                 word.append('"');
                 isInString = true;
             }
-            else if(c == ' ') {
-                words.add(word.toString());
+            else if(c == ' ' || c == '°' || c == 'ß' || c == '§') {
+                String w = word.toString();
+                while(w.startsWith("(") && w.length() > 1)
+                    w = w.substring(1);
+                while(w.endsWith(")") && w.length() > 1)
+                    w = w.substring(0, w.length() - 1);
+                words.add(w);
                 word = new StringBuilder();
             }
             else {
                 word.append(c);
             }
         }
-        words.add(word.toString());
+        String w = word.toString();
+        while(w.startsWith("(") && w.length() > 1)
+            w = w.substring(1);
+        while(w.endsWith(")") && w.length() > 1)
+            w = w.substring(0, w.length() - 1);
+        words.add(w);
 
         ArrayList<String> cleanWords = new ArrayList<>();
         for(int i = 0; i < words.size(); i++) {
