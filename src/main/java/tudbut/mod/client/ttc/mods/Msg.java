@@ -1,6 +1,7 @@
 package tudbut.mod.client.ttc.mods;
 
 import de.tudbut.api.RequestResult;
+import tudbut.parsing.TCN;
 import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.WebServices2;
@@ -15,7 +16,7 @@ public class Msg extends Module {
     @Override
     public void onEveryChat(String s, String[] args) {
         if(args.length == 0) {
-            ChatUtils.print("§aPlayers online: " + WebServices2.client.getUsersOnline().success(Integer.class).get());
+            ChatUtils.print("§aPlayers online: " + WebServices2.client.getOnline().success(TCN.class).apply(it -> it.getArray("names")).apply(it -> String.join(" ", it.toArray(new String[0]))).get());
             return;
         }
         String name = args[0];
