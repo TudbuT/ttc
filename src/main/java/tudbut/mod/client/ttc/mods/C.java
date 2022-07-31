@@ -5,7 +5,12 @@ import tudbut.mod.client.ttc.utils.ChatUtils;
 import tudbut.mod.client.ttc.utils.Module;
 import tudbut.mod.client.ttc.utils.WebServices2;
 
-public class Msg extends Module {
+/**
+ * @author TudbuT
+ * @since 31 Jul 2022
+ */
+
+public class C extends Module {
     
     @Override
     public boolean displayOnClickGUI() {
@@ -14,12 +19,7 @@ public class Msg extends Module {
     
     @Override
     public void onEveryChat(String s, String[] args) {
-        if(args.length == 0) {
-            ChatUtils.print("§aPlayers online: " + WebServices2.client.getUsersOnline());
-            return;
-        }
-        String name = args[0];
-        RequestResult<?> result = WebServices2.sendMessage(name, s.substring(name.length() + 1));
+        RequestResult<?> result = WebServices2.client.sendMessage(s);
         System.out.println(result);
         if(result.result == RequestResult.Type.SUCCESS) {
             ChatUtils.print("§a[TTC] §r[WebServices] §aSuccessfully sent message.");

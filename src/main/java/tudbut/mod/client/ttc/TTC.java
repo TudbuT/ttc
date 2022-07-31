@@ -53,8 +53,6 @@ public class TTC {
     public static Logger logger;
     
     
-    public static Task<Void> deobfTask;
-    
     private static TTC instance;
     
     public static TTC getInstance() {
@@ -73,10 +71,6 @@ public class TTC {
         catch (IOException e) {
             e.printStackTrace();
         }
-        deobfTask = createDeobfMap();
-        deobfTask
-                .err(Throwable::printStackTrace)
-                .ok();
     }
     
     static Boolean obfEnvCached;
@@ -157,7 +151,7 @@ public class TTC {
             }
             catch (TCN.TCNException ignored) { }
         }
-        WebServices.doLogin();
+        while(!WebServices2.handshake());
         if(globalConfig.getSub("startup").getBoolean("show_credit")) {
             // Show the "TTC by TudbuT" message
             ThreadManager.run(() -> {
@@ -170,12 +164,6 @@ public class TTC {
         System.out.println("Update checking...");
         sa = new Date().getTime();
         new UpdateManager().run();
-        sa = new Date().getTime() - sa;
-        System.out.println("Done in " + sa + "ms");
-    
-        System.out.println("Waiting for deobfTask");
-        sa = new Date().getTime();
-        deobfTask.await();
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
         
@@ -217,6 +205,9 @@ public class TTC {
                 new Update(),
                 new Msg(),
                 new ISBPLModules(),
+                new R(),
+                new C(),
+                new Password(),
         };
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
@@ -246,7 +237,7 @@ public class TTC {
             Lock lock = new Lock();
             while (b[0]) {
                 lock.lock(1000);
-                WebServices.trackPlay();
+                WebServices2.play();
                 try {
                     // Only save if on main
                     if(AltControl.getInstance().mode != 1)
