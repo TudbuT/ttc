@@ -15,7 +15,7 @@ public class Msg extends Module {
     @Override
     public void onEveryChat(String s, String[] args) {
         if(args.length == 0) {
-            ChatUtils.print("§aPlayers online: " + WebServices2.client.getUsersOnline());
+            ChatUtils.print("§aPlayers online: " + WebServices2.client.getUsersOnline().success(Integer.class).get());
             return;
         }
         String name = args[0];
