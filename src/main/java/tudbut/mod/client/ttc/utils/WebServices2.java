@@ -32,9 +32,14 @@ public class WebServices2 {
                 return new Nullable<ArrayList<TCN>>(client.getMessages().success(ArrayList.class).get()).apply(msgs -> {
                     for (int i = 0 ; i < msgs.size() ; i++) {
                         TCN msg = msgs.get(i);
-                        ChatUtils.print("§a[TTC] §r[WebServices] <" + msg.getSub("from").getString("name") + "> " + msg.getString("content"));
-                        lastMessaged = UUID.fromString(msg.getString("fromUUID"));
-                        lastMessagedName = null;
+                        if(msg.getBoolean("global")) {
+                            ChatUtils.print("§a[TTC] §r[WebServices] <" + msg.getSub("from").getString("name") + "> " + msg.getString("content"));
+                        }
+                        else {
+                            ChatUtils.print("§a[TTC] §r[WebServices] §c[DIRECT] §r" + msg.getSub("from").getString("name") + ": " + msg.getString("content"));
+                            lastMessaged = UUID.fromString(msg.getString("fromUUID"));
+                            lastMessagedName = null;
+                        }
                     }
                     return msgs;
                 }).get() != null;
