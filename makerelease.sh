@@ -10,7 +10,8 @@ sed "s/$(cat previousVersion.txt)/$(cat version.txt)/g" < src/main/resources/mcm
 mv tmp.mcmod.info src/main/resources/mcmod.info
 rm tmp.TTC.java
 ./gradlew jar
-git commit -m "makerelease.sh: set version" version.txt build src/main/java/tudbut/mod/client/ttc/TTC.java src/main/resources/mcmod.info
+cp version.txt previousVersion.txt
+git commit -m "makerelease.sh: set version" previousVersion.txt version.txt build src/main/java/tudbut/mod/client/ttc/TTC.java src/main/resources/mcmod.info
 git push
 cat > message.txt << EOF
 > $(cat version.txt)
@@ -37,10 +38,6 @@ rm gitdiff gitlog
 
 xdg-open "https://github.com/tudbut/ttc/releases/new" &
 
-
-cp version.txt previousVersion.txt
-git commit -m "makerelease.sh: set previous version" previousVersion.txt
-git push
 git checkout master
 git merge dev
 sleep 1
