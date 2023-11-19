@@ -157,6 +157,27 @@ public class TTC {
             ThreadManager.run(() -> {
                 JOptionPane.showMessageDialog(null, "TTC by TudbuT");
             });
+            // Show the unmaintained message
+            ThreadManager.run(() -> {
+                JOptionPane.showMessageDialog(null, 
+                    "Unfortunately, the TTC project has lost my interest almost entirely. \n" + 
+                    "This is mostly due to messy code and all sorts of bugs in performance \n" + 
+                    "and usability. \n" + 
+                    "This means that this client, while usable, is not something I'd \n" +
+                    "recommend you rely upon. I am still working on its premium version \n" +
+                    "from time to time, which is actually part of the reason why regular \n" +
+                    "TTC is getting almost none of my attention now. TTCp is much nicer to \n" +
+                    "code things for, and so I don't merge any of its features into regular \n" +
+                    "TTC anymore. \n" +
+                    "\n" +
+                    "In effect, this means TTC will most likely deteriorate over time. \n" + 
+                    "Feel free to still use it, but I recommend you either check out TTCp \n" + 
+                    "(which I often give away for free nowadays), or hope it doesn't break \n" + 
+                    "too hard. If it does, you can still message me (@tudbut on discord) and \n" +
+                    "I will help if where I can. \n" + 
+                    "\n" + 
+                    "TTC's development is halted - potentially indefinitely.");
+            });
         }
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
