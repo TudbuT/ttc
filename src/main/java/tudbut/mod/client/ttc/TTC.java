@@ -134,25 +134,25 @@ public class TTC {
         catch (Exception e) {
             e.printStackTrace();
         }
-        try {
-            globalConfig = TCN.read(Objects.requireNonNull(Utils.getRemote("global_config.tcn", true)));
-        }
-        catch (Exception e) {
-            try {
-                globalConfig = TCN.read("" +
-                                        "\n" +
-                                        "messages {\n" +
-                                        "    update: true\n" +
-                                        "}\n" +
-                                        "\n" +
-                                        "startup {\n" +
-                                        "    show_credit: true\n" +
-                                        "}");
-            }
-            catch (TCN.TCNException ignored) { }
-        }
-        while(!WebServices2.handshake());
-        if(globalConfig.getSub("startup").getBoolean("show_credit")) {
+        // try {
+        //     globalConfig = TCN.read(Objects.requireNonNull(Utils.getRemote("global_config.tcn", true)));
+        // }
+        // catch (Exception e) {
+        //     try {
+        //         globalConfig = TCN.read("" +
+        //                                 "\n" +
+        //                                 "messages {\n" +
+        //                                 "    update: true\n" +
+        //                                 "}\n" +
+        //                                 "\n" +
+        //                                 "startup {\n" +
+        //                                 "    show_credit: true\n" +
+        //                                 "}");
+        //     }
+        //     catch (TCN.TCNException ignored) { }
+        // }
+        // while(!WebServices2.handshake());
+        // if(globalConfig.getSub("startup").getBoolean("show_credit")) {
             // Show the "TTC by TudbuT" message
             ThreadManager.run(() -> {
                 JOptionPane.showMessageDialog(null, "TTC by TudbuT");
@@ -178,7 +178,7 @@ public class TTC {
                     "\n" + 
                     "TTC's development is halted - potentially indefinitely.");
             });
-        }
+        // }
         sa = new Date().getTime() - sa;
         System.out.println("Done in " + sa + "ms");
     
@@ -258,7 +258,7 @@ public class TTC {
             Lock lock = new Lock();
             while (b[0]) {
                 lock.lock(1000);
-                WebServices2.play();
+                // WebServices2.play();
                 try {
                     // Only save if on main
                     if(AltControl.getInstance().mode != 1)

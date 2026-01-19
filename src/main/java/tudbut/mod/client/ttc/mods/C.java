@@ -20,15 +20,15 @@ public class C extends Module {
     
     @Override
     public void onEveryChat(String s, String[] args) {
-        ThreadManager.run(() -> {
-            RequestResult<?> result = WebServices2.client.sendMessage(s);
-            System.out.println(result);
-            if(result.result == RequestResult.Type.SUCCESS) {
-                ChatUtils.print("§a[TTC] §r[WebServices] §aSuccessfully sent message.");
-            }
-            else {
-                ChatUtils.print("§a[TTC] §r[WebServices] §cFailed to send message.");
-            }
-        });
+        // ThreadManager.run(() -> {
+        //     RequestResult<?> result = WebServices2.client.sendMessage(s);
+        //     System.out.println(result);
+        //     if(result.result == RequestResult.Type.SUCCESS) {
+        //         ChatUtils.print("§a[TTC] §r[WebServices] §aSuccessfully sent message.");
+        //     }
+        //     else {
+        //         ChatUtils.print("§a[TTC] §r[WebServices] §cFailed to send message.");
+        //     }
+        // });
     }
 }
